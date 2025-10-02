@@ -1,0 +1,44 @@
+version: "3.8"
+name: platform_servers
+services:
+  platform_db:
+    image: postgres
+    container_name: platform_server_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: platform
+      POSTGRES_USER: platform_user
+      POSTGRES_PASSWORD: platform_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  redis:
+    image: redis
+    container_name: platform_server_redis
+    restart: always
+    ports:
+      - "6378:6379" # Redis default port
+    # volumes:
+    #   - redis_data:/data # Persistent storage for Redis data
+
+  # volumes:
+  #   redis:
+
+#   platform_server:
+#     build: .
+#     container_name: platform_app
+#     restart: always
+#     ports:
+#       - "4000:4000"
+#     env_file:
+#       - .env
+#     depends_on:
+#       - db
+#     volumes:
+#       - .:/usr/src/app
+#       - /usr/src/app/node_modules
+#     command: sh -c "npm install && npm run migrate && npm run dev"
+
+volumes:
+  postgres_data:
