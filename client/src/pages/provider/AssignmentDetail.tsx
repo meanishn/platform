@@ -71,9 +71,9 @@ export const AssignmentDetail: React.FC = () => {
       const response = await api.patch(`/api/assignments/${assignment.notification.id}/accept`);
       await handleResponse(response);
       navigate('/provider/assignments');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to accept assignment:', error);
-      alert(error.message || 'Failed to accept assignment');
+      alert((error as Error).message || 'Failed to accept assignment');
     } finally {
       setIsProcessing(false);
     }

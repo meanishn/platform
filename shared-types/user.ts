@@ -12,7 +12,7 @@ export interface PublicUserDto {
   lastName: string;
   profileImage?: string;
   averageRating?: number;
-  totalJobsCompleted: number;
+  totalJobsCompleted?: number;
   role: UserRole;
 }
 
@@ -26,6 +26,12 @@ export interface ProviderProfileDto extends PublicUserDto {
 
 // Provider profile with contact (only for confirmed assignments)
 export interface ProviderWithContactDto extends ProviderProfileDto {
+  email: string;
+  phone?: string;
+}
+
+// Customer with contact info (only for assigned providers)
+export interface CustomerWithContactDto extends PublicUserDto {
   email: string;
   phone?: string;
 }

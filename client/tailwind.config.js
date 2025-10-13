@@ -96,6 +96,7 @@ export default {
         'pulse-slow': 'pulse 3s ease-in-out infinite',
         'bounce-slow': 'bounce 2s infinite',
         'spin-slow': 'spin 3s linear infinite',
+        'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
       },
       keyframes: {
         blob: {
@@ -119,7 +120,17 @@ export default {
           '50%': {
             transform: 'translateY(-20px)',
           },
-        }
+        },
+        'pulse-subtle': {
+          '0%, 100%': {
+            opacity: '1',
+            boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)',
+          },
+          '50%': {
+            opacity: '0.95',
+            boxShadow: '0 6px 20px rgba(251, 191, 36, 0.5)',
+          },
+        },
       },
       boxShadow: {
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',

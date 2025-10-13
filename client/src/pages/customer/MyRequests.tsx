@@ -1,8 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { Card, Button, Input, Badge } from '../../components/ui';
+import { 
+  Card, 
+  Button, 
+  Input, 
+  Badge,
+  PageHeader,
+  StatCard,
+  LoadingSkeleton,
+} from '../../components/ui';
 import { useNavigate } from 'react-router-dom';
 import { api, handleResponse } from '../../services/apiClient';
+import { ServiceRequestListItemDto, ProviderWithContactDto } from '../../types/api';
 
 // Component to show assigned provider info
 interface AssignedProviderInfoProps {
@@ -14,8 +23,7 @@ interface AssignedProviderInfoProps {
 
 const AssignedProviderInfo: React.FC<AssignedProviderInfoProps> = ({ requestId, status, onConfirm, onReject }) => {
   const { token } = useAuth();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [provider, setProvider] = useState<any>(null);
+  const [provider, setProvider] = useState<ProviderWithContactDto | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,8 +31,7 @@ const AssignedProviderInfo: React.FC<AssignedProviderInfoProps> = ({ requestId, 
       if (!token) return;
       try {
         const response = await api.get(`/api/requests/${requestId}/assigned-provider`);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data = await handleResponse<{ success: boolean; data: any }>(response);
+        const data = await handleResponse<{ success: boolean; data: ProviderWithContactDto }>(response);
         setProvider(data.data);
       } catch (error) {
         console.error('Failed to fetch provider:', error);
@@ -129,30 +136,10 @@ const AssignedProviderInfo: React.FC<AssignedProviderInfoProps> = ({ requestId, 
   );
 };
 
-interface ServiceRequest {
-  id: number;
-  userId: number;
-  categoryId: number;
-  tierId: number;
-  title: string;
-  description: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  preferredDate?: string;
-  urgency: 'low' | 'medium' | 'high';
-  estimatedHours: number;
-  status: 'pending' | 'awaiting_customer_confirmation' | 'confirmed' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
-  assignedProviderId?: number;
-  createdAt: string;
-  updatedAt: string;
-  completedAt?: string;
-}
-
 export const MyRequests: React.FC = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
-  const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [requests, setRequests] = useState<ServiceRequestListItemDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -162,7 +149,7 @@ export const MyRequests: React.FC = () => {
     
     try {
       const response = await api.get(`/api/service-requests`);
-      const data = await handleResponse<{ success: boolean; data: ServiceRequest[] }>(response);
+      const data = await handleResponse<{ success: boolean; data: ServiceRequestListItemDto[] }>(response);
       setRequests(data.data || []);
     } catch (error) {
       console.error('Failed to fetch requests:', error);
@@ -255,106 +242,87 @@ export const MyRequests: React.FC = () => {
   });
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton type="page" />;
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">
-            My Service Requests
-          </h1>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={fetchRequests}
-              disabled={isLoading}
-            >
-              🔄 Refresh
-            </Button>
-            <Button onClick={() => navigate('/request-service')}>
-              + New Request
-            </Button>
-          </div>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <PageHeader
+          title="My Service Requests"
+          description="Track and manage your service requests"
+        />
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={fetchRequests}
+            disabled={isLoading}
+          >
+            🔄 Refresh
+          </Button>
+          <Button onClick={() => navigate('/request-service')}>
+            + New Request
+          </Button>
         </div>
+      </div>
         
-        {/* Filters and Search */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <Input
-              placeholder="Search requests..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <div className="flex gap-2">
-            {[
-              { value: 'all', label: 'All' },
-              { value: 'pending', label: 'Pending' },
-              { value: 'accepted', label: 'Accepted' },
-              { value: 'in_progress', label: 'In Progress' },
-              { value: 'completed', label: 'Completed' }
-            ].map(option => (
-              <Button
-                key={option.value}
-                variant={filter === option.value ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilter(option.value)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
+      {/* Filters and Search */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <Input
+            placeholder="Search requests..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="flex gap-2">
+          {[
+            { value: 'all', label: 'All' },
+            { value: 'pending', label: 'Pending' },
+            { value: 'accepted', label: 'Accepted' },
+            { value: 'in_progress', label: 'In Progress' },
+            { value: 'completed', label: 'Completed' }
+          ].map(option => (
+            <Button
+              key={option.value}
+              variant={filter === option.value ? 'primary' : 'outline'}
+              size="sm"
+              onClick={() => setFilter(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
         </div>
       </div>
 
-      {/* Request Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <div className="p-4 text-center">
-            <p className="text-2xl font-bold text-blue-600">
-              {requests.filter(r => r.status === 'pending').length}
-            </p>
-            <p className="text-sm text-gray-600">Pending</p>
-          </div>
-        </Card>
-        <Card>
-          <div className="p-4 text-center">
-            <p className="text-2xl font-bold text-yellow-600">
-              {requests.filter(r => r.status === 'in_progress').length}
-            </p>
-            <p className="text-sm text-gray-600">In Progress</p>
-          </div>
-        </Card>
-        <Card>
-          <div className="p-4 text-center">
-            <p className="text-2xl font-bold text-green-600">
-              {requests.filter(r => r.status === 'completed').length}
-            </p>
-            <p className="text-sm text-gray-600">Completed</p>
-          </div>
-        </Card>
-        <Card>
-          <div className="p-4 text-center">
-            <p className="text-2xl font-bold text-gray-600">
-              {requests.length}
-            </p>
-            <p className="text-sm text-gray-600">Total</p>
-          </div>
-        </Card>
+      {/* Request Summary Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard
+          label="Pending"
+          value={requests.filter(r => r.status === 'pending').length}
+          icon="⏳"
+          colorScheme="blue"
+        />
+        <StatCard
+          label="In Progress"
+          value={requests.filter(r => r.status === 'in_progress').length}
+          icon="🔧"
+          colorScheme="yellow"
+        />
+        <StatCard
+          label="Completed"
+          value={requests.filter(r => r.status === 'completed').length}
+          icon="✅"
+          colorScheme="green"
+        />
+        <StatCard
+          label="Total"
+          value={requests.length}
+          icon="📊"
+          colorScheme="purple"
+        />
       </div>
 
       {/* Requests List */}
@@ -379,7 +347,7 @@ export const MyRequests: React.FC = () => {
                     <p className="text-gray-600 mb-3">{request.description}</p>
                     
                     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                      <span>🏷️ Category ID: {request.categoryId}</span>
+                      <span>🏷️ Category: {request.category.name}</span>
                       <span>⏰ {request.estimatedHours} hour(s)</span>
                       <span>📍 {request.address}</span>
                       <span>📅 {new Date(request.createdAt).toLocaleDateString()}</span>
@@ -404,9 +372,9 @@ export const MyRequests: React.FC = () => {
                       </div>
                     )}
 
-                    {(request.status === 'awaiting_customer_confirmation' || request.status === 'confirmed' || request.status === 'assigned' || request.status === 'in_progress' || request.status === 'completed') && request.assignedProviderId && (
-                      <AssignedProviderInfo 
-                        requestId={request.id} 
+                    {(request.status === 'assigned' || request.status === 'in_progress' || request.status === 'completed') && (
+                      <AssignedProviderInfo
+                        requestId={request.id}
                         status={request.status}
                         onConfirm={() => handleConfirmProvider(request.id)}
                         onReject={() => handleRejectProvider(request.id)}

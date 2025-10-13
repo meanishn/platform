@@ -9,6 +9,7 @@ import User from '../models/User';
 import ServiceRequest from '../models/ServiceRequest';
 import ProviderCategory from '../models/ProviderCategory';
 import Notification from '../models/Notification';
+import RequestEligibleProvider from '../models/RequestEligibleProvider';
 import { notificationService } from './notificationService';
 
 interface MatchScore {
@@ -66,12 +67,15 @@ export class MatchingService {
     // Step 2: Score and sort providers
     const scoredProviders = this.scoreProviders(qualifiedProviders, criteria);
 
-    // Step 3: Notify top candidates
+    // Step 3: Save ALL eligible providers to database with metadata
+    await this.saveEligibleProviders(scoredProviders, request.id);
+
+    // Step 4: Notify top candidates
     const topProviders = scoredProviders.slice(0, TOP_PROVIDERS_TO_NOTIFY);
     
     await this.notifyProviders(topProviders, request);
 
-    console.log(`✅ Notified ${topProviders.length} providers for request ${request.id}`);
+    console.log(`✅ Saved ${scoredProviders.length} eligible providers, notified top ${topProviders.length} for request ${request.id}`);
   }
 
   /**
@@ -244,6 +248,29 @@ export class MatchingService {
   }
 
   /**
+   * Save eligible providers to database with matching metadata
+   * NEW: Stores ALL eligible providers (not just top 5 notified)
+   */
+  private async saveEligibleProviders(
+    scoredProviders: MatchScore[], 
+    requestId: number
+  ): Promise<void> {
+    const records = scoredProviders.map((match, index) => ({
+      request_id: requestId,
+      provider_id: match.provider.id,
+      match_score: Math.round(match.score * 100) / 100, // Round to 2 decimals
+      distance_miles: match.distance ? Math.round(match.distance * 100) / 100 : undefined,
+      rank: index + 1, // 1-based ranking
+      status: 'eligible' as const, // Initial status
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+
+    // Batch insert all eligible providers
+    await RequestEligibleProvider.query().insert(records);
+  }
+
+  /**
    * Send notifications to selected providers
    */
   private async notifyProviders(scoredProviders: MatchScore[], request: ServiceRequest): Promise<void> {
@@ -267,6 +294,15 @@ export class MatchingService {
           expiresAt: expiresAt.toISOString()
         }
       });
+      
+      // UPDATE: Mark provider as notified in eligible providers table
+      await RequestEligibleProvider.query()
+        .patch({
+          status: 'notified',
+          notified_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .where({ request_id: request.id, provider_id: provider.id });
     }
   }
 

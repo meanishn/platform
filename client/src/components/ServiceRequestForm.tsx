@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button, Input, Select } from './ui';
+import { Card, Button, Input } from './ui';
 import { useNotificationService } from '../services/notificationService';
 import { useAuth } from '../hooks/useAuth';
 import { serviceApi, requestApi } from '../services/realApi';
@@ -20,6 +20,42 @@ interface ServiceRequestFormProps {
   onSubmit?: (data: ServiceRequestFormData) => void;
   onCancel?: () => void;
 }
+
+// Urgency configuration
+const urgencyConfig = {
+  low: { 
+    label: 'Low Priority', 
+    icon: '📅', 
+    color: 'text-green-600', 
+    bgColor: 'bg-green-50', 
+    borderColor: 'border-green-200',
+    description: 'Can wait a few days'
+  },
+  medium: { 
+    label: 'Medium Priority', 
+    icon: '⏰', 
+    color: 'text-yellow-600', 
+    bgColor: 'bg-yellow-50', 
+    borderColor: 'border-yellow-200',
+    description: 'Within 1-2 days'
+  },
+  high: { 
+    label: 'High Priority', 
+    icon: '🔥', 
+    color: 'text-orange-600', 
+    bgColor: 'bg-orange-50', 
+    borderColor: 'border-orange-200',
+    description: 'Same day preferred'
+  },
+  emergency: { 
+    label: 'Emergency', 
+    icon: '🚨', 
+    color: 'text-red-600', 
+    bgColor: 'bg-red-50', 
+    borderColor: 'border-red-200',
+    description: 'Immediate attention required'
+  }
+};
 
 export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
   onSubmit,
@@ -184,187 +220,401 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
   }, [formData, validateForm, notify, onSubmit, user]);
 
   const selectedTier = tiers.find(t => t.id === formData.tierId);
-  const estimatedCost = selectedTier ? selectedTier.baseHourlyRate * formData.estimatedHours : 0;
+  const baseRate = selectedTier?.baseHourlyRate ? Number(selectedTier.baseHourlyRate) : 0;
+  const hours = formData.estimatedHours > 0 ? formData.estimatedHours : 0;
+  const estimatedCost = baseRate * hours;
 
   if (isLoading) {
     return (
-      <Card className="p-6">
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded"></div>
-        </div>
-      </Card>
+      <div className="max-w-5xl mx-auto">
+        <Card className="p-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg mb-6"></div>
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="h-32 bg-gray-200 rounded-xl"></div>
+              <div className="h-32 bg-gray-200 rounded-xl"></div>
+              <div className="h-32 bg-gray-200 rounded-xl"></div>
+            </div>
+            <div className="space-y-4">
+              <div className="h-12 bg-gray-200 rounded-lg"></div>
+              <div className="h-12 bg-gray-200 rounded-lg"></div>
+              <div className="h-24 bg-gray-200 rounded-lg"></div>
+            </div>
+          </div>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Request a Service</h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Service Category Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Service Category *
-          </label>
-          <Select
-            value={formData.categoryId?.toString() || ''}
-            onChange={(e) => handleCategoryChange(e.target.value)}
-            className="w-full"
-          >
-            <option value="">Select a service category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.icon ? `${category.icon} ${category.name}` : category.name}
-              </option>
-            ))}
-          </Select>
+    <div className="max-w-5xl mx-auto">
+      <Card className="overflow-hidden bg-gradient-to-br from-white to-blue-50">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-white">
+          <h2 className="text-3xl font-bold mb-2">Request a Service</h2>
+          <p className="text-blue-100">Tell us what you need and we'll connect you with qualified providers</p>
         </div>
-
-        {/* Service Tier Selection */}
-        {selectedCategory && tiers.length > 0 && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Service Tier *
-            </label>
-            <Select
-              value={formData.tierId?.toString() || ''}
-              onChange={(e) => handleTierChange(e.target.value)}
-              className="w-full"
-            >
-              <option value="">Select a service tier</option>
-              {tiers.map((tier) => (
-                <option key={tier.id} value={tier.id}>
-                  {tier.name} - ${tier.baseHourlyRate}/hour
-                </option>
-              ))}
-            </Select>
+        
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          {/* Step 1: Service Category Selection */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold">1</div>
+              <h3 className="text-xl font-semibold text-gray-800">Choose Service Category</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {categories.map((category) => {
+                const isSelected = formData.categoryId === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => handleCategoryChange(category.id.toString())}
+                    className={`
+                      relative p-6 rounded-xl border-2 transition-all duration-300 text-left
+                      hover:shadow-lg hover:scale-105 transform
+                      ${isSelected 
+                        ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg scale-105' 
+                        : 'border-gray-200 bg-white hover:border-blue-300'
+                      }
+                    `}
+                  >
+                    {isSelected && (
+                      <div className="absolute top-3 right-3">
+                        <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs">✓</span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="text-4xl mb-3">{category.icon || '🔧'}</div>
+                    <h4 className="font-semibold text-lg text-gray-800 mb-1">{category.name}</h4>
+                    {category.description && (
+                      <p className="text-sm text-gray-600 line-clamp-2">{category.description}</p>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        )}
 
-        {/* Service Title */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Service Title *
-          </label>
-          <Input
-            type="text"
-            value={formData.title}
-            onChange={(e) => handleInputChange('title', e.target.value)}
-            placeholder="e.g., Fix leaky faucet"
-            className="w-full"
-          />
-        </div>
-
-        {/* Service Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Description *
-          </label>
-          <textarea
-            value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
-            placeholder="Describe the service you need..."
-            rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        {/* Address */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Service Address *
-          </label>
-          <Input
-            type="text"
-            value={formData.address}
-            onChange={(e) => handleInputChange('address', e.target.value)}
-            placeholder="Enter the address where service is needed"
-            className="w-full"
-          />
-        </div>
-
-        {/* Preferred Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Preferred Date
-          </label>
-          <Input
-            type="datetime-local"
-            value={formData.preferredDate}
-            onChange={(e) => handleInputChange('preferredDate', e.target.value)}
-            className="w-full"
-          />
-        </div>
-
-        {/* Estimated Hours */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Estimated Hours *
-          </label>
-          <Input
-            type="number"
-            min="1"
-            value={formData.estimatedHours.toString()}
-            onChange={(e) => handleInputChange('estimatedHours', parseInt(e.target.value) || 1)}
-            className="w-full"
-          />
-        </div>
-
-        {/* Urgency Level */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Urgency Level
-          </label>
-          <Select
-            value={formData.urgency}
-            onChange={(e) => handleInputChange('urgency', e.target.value as 'low' | 'medium' | 'high' | 'emergency')}
-            className="w-full"
-          >
-            <option value="low">Low - Can wait a few days</option>
-            <option value="medium">Medium - Within 1-2 days</option>
-            <option value="high">High - Same day preferred</option>
-            <option value="emergency">Emergency - ASAP</option>
-          </Select>
-        </div>
-
-        {/* Cost Estimate */}
-        {selectedTier && (
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-medium text-blue-900 mb-2">Cost Estimate</h3>
-            <p className="text-blue-800">
-              <span className="font-semibold">${estimatedCost.toFixed(2)}</span> 
-              {' '}({formData.estimatedHours} hours × ${selectedTier.baseHourlyRate}/hour)
-            </p>
-            <p className="text-sm text-blue-600 mt-1">
-              * Final cost may vary based on actual work required
-            </p>
-          </div>
-        )}
-
-        {/* Form Actions */}
-        <div className="flex gap-4 pt-4">
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Request'}
-          </Button>
-          {onCancel && (
-            <Button
-              type="button"
-              onClick={onCancel}
-              variant="outline"
-              className="flex-1"
-            >
-              Cancel
-            </Button>
+          {/* Step 2: Service Tier Selection */}
+          {selectedCategory && tiers.length > 0 && (
+            <div className="space-y-4 animate-fadeIn">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold">2</div>
+                <h3 className="text-xl font-semibold text-gray-800">Select Service Tier</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {tiers.map((tier, index) => {
+                  const isSelected = formData.tierId === tier.id;
+                  const tierColors = [
+                    { gradient: 'from-green-500 to-emerald-600', badge: 'bg-green-100 text-green-700' },
+                    { gradient: 'from-blue-500 to-indigo-600', badge: 'bg-blue-100 text-blue-700' },
+                    { gradient: 'from-purple-500 to-pink-600', badge: 'bg-purple-100 text-purple-700' }
+                  ];
+                  const colors = tierColors[index % 3];
+                  
+                  return (
+                    <button
+                      key={tier.id}
+                      type="button"
+                      onClick={() => handleTierChange(tier.id.toString())}
+                      className={`
+                        relative p-6 rounded-2xl border-2 transition-all duration-300 text-left
+                        hover:shadow-2xl hover:scale-105 transform overflow-hidden
+                        ${isSelected 
+                          ? 'border-blue-500 shadow-2xl scale-105' 
+                          : 'border-gray-200 hover:border-blue-300'
+                        }
+                      `}
+                    >
+                      {/* Gradient header */}
+                      <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${colors.gradient}`}></div>
+                      
+                      {isSelected && (
+                        <div className="absolute top-4 right-4">
+                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                            <span className="text-white font-bold">✓</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="mt-4">
+                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${colors.badge}`}>
+                          {tier.name}
+                        </div>
+                        
+                        <div className="mb-4">
+                          <div className="text-3xl font-bold text-gray-800">
+                            ${tier.baseHourlyRate}
+                            <span className="text-lg text-gray-500 font-normal">/hour</span>
+                          </div>
+                        </div>
+                        
+                        {tier.description && (
+                          <p className="text-sm text-gray-600 mb-4">{tier.description}</p>
+                        )}
+                        
+                        {/* Features based on tier */}
+                        <div className="space-y-2 text-sm text-gray-700">
+                          {index === 0 && (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="text-green-600">✓</span>
+                                <span>Standard service</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-green-600">✓</span>
+                                <span>Basic tools & equipment</span>
+                              </div>
+                            </>
+                          )}
+                          {index === 1 && (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="text-blue-600">✓</span>
+                                <span>Experienced professionals</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-blue-600">✓</span>
+                                <span>Advanced tools</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-blue-600">✓</span>
+                                <span>Faster service</span>
+                              </div>
+                            </>
+                          )}
+                          {index === 2 && (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="text-purple-600">✓</span>
+                                <span>Top-tier experts</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-purple-600">✓</span>
+                                <span>Premium equipment</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-purple-600">✓</span>
+                                <span>Priority service</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-purple-600">✓</span>
+                                <span>Extended warranty</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
-        </div>
-      </form>
-    </Card>
+
+          {/* Step 3: Service Details */}
+          {formData.tierId && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold">3</div>
+                <h3 className="text-xl font-semibold text-gray-800">Service Details</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Service Title */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Service Title <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    placeholder="e.g., Fix leaking kitchen faucet"
+                    className="w-full text-lg"
+                  />
+                </div>
+
+                {/* Service Description */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Description <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    placeholder="Describe the service you need in detail..."
+                    rows={4}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 bg-white"
+                  />
+                </div>
+
+                {/* Address */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Service Address <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    placeholder="Enter the address where service is needed"
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Preferred Date */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Preferred Date & Time
+                  </label>
+                  <Input
+                    type="datetime-local"
+                    value={formData.preferredDate}
+                    onChange={(e) => handleInputChange('preferredDate', e.target.value)}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">When would you like the service to be done?</p>
+                </div>
+
+                {/* Estimated Hours */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Estimated Hours <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="number"
+                    min="0.5"
+                    step="0.5"
+                    value={formData.estimatedHours.toString()}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow empty string and any number while typing
+                      if (value === '' || value === '0') {
+                        // Store 0 temporarily to allow user to type
+                        handleInputChange('estimatedHours', 0);
+                      } else {
+                        const parsed = parseFloat(value);
+                        handleInputChange('estimatedHours', isNaN(parsed) ? 0 : parsed);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Enforce minimum value of 1 when user leaves the field
+                      const value = parseFloat(e.target.value);
+                      if (isNaN(value) || value < 1) {
+                        handleInputChange('estimatedHours', 1);
+                      }
+                    }}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">How many hours do you think this will take?</p>
+                </div>
+
+                {/* Urgency Level */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Urgency Level
+                  </label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {(Object.keys(urgencyConfig) as Array<keyof typeof urgencyConfig>).map((urgencyKey) => {
+                      const config = urgencyConfig[urgencyKey];
+                      const isSelected = formData.urgency === urgencyKey;
+                      
+                      return (
+                        <button
+                          key={urgencyKey}
+                          type="button"
+                          onClick={() => handleInputChange('urgency', urgencyKey)}
+                          className={`
+                            p-4 rounded-xl border-2 transition-all duration-200 text-center
+                            hover:shadow-md transform hover:scale-105
+                            ${isSelected 
+                              ? `${config.borderColor} ${config.bgColor} shadow-md scale-105` 
+                              : 'border-gray-200 bg-white hover:border-gray-300'
+                            }
+                          `}
+                        >
+                          <div className="text-3xl mb-2">{config.icon}</div>
+                          <div className={`font-semibold text-sm mb-1 ${isSelected ? config.color : 'text-gray-700'}`}>
+                            {config.label}
+                          </div>
+                          <div className="text-xs text-gray-500">{config.description}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cost Estimate */}
+          {selectedTier && formData.tierId && (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl border-2 border-blue-200 animate-fadeIn">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                    <span className="text-2xl">💰</span>
+                    Cost Estimate
+                  </h3>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                    ${estimatedCost.toFixed(2)}
+                  </div>
+                  <p className="text-gray-700">
+                    {hours.toFixed(1)} hours × ${baseRate.toFixed(2)}/hour
+                  </p>
+                  <p className="text-sm text-gray-500 mt-3 flex items-center gap-1">
+                    <span>ℹ️</span>
+                    <span>Final cost may vary based on actual work required</span>
+                  </p>
+                </div>
+                <div className="bg-white p-4 rounded-xl shadow-md">
+                  <div className="text-xs text-gray-500 mb-1">Selected Tier</div>
+                  <div className="font-semibold text-blue-600">{selectedTier?.name || 'N/A'}</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Form Actions */}
+          {formData.tierId && (
+            <div className="flex gap-4 pt-4 animate-fadeIn">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="animate-spin">⏳</span>
+                    Submitting Request...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <span>🚀</span>
+                    Submit Service Request
+                  </span>
+                )}
+              </Button>
+              {onCancel && (
+                <Button
+                  type="button"
+                  onClick={onCancel}
+                  variant="outline"
+                  className="px-8 py-4 text-lg rounded-xl"
+                >
+                  Cancel
+                </Button>
+              )}
+            </div>
+          )}
+        </form>
+      </Card>
+    </div>
   );
 };

@@ -309,6 +309,34 @@ export class AdminController {
       });
     }
   };
+
+  /**
+   * Get eligible providers for a service request (debugging/admin view)
+   * GET /api/admin/requests/:id/eligible-providers
+   */
+  getEligibleProviders = async (req: Request, res: Response) => {
+    try {
+      if (!req.user?.is_admin) {
+        return res.status(403).json({ success: false, message: 'Admin access required' });
+      }
+
+      const { id } = req.params;
+
+      // Import requestService here to avoid circular dependencies
+      const { requestService } = await import('../services/requestService');
+      const eligibleProviders = await requestService.getEligibleProviders(parseInt(id));
+
+      res.json({
+        success: true,
+        data: eligibleProviders
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to get eligible providers'
+      });
+    }
+  };
 }
 
 export const adminController = new AdminController();

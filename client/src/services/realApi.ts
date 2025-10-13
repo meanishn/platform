@@ -20,29 +20,26 @@ import type {
   AcceptAssignmentDto,
   DeclineAssignmentDto,
   AuthUserDto,
-  NotificationDto,
   ReviewDto,
   ReviewDetailDto,
   ProviderRatingStatsDto,
   CreateReviewDto,
   UpdateProfileData,
   PublicUserDto,
-  AuthUserRespose
+  AuthUserRespose,
+  CustomerStatsDto,
+  ProviderStatsDto,
+  AdminStatsDto,
+  ActivityItemDto,
+  ProviderActionRequest,
+  ProviderActionResponse,
+  ProviderJobDetailDto,
+  JobDto
 } from '../types/api';
 
 // Base API URL - in development, use the Vite proxy by using relative URLs
 // In production, use the environment variable or default to the API server
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
-
-// Activity item interface for dashboard APIs
-interface ActivityItem {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  timestamp: string;
-  metadata?: Record<string, unknown>;
-}
 
 /**
  * Authentication API
@@ -168,6 +165,23 @@ export const requestApi = {
   getAcceptedProviders: async (id: number): Promise<ApiResponse<PublicUserDto[]>> => {
     const response = await apiClient(`${API_BASE_URL}/service-requests/${id}/accepted-providers`);
     return handleResponse<ApiResponse<PublicUserDto[]>>(response);
+  },
+
+  // Provider-specific methods
+  acceptAssignment: async (data: AcceptAssignmentDto): Promise<ApiResponse<void>> => {
+    const response = await apiClient(`${API_BASE_URL}/providers/assignments/accept`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+    return handleResponse<ApiResponse<void>>(response);
+  },
+
+  declineAssignment: async (data: DeclineAssignmentDto): Promise<ApiResponse<void>> => {
+    const response = await apiClient(`${API_BASE_URL}/providers/assignments/decline`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+    return handleResponse<ApiResponse<void>>(response);
   }
 };
 
@@ -238,9 +252,9 @@ export const dashboardApi = {
       monthlyGrowth: number;
     }>>(response);
   },
-  getActivity: async(): Promise<ApiResponse<ActivityItem[]>> => {
+  getActivity: async(): Promise<ApiResponse<ActivityItemDto[]>> => {
     const response = await apiClient(`${API_BASE_URL}/dashboard/activity`);
-    return handleResponse<ApiResponse<ActivityItem[]>>(response);
+    return handleResponse<ApiResponse<ActivityItemDto[]>>(response);
   }
 };
 
@@ -260,11 +274,48 @@ export const healthApi = {
  * Provider Assignment API
  */
 export const providerApi = {
+  getAvailableJobs: async (): Promise<ApiResponse<JobDto[]>> => {
+    const response = await apiClient(`${API_BASE_URL}/providers/available-jobs`);
+    return handleResponse<ApiResponse<JobDto[]>>(response);
+  },
+
   getAssignments: async (): Promise<ApiResponse<ProviderAssignmentDto[]>> => {
     const response = await apiClient(`${API_BASE_URL}/providers/assignments`);
     return handleResponse<ApiResponse<ProviderAssignmentDto[]>>(response);
   },
 
+  // Get provider-specific job details with match metadata and progressive customer disclosure
+  // Optimized for provider views - includes matchScore, rank, distance, eligibility status
+  getJobDetails: async (requestId: number): Promise<ApiResponse<ProviderJobDetailDto>> => {
+    const response = await apiClient(`${API_BASE_URL}/providers/requests/${requestId}`);
+    return handleResponse<ApiResponse<ProviderJobDetailDto>>(response);
+  },
+
+  // NEW: Get accepted jobs waiting for customer selection
+  getAcceptedPendingJobs: async (): Promise<ApiResponse<ServiceRequestListItemDto[]>> => {
+    const response = await apiClient(`${API_BASE_URL}/providers/accepted-jobs`);
+    return handleResponse<ApiResponse<ServiceRequestListItemDto[]>>(response);
+  },
+
+  // NEW: Get cancelled jobs (for history/reference)
+  getCancelledJobs: async (): Promise<ApiResponse<ServiceRequestListItemDto[]>> => {
+    const response = await apiClient(`${API_BASE_URL}/providers/cancelled`);
+    return handleResponse<ApiResponse<ServiceRequestListItemDto[]>>(response);
+  },
+
+  // NEW: Unified action endpoint (accept, decline, start, complete, cancel)
+  performAction: async (
+    requestId: number,
+    data: ProviderActionRequest
+  ): Promise<ApiResponse<ProviderActionResponse>> => {
+    const response = await apiClient(`${API_BASE_URL}/providers/requests/${requestId}/action`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    return handleResponse<ApiResponse<ProviderActionResponse>>(response);
+  },
+
+  // LEGACY: Keep for backward compatibility (will be replaced with performAction)
   acceptAssignment: async (data: AcceptAssignmentDto): Promise<ApiResponse<void>> => {
     const response = await apiClient(`${API_BASE_URL}/providers/assignments/accept`, {
       method: 'PATCH',
@@ -281,30 +332,14 @@ export const providerApi = {
     return handleResponse<ApiResponse<void>>(response);
   },
 
-  getProviderStats: async (): Promise<ApiResponse<{ 
-    activeRequests: number;
-    completedJobs: number;
-    totalEarnings: number;
-    averageRating: number;
-    responseTime: string;
-    completionRate: number;
-    pendingAssignments: number;
-  }>> => {
+  getProviderStats: async (): Promise<ApiResponse<ProviderStatsDto>> => {
     const response = await apiClient(`${API_BASE_URL}/providers/dashboard/stats`);
-    return handleResponse<ApiResponse<{ 
-      activeRequests: number;
-      completedJobs: number;
-      totalEarnings: number;
-      averageRating: number;
-      responseTime: string;
-      completionRate: number;
-      pendingAssignments: number;
-    }>>(response);
+    return handleResponse<ApiResponse<ProviderStatsDto>>(response);
   },
 
-  getProviderActivity: async (): Promise<ApiResponse<ServiceRequestListItemDto[]>> => {
+  getProviderActivity: async (): Promise<ApiResponse<ActivityItemDto[]>> => {
     const response = await apiClient(`${API_BASE_URL}/providers/dashboard/requests`);
-    return handleResponse<ApiResponse<ServiceRequestListItemDto[]>>(response);
+    return handleResponse<ApiResponse<ActivityItemDto[]>>(response);
   }
 };
 
@@ -442,33 +477,15 @@ export const adminApi = {
     }>>(response);
   },
 
-  getAdminStats: async (): Promise<ApiResponse<{
-    totalUsers: number;
-    totalProviders: number;
-    totalCustomers: number;
-    pendingVerifications: number;
-    activeRequests: number;
-    completedRequests: number;
-    totalRevenue: number;
-    monthlyGrowth: number;
-  }>> => {
+  getAdminStats: async (): Promise<ApiResponse<AdminStatsDto>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/dashboard/stats`);
-    return handleResponse<ApiResponse<{
-      totalUsers: number;
-      totalProviders: number;
-      totalCustomers: number;
-      pendingVerifications: number;
-      activeRequests: number;
-      completedRequests: number;
-      totalRevenue: number;
-      monthlyGrowth: number;
-    }>>(response);
+    return handleResponse<ApiResponse<AdminStatsDto>>(response);
   },
 
-  getAdminActivity: async (limit?: number): Promise<ApiResponse<ActivityItem[]>> => {
+  getAdminActivity: async (limit?: number): Promise<ApiResponse<ActivityItemDto[]>> => {
     const url = limit ? `${API_BASE_URL}/admin/dashboard/activity?limit=${limit}` : `${API_BASE_URL}/admin/dashboard/activity`;
     const response = await apiClient(url);
-    return handleResponse<ApiResponse<ActivityItem[]>>(response);
+    return handleResponse<ApiResponse<ActivityItemDto[]>>(response);
   }
 };
 
@@ -476,24 +493,14 @@ export const adminApi = {
  * Customer API
  */
 export const customerApi = {
-  getStats: async (): Promise<ApiResponse<{
-    activeRequests: number;
-    completedJobs: number;
-    totalSpent: number;
-    pendingReviews: number;
-  }>> => {
+  getStats: async (): Promise<ApiResponse<CustomerStatsDto>> => {
     const response = await apiClient(`${API_BASE_URL}/customers/dashboard/stats`);
-    return handleResponse<ApiResponse<{
-      activeRequests: number;
-      completedJobs: number;
-      totalSpent: number;
-      pendingReviews: number;
-    }>>(response);
+    return handleResponse<ApiResponse<CustomerStatsDto>>(response);
   },
 
-  getActivity: async (limit?: number): Promise<ApiResponse<ActivityItem[]>> => {
+  getActivity: async (limit?: number): Promise<ApiResponse<ActivityItemDto[]>> => {
     const url = limit ? `${API_BASE_URL}/customers/dashboard/activity?limit=${limit}` : `${API_BASE_URL}/customers/dashboard/activity`;
     const response = await apiClient(url);
-    return handleResponse<ApiResponse<ActivityItem[]>>(response);
+    return handleResponse<ApiResponse<ActivityItemDto[]>>(response);
   }
 };

@@ -2,7 +2,10 @@
  * Service Types
  */
 
-export type RequestStatus = 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
+import { ProviderEligibilityStatus } from '../server/src/models/RequestEligibleProvider';
+import { CustomerWithContactDto, ProviderWithContactDto, PublicUserDto } from './user';
+
+export type RequestStatus = 'pending' | 'accepted' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
 export type UrgencyLevel = 'low' | 'medium' | 'high' | 'emergency';
 
 export interface ServiceCategoryDto {
@@ -53,10 +56,49 @@ export interface ServiceRequestDto {
 
 // Request with related data (for detail views)
 export interface ServiceRequestDetailDto extends ServiceRequestDto {
-  customer: import('./user').PublicUserDto;
+  customer: PublicUserDto | CustomerWithContactDto;
   category: ServiceCategoryDto;
   tier: ServiceTierDto;
-  assignedProvider?: import('./user').ProviderWithContactDto;
+  assignedProvider?: ProviderWithContactDto;
+}
+
+// Provider-specific job detail view (cleaner, no assignedProvider confusion)
+export interface ProviderJobDetailDto {
+  // Job basic info
+  id: number;
+  
+  title: string;
+  description: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  
+  preferredDate?: string;
+  urgency: UrgencyLevel;
+  estimatedHours?: number;
+  images?: string[];
+  
+  status: RequestStatus;
+  assignedProviderId?: number;
+  assignedAt?: string;
+  startedAt?: string;
+  completedAt?: string;
+  
+  createdAt: string;
+  updatedAt: string;
+  
+  // Customer info with progressive disclosure
+  customer: PublicUserDto | CustomerWithContactDto;
+  
+  // Related data
+  category: ServiceCategoryDto;
+  tier: ServiceTierDto;
+  
+  // Provider-specific metadata
+  matchScore?: number;
+  rank?: number;
+  distanceMiles?: number;
+  eligibilityStatus?: ProviderEligibilityStatus;
 }
 
 // Request list item (for customer/provider dashboards)
@@ -70,7 +112,7 @@ export interface ServiceRequestListItemDto {
   estimatedHours?: number;
   preferredDate?: string;
   createdAt: string;
-  
+  completedAt?: string;
   category: {
     id: number;
     name: string;
@@ -81,6 +123,15 @@ export interface ServiceRequestListItemDto {
     name: string;
     baseHourlyRate: number;
   };
+}
+
+export interface JobDto extends ServiceRequestListItemDto {
+  // NEW: Matching metadata (only present for providers)
+  matchScore?: number;      // 0-100 how well provider matches
+  distanceMiles?: number;   // Distance from provider location
+  rank?: number;            // Provider's rank among all eligible (1=best)
+  notifiedAt?: string;
+  expiresAt?: string;
 }
 
 // Create request payload

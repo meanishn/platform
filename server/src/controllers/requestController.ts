@@ -147,7 +147,7 @@ export class RequestController {
   };
 
   /**
-   * Provider declines an assignment
+   * Provider declines an assignment (LEGACY - use unified action endpoint instead)
    * PATCH /api/assignments/:notificationId/decline
    */
   declineAssignment = async (req: Request, res: Response) => {
@@ -169,7 +169,8 @@ export class RequestController {
         });
       }
 
-      await requestService.declineAssignment(
+      // Use the new fixed method that updates request_eligible_providers
+      await requestService.declineEligibleJob(
         parseInt(requestId),
         providerId,
         reason
@@ -313,6 +314,90 @@ export class RequestController {
   };
 
   /**
+   * Get provider's available jobs (jobs they can accept)
+   * GET /api/providers/available-jobs
+   */
+  getAvailableJobs = async (req: Request, res: Response) => {
+    try {
+      const providerId = req.user?.id;
+      if (!providerId || !req.user?.isApprovedProvider) {
+        return res.status(403).json({
+          success: false,
+          message: 'Approved provider access required'
+        });
+      }
+
+      const availableJobs = await requestService.getAvailableJobs(providerId);
+
+      res.json({
+        success: true,
+        data: availableJobs
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to get available jobs'
+      });
+    }
+  };
+
+  /**
+   * Get provider's accepted jobs waiting for customer selection
+   * GET /api/providers/accepted-jobs
+   */
+  getAcceptedPendingJobs = async (req: Request, res: Response) => {
+    try {
+      const providerId = req.user?.id;
+      if (!providerId || !req.user?.isApprovedProvider) {
+        return res.status(403).json({
+          success: false,
+          message: 'Approved provider access required'
+        });
+      }
+
+      const acceptedJobs = await requestService.getAcceptedPendingJobs(providerId);
+
+      res.json({
+        success: true,
+        data: acceptedJobs
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to get accepted jobs'
+      });
+    }
+  };
+
+  /**
+   * Get provider's cancelled jobs
+   * GET /api/providers/cancelled-jobs
+   */
+  getCancelledJobs = async (req: Request, res: Response) => {
+    try {
+      const providerId = req.user?.id;
+      if (!providerId || !req.user?.isApprovedProvider) {
+        return res.status(403).json({
+          success: false,
+          message: 'Approved provider access required'
+        });
+      }
+
+      const cancelledJobs = await requestService.getCancelledJobs(providerId);
+
+      res.json({
+        success: true,
+        data: cancelledJobs
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to get cancelled jobs'
+      });
+    }
+  };
+
+  /**
    * Get provider's assignments
    * GET /api/providers/assignments
    */
@@ -378,6 +463,39 @@ export class RequestController {
   };
 
   /**
+   * Get provider-specific job details
+   * GET /api/providers/requests/:id
+   * Returns job details with match metadata, progressive customer disclosure, no assignedProvider confusion
+   */
+  getProviderJobDetails = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const providerId = req.user?.id;
+
+      if (!providerId) {
+        return res.status(401).json({ success: false, message: 'Authentication required' });
+      }
+
+      const jobDetails = await requestService.getProviderJobDetails(parseInt(id), providerId);
+
+      if (!jobDetails) {
+        return res.status(404).json({ success: false, message: 'Job not found' });
+      }
+
+      res.json({
+        success: true,
+        data: jobDetails
+      });
+    } catch (error) {
+      const status = error instanceof Error && error.message.includes('Unauthorized') ? 403 : 400;
+      res.status(status).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to get job details'
+      });
+    }
+  };
+
+  /**
    * Get assigned provider for a request
    * GET /api/requests/:requestId/assigned-provider
    */
@@ -402,6 +520,62 @@ export class RequestController {
       res.status(400).json({
         success: false,
         message: error instanceof Error ? error.message : 'Failed to get provider'
+      });
+    }
+  };
+
+  /**
+   * Unified provider action endpoint
+   * POST /api/providers/requests/:id/action
+   * Body: { action: 'accept' | 'decline' | 'start' | 'complete' | 'cancel', reason?: string }
+   */
+  providerAction = async (req: Request, res: Response) => {
+    try {
+      const providerId = req.user?.id;
+      if (!providerId || !req.user?.isApprovedProvider) {
+        return res.status(403).json({
+          success: false,
+          message: 'Approved provider access required'
+        });
+      }
+
+      const { id } = req.params;
+      const { action, reason } = req.body;
+
+      if (!action) {
+        return res.status(400).json({
+          success: false,
+          message: 'Action is required'
+        });
+      }
+
+      const validActions = ['accept', 'decline', 'start', 'complete', 'cancel'];
+      if (!validActions.includes(action)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid action. Must be one of: ${validActions.join(', ')}`
+        });
+      }
+
+      const result = await requestService.performProviderAction(
+        parseInt(id),
+        providerId,
+        action,
+        reason
+      );
+
+      res.json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Action failed';
+      const status = 
+        message.includes('not eligible') || message.includes('not authorized') ? 403 :
+        message.includes('not found') ? 404 :
+        message.includes('no longer available') || message.includes('not in') ? 409 :
+        400;
+      
+      res.status(status).json({
+        success: false,
+        message
       });
     }
   };

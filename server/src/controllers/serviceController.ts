@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import ServiceCategory from '../models/ServiceCategory';
 import ServiceTier from '../models/ServiceTier';
+import { toServiceTierDto } from '../sanitizers';
 
 export class ServiceController {
   /**
@@ -37,9 +38,10 @@ export class ServiceController {
         .where('is_active', true)
         .orderBy('base_hourly_rate');
 
+      const mappedTiers = tiers.map(toServiceTierDto);
       res.json({
         success: true,
-        data: tiers
+        data: mappedTiers
       });
     } catch (error) {
       res.status(400).json({

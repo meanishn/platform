@@ -18,7 +18,9 @@ export const Sidebar: React.FC = () => {
 
   const providerLinks = [
     { path: '/provider/dashboard', label: 'Provider Dashboard', icon: '📊' },
-    { path: '/provider/assignments', label: 'Assignments', icon: '📋' },
+    { path: '/provider/available-jobs', label: 'Available Jobs', icon: '💼' },
+    { path: '/provider/accepted-jobs', label: 'Accepted Jobs', icon: '✅' },
+    { path: '/provider/assignments', label: 'My Assignments', icon: '📋' },
     { path: '/request-service', label: 'Request Service', icon: '➕' },
     { path: '/requests', label: 'My Requests', icon: '📝' },
     { path: '/profile', label: 'Profile', icon: '👤' },

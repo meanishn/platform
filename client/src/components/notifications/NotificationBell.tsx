@@ -62,10 +62,10 @@ export const NotificationBell: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 glass rounded-2xl shadow-2xl border border-white/20 z-50 max-h-96 overflow-hidden">
-          <div className="p-4 border-b border-white/10">
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 max-h-96 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-secondary-50">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-white flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <span className="animate-float">🔔</span>
                 Notifications
               </h3>
@@ -82,20 +82,20 @@ export const NotificationBell: React.FC = () => {
             </div>
           </div>
 
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto bg-white">
             {notifications.length > 0 ? (
-              <div className="divide-y divide-white/10">
+              <div className="divide-y divide-gray-100">
                 {notifications.slice(0, 10).map((notification) => (
                   <div
                     key={notification.id}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`p-4 hover:bg-white/10 cursor-pointer transition-all duration-300 hover:backdrop-blur-lg ${
-                      !notification.read ? 'bg-primary-500/20 border-l-4 border-primary-400' : ''
+                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-all duration-200 ${
+                      !notification.read ? 'bg-blue-50 border-l-4 border-blue-500' : 'bg-white'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-400/30 to-secondary-400/30 rounded-xl flex items-center justify-center border border-white/20 backdrop-blur-sm">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center border border-gray-200">
                           <span className="text-lg">
                             {getCategoryIcon(notification.category)}
                           </span>
@@ -103,26 +103,26 @@ export const NotificationBell: React.FC = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-white text-sm">
+                          <p className="font-semibold text-gray-900 text-sm">
                             {notification.title}
                           </p>
                           <span className="text-xs">
                             {getNotificationIcon(notification.type)}
                           </span>
                           {!notification.read && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className="text-sm text-gray-700 mb-2 leading-relaxed">
                           {notification.message}
                         </p>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 font-medium">
                             {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
                           </span>
                           {notification.actionText && (
-                            <span className="text-xs text-blue-600 font-medium">
-                              {notification.actionText}
+                            <span className="text-xs text-blue-600 font-semibold hover:text-blue-700">
+                              {notification.actionText} →
                             </span>
                           )}
                         </div>
@@ -132,10 +132,10 @@ export const NotificationBell: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="p-8 text-center">
-                <div className="text-gray-400 text-4xl mb-2">🔔</div>
-                <p className="text-gray-500">No notifications yet</p>
-                <p className="text-sm text-gray-400">
+              <div className="p-8 text-center bg-white">
+                <div className="text-gray-300 text-4xl mb-2">🔔</div>
+                <p className="text-gray-700 font-medium">No notifications yet</p>
+                <p className="text-sm text-gray-500 mt-1">
                   You'll see updates about your requests here
                 </p>
               </div>
@@ -143,7 +143,7 @@ export const NotificationBell: React.FC = () => {
           </div>
 
           {notifications.length > 10 && (
-            <div className="p-4 border-t border-gray-200 text-center">
+            <div className="p-4 border-t border-gray-200 text-center bg-gray-50">
               <Button
                 variant="outline"
                 size="sm"

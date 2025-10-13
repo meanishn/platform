@@ -142,7 +142,7 @@ export const Profile: React.FC = () => {
                   First Name
                 </label>
                 <Input
-                  value={profile.firstName}
+                  value={profile?.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
                   placeholder="Enter your first name"
                 />
@@ -153,7 +153,7 @@ export const Profile: React.FC = () => {
                   Last Name
                 </label>
                 <Input
-                  value={profile.lastName}
+                  value={profile?.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
                   placeholder="Enter your last name"
                 />
@@ -165,20 +165,9 @@ export const Profile: React.FC = () => {
                 </label>
                 <Input
                   type="email"
-                  value={profile.email}
+                  value={profile?.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="Enter your email"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date of Birth
-                </label>
-                <Input
-                  type="date"
-                  value={profile.dateOfBirth || ''}
-                  onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                 />
               </div>
             </div>

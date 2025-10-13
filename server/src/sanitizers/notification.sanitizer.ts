@@ -4,7 +4,7 @@
  */
 
 import Notification from '../models/Notification';
-import { NotificationDto, NotificationListDto } from '../shared/dtos/notification.dto';
+import type { NotificationDto, NotificationListDto } from '../../../shared-types';
 import { sanitizeArray } from './base.sanitizer';
 
 /**

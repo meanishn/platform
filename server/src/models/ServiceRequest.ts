@@ -2,9 +2,12 @@ import { Model } from 'objection';
 import User from './User';
 import ServiceCategory from './ServiceCategory';
 import ServiceTier from './ServiceTier';
+import RequestEligibleProvider from './RequestEligibleProvider';
 
 export type RequestStatus = 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
 export type UrgencyLevel = 'low' | 'medium' | 'high' | 'emergency';
+export type CancelledBy = 'customer' | 'provider' | 'admin';
+export type CancellationStage = 'pending' | 'assigned' | 'in_progress';
 
 export default class ServiceRequest extends Model {
   id!: number;
@@ -37,6 +40,12 @@ export default class ServiceRequest extends Model {
   started_at?: string;
   completed_at?: string;
   
+  // Cancellation tracking (NEW)
+  cancelled_at?: string;
+  cancelled_by?: CancelledBy;
+  cancellation_reason?: string;
+  cancellation_stage?: CancellationStage;
+  
   created_at!: string;
   updated_at!: string;
 
@@ -45,6 +54,7 @@ export default class ServiceRequest extends Model {
   category?: ServiceCategory;
   tier?: ServiceTier;
   assignedProvider?: User;
+  eligibleProviders?: RequestEligibleProvider[];
 
   static get tableName() {
     return 'service_requests';
@@ -82,6 +92,14 @@ export default class ServiceRequest extends Model {
         join: {
           from: 'service_requests.assigned_provider_id',
           to: 'users.id'
+        }
+      },
+      eligibleProviders: {
+        relation: Model.HasManyRelation,
+        modelClass: RequestEligibleProvider,
+        join: {
+          from: 'service_requests.id',
+          to: 'request_eligible_providers.request_id'
         }
       }
     };

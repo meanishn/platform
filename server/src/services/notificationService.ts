@@ -1,4 +1,5 @@
 import Notification from '../models/Notification';
+import type { NotificationDto, NotificationListDto } from '../../../shared-types';
 
 export interface CreateNotificationData {
   userId: number;
@@ -8,13 +9,30 @@ export interface CreateNotificationData {
   data?: any;
 }
 
+/**
+ * Mapper function to convert model instance to DTO
+ */
+function toNotificationDto(notification: Notification): NotificationDto {
+  return {
+    id: notification.id,
+    userId: notification.user_id,
+    type: notification.type,
+    title: notification.title,
+    message: notification.message,
+    data: notification.data,
+    isRead: notification.is_read,
+    readAt: notification.read_at || undefined,
+    createdAt: notification.created_at
+  };
+}
+
 export class NotificationService {
   
   /**
    * Create a new notification
    */
-  async create(data: CreateNotificationData): Promise<Notification> {
-    return Notification.query().insertAndFetch({
+  async create(data: CreateNotificationData): Promise<NotificationDto> {
+    const notification = await Notification.query().insertAndFetch({
       user_id: data.userId,
       type: data.type,
       title: data.title,
@@ -24,37 +42,52 @@ export class NotificationService {
       is_push_sent: false,
       is_email_sent: false
     });
+
+    return toNotificationDto(notification);
   }
 
   /**
    * Alias for create() - for consistency across services
    */
-  async createNotification(data: CreateNotificationData): Promise<Notification> {
+  async createNotification(data: CreateNotificationData): Promise<NotificationDto> {
     return this.create(data);
   }
 
   /**
-   * Get user notifications
+   * Get user notifications with unread count
    */
-  async getUserNotifications(userId: number, limit = 50): Promise<Notification[]> {
-    return Notification.query()
-      .where('user_id', userId)
-      .orderBy('created_at', 'desc')
-      .limit(limit);
+  async getUserNotifications(userId: number, limit = 50): Promise<NotificationListDto> {
+    const [notifications, unreadCount] = await Promise.all([
+      Notification.query()
+        .where('user_id', userId)
+        .orderBy('created_at', 'desc')
+        .limit(limit),
+      Notification.query()
+        .where('user_id', userId)
+        .where('is_read', false)
+        .resultSize()
+    ]);
+
+    return {
+      notifications: notifications.map(toNotificationDto),
+      unreadCount
+    };
   }
 
   /**
    * Mark notification as read
    */
-  async markAsRead(notificationId: number, userId: number): Promise<Notification> {
+  async markAsRead(notificationId: number, userId: number): Promise<NotificationDto> {
     const notification = await Notification.query().findById(notificationId);
     if (!notification) throw new Error('Notification not found');
     if (notification.user_id !== userId) throw new Error('Unauthorized');
 
-    return Notification.query().patchAndFetchById(notificationId, {
+    const updated = await Notification.query().patchAndFetchById(notificationId, {
       is_read: true,
       read_at: new Date().toISOString()
     });
+
+    return toNotificationDto(updated);
   }
 
   /**

@@ -14,7 +14,7 @@ import { RoleBasedRedirect } from './components/auth/RoleBasedRedirect';
 // Customer Pages
 import { CustomerDashboard } from './pages/customer/Dashboard';
 import { Services } from './pages/customer/Services';
-import { MyRequests } from './pages/customer/MyRequests';
+import { MyRequests } from './pages/customer/MyRequestsNew';
 import { ServiceRequestPage } from './pages/customer/ServiceRequest';
 import { RequestDetail } from './pages/customer/RequestDetail';
 
@@ -22,6 +22,9 @@ import { RequestDetail } from './pages/customer/RequestDetail';
 import { ProviderDashboard } from './pages/provider/Dashboard';
 import { ProviderAssignments } from './pages/provider/Assignments';
 import { AssignmentDetail } from './pages/provider/AssignmentDetail';
+import { ProviderRequestDetail } from './pages/provider/RequestDetail';
+import { AvailableJobsEnhanced } from './pages/provider/AvailableJobsEnhanced';
+import { AcceptedJobs } from './pages/provider/AcceptedJobs';
 
 // Admin Pages
 import { AdminDashboard } from './pages/admin/Dashboard';
@@ -33,6 +36,7 @@ import { NotificationsPage } from './pages/shared/Notifications';
 // Test Pages
 import { TestSCSS } from './pages/TestSCSS';
 import { AuthDebug } from './components/AuthDebug';
+
 
 // App content wrapper for toast notifications
 const AppContent = () => {
@@ -63,8 +67,12 @@ const AppContent = () => {
           
           {/* Provider routes */}
           <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+          <Route path="/provider/available-jobs" element={<AvailableJobsEnhanced />} />
+          <Route path="/provider/accepted-jobs" element={<AcceptedJobs />} />
           <Route path="/provider/assignments" element={<ProviderAssignments />} />
           <Route path="/provider/assignments/:id" element={<AssignmentDetail />} />
+          <Route path="/provider/requests/:id" element={<ProviderRequestDetail />} />
+          <Route path="/provider/jobs/:id" element={<ProviderRequestDetail />} />
           
           {/* Admin routes */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

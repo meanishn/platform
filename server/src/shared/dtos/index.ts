@@ -6,5 +6,6 @@
 export * from './user.dto';
 export * from './request.dto';
 export * from './review.dto';
-export * from './notification.dto';
+// Notification DTOs are imported from shared-types instead
+
 

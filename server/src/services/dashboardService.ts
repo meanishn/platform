@@ -8,50 +8,18 @@
 import ServiceRequest from '../models/ServiceRequest';
 import User from '../models/User';
 import Review from '../models/Review';
-import { raw } from 'objection';
-
-export interface CustomerStats {
-  activeRequests: number;
-  completedJobs: number;
-  totalSpent: number;
-  pendingReviews: number;
-}
-
-export interface ProviderStats {
-  activeRequests: number;
-  completedJobs: number;
-  totalEarnings: number;
-  averageRating: number;
-  responseTime: string;
-  completionRate: number;
-  pendingAssignments: number;
-}
-
-export interface AdminStats {
-  totalUsers: number;
-  totalProviders: number;
-  totalCustomers: number;
-  pendingVerifications: number;
-  activeRequests: number;
-  completedRequests: number;
-  totalRevenue: number;
-  monthlyGrowth: number;
-}
-
-export interface ActivityItem {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  timestamp: string;
-  metadata?: any;
-}
+import { 
+  CustomerStatsDto, 
+  ProviderStatsDto, 
+  AdminStatsDto, 
+  ActivityItemDto 
+} from '../../../shared-types';
 
 export class DashboardService {
   /**
    * Get customer dashboard statistics
    */
-  async getCustomerStats(userId: number): Promise<CustomerStats> {
+  async getCustomerStats(userId: number): Promise<CustomerStatsDto> {
     // Get active requests
     const activeRequests = await ServiceRequest.query()
       .where('user_id', userId)
@@ -96,7 +64,7 @@ export class DashboardService {
   /**
    * Get customer activity feed
    */
-  async getCustomerActivity(userId: number, limit = 20): Promise<ActivityItem[]> {
+  async getCustomerActivity(userId: number, limit = 20): Promise<ActivityItemDto[]> {
     const requests = await ServiceRequest.query()
       .where('user_id', userId)
       .withGraphFetched('[category, assignedProvider]')
@@ -121,7 +89,7 @@ export class DashboardService {
   /**
    * Get provider dashboard statistics
    */
-  async getProviderStats(providerId: number): Promise<ProviderStats> {
+  async getProviderStats(providerId: number): Promise<ProviderStatsDto> {
     // Get provider details
     const provider = await User.query().findById(providerId);
     if (!provider) {
@@ -175,7 +143,7 @@ export class DashboardService {
   /**
    * Get provider activity/recent requests
    */
-  async getProviderActivity(providerId: number, limit = 20): Promise<ActivityItem[]> {
+  async getProviderActivity(providerId: number, limit = 20): Promise<ActivityItemDto[]> {
     const requests = await ServiceRequest.query()
       .where('assigned_provider_id', providerId)
       .withGraphFetched('[category, user]')
@@ -201,7 +169,7 @@ export class DashboardService {
   /**
    * Get admin dashboard statistics
    */
-  async getAdminStats(): Promise<AdminStats> {
+  async getAdminStats(): Promise<AdminStatsDto> {
     // Total users
     const totalUsers = await User.query().resultSize();
 
@@ -277,14 +245,14 @@ export class DashboardService {
   /**
    * Get admin activity feed
    */
-  async getAdminActivity(limit = 50): Promise<ActivityItem[]> {
+  async getAdminActivity(limit = 50): Promise<ActivityItemDto[]> {
     // Get recent service requests
     const requests = await ServiceRequest.query()
       .withGraphFetched('[user, category, assignedProvider]')
       .orderBy('created_at', 'desc')
       .limit(limit);
 
-    const activities: ActivityItem[] = requests.map(request => ({
+    const activities: ActivityItemDto[] = requests.map(request => ({
       id: `request-${request.id}`,
       type: 'service_request',
       title: `${request.user?.fullName} requested ${request.category?.name}`,

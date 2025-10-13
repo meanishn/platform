@@ -54,15 +54,55 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       const response = await notificationApi.getUserNotifications();
       if (response.success && response.data && response.data.notifications) {
         // Convert server notifications to client format
-        const clientNotifications: Notification[] = response.data.notifications.map((n: NotificationDto) => ({
-          id: n.id.toString(),
-          type: 'info', // Default type, could be derived from n.type
-          title: n.title,
-          message: n.message,
-          timestamp: new Date(n.createdAt),
-          read: n.isRead,
-          category: 'system' // Default category
-        }));
+        const clientNotifications: Notification[] = response.data.notifications.map((n: NotificationDto) => {
+          // Derive actionUrl and actionText based on notification type and data
+          let actionUrl: string | undefined;
+          let actionText: string | undefined;
+          let category: Notification['category'] = 'system';
+
+          switch (n.type) {
+            case 'new_assignment':
+              // Navigate to available jobs with jobId parameter to auto-open modal
+              actionUrl = n.data?.requestId 
+                ? `/provider/available-jobs?jobId=${n.data.requestId}`
+                : `/provider/available-jobs`;
+              actionText = 'View Job Details';
+              category = 'service_request';
+              break;
+            case 'provider_accepted':
+              actionUrl = n.data?.requestId ? `/requests/${n.data.requestId}` : undefined;
+              actionText = 'Select Provider';
+              category = 'provider_update';
+              break;
+            case 'assignment_confirmed':
+              // Navigate to assignments (could be enhanced to auto-open specific assignment)
+              actionUrl = `/provider/assignments`;
+              actionText = 'View Assignment';
+              category = 'service_request';
+              break;
+            case 'job_started':
+            case 'job_completed':
+              actionUrl = n.data?.requestId ? `/requests/${n.data.requestId}` : undefined;
+              actionText = 'View Request';
+              category = 'service_request';
+              break;
+            default:
+              // Keep actionUrl/actionText undefined for unknown types
+              break;
+          }
+
+          return {
+            id: n.id.toString(),
+            type: 'info', // Default type, could be derived from n.type
+            title: n.title,
+            message: n.message,
+            timestamp: new Date(n.createdAt),
+            read: n.isRead,
+            category,
+            actionUrl,
+            actionText
+          };
+        });
         setNotifications(clientNotifications);
         setUnreadCount(response.data.unreadCount || 0);
       }
