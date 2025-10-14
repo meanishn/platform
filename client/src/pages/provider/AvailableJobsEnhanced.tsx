@@ -15,9 +15,15 @@ import { providerApi } from '../../services/realApi';
 import { useNotificationService } from '../../services/notificationService';
 import { useJobDetailsModal } from '../../hooks';
 import type { JobDto, ProviderActionRequest } from '../../types/api';
+import { SocketEvents, useSocketEvent } from '../../hooks/useWebSocket';
 
 type FilterType = 'all' | 'nearby' | 'high-match' | 'urgent';
 type SortType = 'match-score' | 'distance' | 'posted-date' | 'urgency';
+
+interface SocketEventData {
+  requestId?: number | string;
+  [key: string]: unknown;
+}
 
 export const AvailableJobsEnhanced: React.FC = () => {
   const notify = useNotificationService();
@@ -67,6 +73,23 @@ export const AvailableJobsEnhanced: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, isLoading]);
 
+    // WebSocket: Listen for real-time updates
+    useSocketEvent(SocketEvents.REQUEST_CREATED, useCallback((data: SocketEventData) => {
+      console.log('🔔 New request created:', data);
+      fetchAvailableJobs(); // Refresh to show new jobs
+    }, [fetchAvailableJobs]));
+  
+    useSocketEvent(SocketEvents.REQUEST_STATUS_CHANGED, useCallback((data: SocketEventData) => {
+      console.log('🔔 Request status changed:', data);
+      fetchAvailableJobs(); // Refresh to update job status
+    }, [fetchAvailableJobs]));
+  
+    useSocketEvent(SocketEvents.PROVIDER_ASSIGNED, useCallback((data: SocketEventData) => {
+      console.log('🔔 Provider assigned:', data);
+      fetchAvailableJobs(); // Refresh to remove assigned jobs
+    }, [fetchAvailableJobs]));
+
+    
   const handlePerformAction = async (jobId: number, action: ProviderActionRequest) => {
     try {
       setActioningJobId(jobId);

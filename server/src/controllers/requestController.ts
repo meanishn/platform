@@ -8,6 +8,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { requestService } from '../services/requestService';
+import { emitToUser, emitToRole, SocketEvents } from '../services/socketService';
 
 export class RequestController {
   /**
@@ -55,6 +56,14 @@ export class RequestController {
         images
       });
 
+      // Emit WebSocket event to all providers about new request
+      emitToRole('provider', SocketEvents.REQUEST_CREATED, {
+        requestId: request.id,
+        categoryId: request.categoryId,
+        title: request.title,
+        urgency: request.urgency
+      });
+
       res.status(201).json({
         success: true,
         message: 'Service request created successfully. Notifying qualified providers...',
@@ -88,6 +97,17 @@ export class RequestController {
       }
 
       const updated = await requestService.confirmProvider(parseInt(id), userId, parseInt(providerId));
+
+      // Emit WebSocket event to customer and provider
+      emitToUser(userId, SocketEvents.PROVIDER_CONFIRMED, {
+        requestId: updated.id,
+        providerId: providerId,
+        status: 'assigned'
+      });
+      emitToUser(providerId, SocketEvents.PROVIDER_ASSIGNED, {
+        requestId: updated.id,
+        status: 'assigned'
+      });
 
       res.json({
         success: true,
@@ -129,6 +149,13 @@ export class RequestController {
         parseInt(requestId),
         providerId
       );
+
+      // Emit WebSocket event to customer about provider acceptance
+      emitToUser(request.userId, SocketEvents.PROVIDER_ACCEPTED, {
+        requestId: request.id,
+        providerId: providerId,
+        title: request.title
+      });
 
       res.json({
         success: true,
@@ -206,6 +233,13 @@ export class RequestController {
 
       const request = await requestService.startJob(parseInt(id), providerId);
 
+      // Emit WebSocket event about work starting
+      emitToUser(request.userId, SocketEvents.WORK_STARTED, {
+        requestId: request.id,
+        providerId: providerId,
+        status: 'in_progress'
+      });
+
       res.json({
         success: true,
         message: 'Job started successfully',
@@ -236,6 +270,13 @@ export class RequestController {
       const { id } = req.params;
 
       const request = await requestService.completeJob(parseInt(id), providerId);
+
+      // Emit WebSocket event about work completion
+      emitToUser(request.userId, SocketEvents.WORK_COMPLETED, {
+        requestId: request.id,
+        providerId: providerId,
+        status: 'completed'
+      });
 
       res.json({
         success: true,
@@ -269,6 +310,19 @@ export class RequestController {
         userId,
         reason
       );
+
+      // Emit WebSocket event about cancellation
+      emitToUser(userId, SocketEvents.REQUEST_CANCELLED, {
+        requestId: request.id,
+        status: 'cancelled'
+      });
+      // If provider was assigned, notify them too
+      if (request.assignedProviderId) {
+        emitToUser(request.assignedProviderId, SocketEvents.REQUEST_CANCELLED, {
+          requestId: request.id,
+          status: 'cancelled'
+        });
+      }
 
       res.json({
         success: true,

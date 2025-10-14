@@ -22,11 +22,11 @@ export const DemoCredentials: React.FC = () => {
           <div className="text-sm space-y-1">
             <div>
               <span className="text-black/60">Email:</span>
-              <code className="ml-2 text-primary-600">admin@example.com</code>
+              <code className="ml-2 text-primary-600">aadmin@platform.com</code>
             </div>
             <div>
               <span className="text-black/60">Password:</span>
-              <code className="ml-2 text-primary-600">password</code>
+              <code className="ml-2 text-primary-600">admin123</code>
             </div>
           </div>
         </div>
@@ -39,11 +39,11 @@ export const DemoCredentials: React.FC = () => {
           <div className="text-sm space-y-1">
             <div>
               <span className="text-black/60">Email:</span>
-              <code className="ml-2 text-secondary-600">provider@example.com</code>
+              <code className="ml-2 text-secondary-600">maria.garcia@email.com</code>
             </div>
             <div>
               <span className="text-black/60">Password:</span>
-              <code className="ml-2 text-secondary-600">password</code>
+              <code className="ml-2 text-secondary-600">password123</code>
             </div>
           </div>
         </div>
@@ -60,16 +60,10 @@ export const DemoCredentials: React.FC = () => {
             </div>
             <div>
               <span className="text-black/60">Password:</span>
-              <code className="ml-2 text-accent-600">password</code>
+              <code className="ml-2 text-accent-600">password123</code>
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="mt-4 p-3 bg-primary-500/10 border border-primary-400/20 rounded-xl">
-        <p className="text-sm text-black/80">
-          💡 <strong>Tip:</strong> You can also use any email with password <code className="text-primary-600">"password"</code> or <code className="text-primary-600">"123456"</code> to create a demo customer account.
-        </p>
       </div>
     </div>
   );

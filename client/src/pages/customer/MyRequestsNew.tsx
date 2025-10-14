@@ -23,6 +23,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api, handleResponse } from '../../services/apiClient';
 import { ServiceRequestListItemDto } from '../../types/api';
 import { formatDistanceToNow } from 'date-fns';
+import { useSocketEvent, SocketEvents } from '../../hooks/useWebSocket';
+
+interface SocketEventData {
+  requestId?: number | string;
+  [key: string]: unknown;
+}
 
 export const MyRequests: React.FC = () => {
   const { token } = useAuth();
@@ -97,6 +103,35 @@ export const MyRequests: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, isLoading, requests]);
+
+  // WebSocket: Listen for real-time updates
+  useSocketEvent(SocketEvents.REQUEST_STATUS_CHANGED, useCallback((data: SocketEventData) => {
+    console.log('🔔 Request status changed:', data);
+    fetchRequests(); // Refresh the list
+  }, [fetchRequests]));
+
+  useSocketEvent(SocketEvents.PROVIDER_ACCEPTED, useCallback((data: SocketEventData) => {
+    console.log('🔔 Provider accepted request:', data);
+    fetchRequests(); // Refresh to show new accepted provider
+    if (data.requestId) {
+      fetchAcceptedProviderCount(Number(data.requestId)); // Update specific request count
+    }
+  }, [fetchRequests]));
+
+  useSocketEvent(SocketEvents.PROVIDER_CONFIRMED, useCallback((data: SocketEventData) => {
+    console.log('🔔 Provider confirmed:', data);
+    fetchRequests(); // Refresh to show assignment
+  }, [fetchRequests]));
+
+  useSocketEvent(SocketEvents.WORK_STARTED, useCallback((data: SocketEventData) => {
+    console.log('🔔 Work started:', data);
+    fetchRequests(); // Refresh to show in-progress status
+  }, [fetchRequests]));
+
+  useSocketEvent(SocketEvents.WORK_COMPLETED, useCallback((data: SocketEventData) => {
+    console.log('🔔 Work completed:', data);
+    fetchRequests(); // Refresh to show completed status
+  }, [fetchRequests]));
 
   const handleViewProviders = (requestId: number, title: string) => {
     setSelectedRequestId(requestId);

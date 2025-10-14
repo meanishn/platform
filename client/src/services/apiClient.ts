@@ -6,6 +6,9 @@ interface RequestConfig extends RequestInit {
   skipAuth?: boolean; // Optional flag to skip auth for public endpoints
 }
 
+// Get API base URL from environment or use default
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 /**
  * Fetch wrapper that automatically adds Authorization header
  */
@@ -14,7 +17,10 @@ export const apiClient = async (url: string, config: RequestConfig = {}): Promis
 
   // Get token from localStorage
   const token = localStorage.getItem('token');
-  console.log(`[API Client] ${restConfig.method || 'GET'} ${url} - Token exists:`, !!token, 'Skip auth:', skipAuth);
+  
+  // Construct full URL
+  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+  console.log(`[API Client] ${restConfig.method || 'GET'} ${fullUrl} - Token exists:`, !!token, 'Skip auth:', skipAuth);
 
   // Build headers
   const finalHeaders: HeadersInit = {
@@ -29,7 +35,7 @@ export const apiClient = async (url: string, config: RequestConfig = {}): Promis
   }
 
   // Make the request
-  return fetch(url, {
+  return fetch(fullUrl, {
     ...restConfig,
     headers: finalHeaders,
   });

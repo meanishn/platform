@@ -6,6 +6,12 @@ import { AcceptedProvidersModal } from '../../components/customer';
 import { api, handleResponse } from '../../services/apiClient';
 import type { ServiceRequestDetailDto, ProviderWithContactDto } from '../../types/api';
 import { formatDistanceToNow } from 'date-fns';
+import { useSocketEvent, SocketEvents } from '../../hooks/useWebSocket';
+
+interface SocketEventData {
+  requestId?: number | string;
+  [key: string]: unknown;
+}
 
 export const RequestDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -73,6 +79,43 @@ export const RequestDetail: React.FC = () => {
   useEffect(() => {
     fetchRequestDetail();
   }, [fetchRequestDetail]);
+
+  // WebSocket: Listen for real-time updates for this specific request
+  useSocketEvent(SocketEvents.REQUEST_STATUS_CHANGED, useCallback((data: SocketEventData) => {
+    if (data.requestId && data.requestId.toString() === id) {
+      console.log('🔔 Request status changed:', data);
+      fetchRequestDetail();
+    }
+  }, [id, fetchRequestDetail]));
+
+  useSocketEvent(SocketEvents.PROVIDER_ACCEPTED, useCallback((data: SocketEventData) => {
+    if (data.requestId && data.requestId.toString() === id) {
+      console.log('🔔 Provider accepted:', data);
+      fetchRequestDetail();
+      fetchAcceptedProviderCount();
+    }
+  }, [id, fetchRequestDetail, fetchAcceptedProviderCount]));
+
+  useSocketEvent(SocketEvents.PROVIDER_CONFIRMED, useCallback((data: SocketEventData) => {
+    if (data.requestId && data.requestId.toString() === id) {
+      console.log('🔔 Provider confirmed:', data);
+      fetchRequestDetail();
+    }
+  }, [id, fetchRequestDetail]));
+
+  useSocketEvent(SocketEvents.WORK_STARTED, useCallback((data: SocketEventData) => {
+    if (data.requestId && data.requestId.toString() === id) {
+      console.log('🔔 Work started:', data);
+      fetchRequestDetail();
+    }
+  }, [id, fetchRequestDetail]));
+
+  useSocketEvent(SocketEvents.WORK_COMPLETED, useCallback((data: SocketEventData) => {
+    if (data.requestId && data.requestId.toString() === id) {
+      console.log('🔔 Work completed:', data);
+      fetchRequestDetail();
+    }
+  }, [id, fetchRequestDetail]));
 
   const handleConfirmProvider = async () => {
     if (!id) return;

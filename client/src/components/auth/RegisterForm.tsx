@@ -57,6 +57,7 @@ export const RegisterForm: React.FC = () => {
         setErrors({ general: result.message || 'Registration failed' });
       }
     } catch (error) {
+      console.error(error);
       setErrors({ general: 'An unexpected error occurred' });
     }
   };

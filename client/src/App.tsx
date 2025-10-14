@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { WebSocketProvider } from './contexts/WebSocketContext';
 import { Layout } from './components/layout/Layout';
 import { ToastContainer, useToast } from './components/notifications/ToastNotification';
 
@@ -98,13 +99,13 @@ const AppContent = () => {
 function App() {
   return (
     <AuthProvider>
-      <NotificationProvider>
-        <Router>
-          <div className="page-container">
-            <AppContent />
-          </div>
-        </Router>
-      </NotificationProvider>
+        <NotificationProvider>
+          <Router>
+            <div className="page-container">
+              <AppContent />
+            </div>
+          </Router>
+        </NotificationProvider>
     </AuthProvider>
   );
 }
