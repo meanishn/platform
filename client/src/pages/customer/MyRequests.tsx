@@ -33,7 +33,6 @@ import { useConfirmationModal } from '../../hooks/useConfirmationModal';
 import {
   Clock,
   CheckCircle2,
-  BarChart3,
   RefreshCw,
   Plus,
   CheckCircle,
@@ -211,7 +210,8 @@ export const MyRequests: React.FC = () => {
   }
 
   const pendingCount = requests.filter(r => r.status === 'pending').length;
-  const inProgressCount = requests.filter(r => r.status === 'in_progress' || r.status === 'assigned').length;
+  const assignedCount = requests.filter(r => r.status === 'assigned').length;
+  const inProgressCount = requests.filter(r => r.status === 'in_progress').length;
   const completedCount = requests.filter(r => r.status === 'completed').length;
 
   return (
@@ -254,6 +254,14 @@ export const MyRequests: React.FC = () => {
           onClick={() => setFilter('pending')}
         />
         <StatCard
+          label="Assigned"
+          value={assignedCount}
+          icon={CheckCircle}
+          colorScheme="purple"
+          isActive={filter === 'assigned'}
+          onClick={() => setFilter('assigned')}
+        />
+        <StatCard
           label="Active"
           value={inProgressCount}
           icon={Hammer}
@@ -268,14 +276,6 @@ export const MyRequests: React.FC = () => {
           colorScheme="emerald"
           isActive={filter === 'completed'}
           onClick={() => setFilter('completed')}
-        />
-        <StatCard
-          label="Total"
-          value={requests.length}
-          icon={BarChart3}
-          colorScheme="slate"
-          isActive={filter === 'all'}
-          onClick={() => setFilter('all')}
         />
       </div>
 
