@@ -18,4 +18,10 @@ export {
 
 // Customer-specific components
 export { AcceptedProvidersModal } from './AcceptedProvidersModal';
+export { FilterStatCard } from './FilterStatCard';
+export type { FilterStatCardProps } from './FilterStatCard';
+export { ServiceRequestCard } from './ServiceRequestCard';
+export type { ServiceRequestCardProps } from './ServiceRequestCard';
+export { HelpCard } from './HelpCard';
+export type { HelpCardProps } from './HelpCard';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { Card, Button, Badge } from '../../components/ui';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { Card, Button } from '../../components/ui';
 import { RoleGuard } from '../../components/auth/RoleGuard';
 import { providerApi } from '../../services/realApi';
 import { ActivityItemDto } from '../../types/api';
@@ -12,6 +12,7 @@ import {
   ActivityList,
   QuickActionsCard
 } from '../../components/ui';
+import { ProfileStatusCard } from '../../components/provider';
 import { ClipboardList, CheckCircle2, DollarSign, Star, User, Plus, FileText } from 'lucide-react';
 
 interface ProviderStats {
@@ -134,30 +135,13 @@ export const ProviderDashboard: React.FC = () => {
         </div>
 
         <div>
-          <Card>
-            <div className="p-4 sm:p-6 glass-card">
-              <h3 className="text-lg font-medium text-black mb-4">
-                Profile Status
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-black/70">Profile Complete</span>
-                  <Badge variant="success" size="sm">85%</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-black/70">Verification</span>
-                  <Badge variant="success" size="sm">Verified</Badge>
-                </div>
-                <div className="mt-4">
-                  <Link to="/provider/profile">
-                    <Button variant="outline" size="sm" className="w-full">
-                      Complete Profile
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <ProfileStatusCard
+            status={{
+              completionPercentage: 85,
+              verificationStatus: 'verified'
+            }}
+            editProfileHref="/provider/profile"
+          />
         </div>
       </div>
 

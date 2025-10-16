@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { Card, Button } from '../../components/ui';
+import { Card } from '../../components/ui';
 import { customerApi } from '../../services/realApi';
 import type { CustomerStatsDto, ActivityItemDto } from '../../types/api';
 import {
@@ -10,6 +10,7 @@ import {
   ActivityList,
   QuickActionsCard
 } from '../../components/ui';
+import { HelpCard } from '../../components/customer';
 import { ClipboardList, CheckCircle2, DollarSign, Star, Search, User, MessageCircle } from 'lucide-react';
 
 export const CustomerDashboard: React.FC = () => {
@@ -112,24 +113,18 @@ export const CustomerDashboard: React.FC = () => {
         </div>
 
         <div>
-          <Card>
-            <div className="p-4 sm:p-6">
-              <h3 className="text-lg font-medium text-slate-900 mb-4">
-                Need Help?
-              </h3>
-              <div className="space-y-3">
-                <div className="text-sm text-slate-600">
-                  Our support team is here to help you find the right service providers.
-                </div>
-                <Button variant="primary" size="sm" className="w-full">
-                  Contact Support
-                </Button>
-                <Button variant="outline" size="sm" className="w-full">
-                  View FAQ
-                </Button>
-              </div>
-            </div>
-          </Card>
+          <HelpCard
+            title="Need Help?"
+            description="Our support team is here to help you find the right service providers."
+            primaryAction={{
+              label: 'Contact Support',
+              onClick: () => window.location.href = '/support'
+            }}
+            secondaryAction={{
+              label: 'View FAQ',
+              onClick: () => window.location.href = '/faq'
+            }}
+          />
         </div>
       </div>
 

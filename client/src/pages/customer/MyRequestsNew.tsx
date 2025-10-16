@@ -14,38 +14,30 @@ import { useAuth } from '../../hooks/useAuth';
 import { 
   Card, 
   Button, 
-  Input, 
-  Badge,
+  Input,
   PageHeader,
   LoadingSkeleton,
 } from '../../components/ui';
-import { AcceptedProvidersModal } from '../../components/customer';
+import { 
+  AcceptedProvidersModal, 
+  FilterStatCard, 
+  ServiceRequestCard 
+} from '../../components/customer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api, handleResponse } from '../../services/apiClient';
 import { ServiceRequestListItemDto } from '../../types/api';
-import { formatDistanceToNow } from 'date-fns';
 import { useSocketEvent, SocketEvents } from '../../hooks/useWebSocket';
 import { useConfirmationModal } from '../../hooks/useConfirmationModal';
 import {
   Clock,
-  Wrench,
   CheckCircle2,
   BarChart3,
   RefreshCw,
   Plus,
-  MapPin,
-  Calendar,
-  Tag,
-  User,
   Search,
-  FileText,
-  AlertCircle,
-  XCircle,
-  Star,
   CheckCircle,
   Hammer,
   ClipboardList,
-  Users,
   AlertTriangle,
 } from 'lucide-react';
 
@@ -178,46 +170,6 @@ export const MyRequests: React.FC = () => {
     fetchRequests(); // Refresh to show updated status
   };
 
-  const getStatusBadge = (status: string) => {
-    const configs: Record<string, { variant: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info', label: string, IconComponent: typeof Clock }> = {
-      pending: { variant: 'warning', label: 'Awaiting Providers', IconComponent: Clock },
-      assigned: { variant: 'info', label: 'Provider Assigned', IconComponent: CheckCircle },
-      in_progress: { variant: 'primary', label: 'In Progress', IconComponent: Hammer },
-      completed: { variant: 'success', label: 'Completed', IconComponent: CheckCircle2 },
-      cancelled: { variant: 'danger', label: 'Cancelled', IconComponent: XCircle },
-    };
-    
-    const config = configs[status] || { variant: 'default' as const, label: status, IconComponent: AlertCircle };
-    
-    return (
-      <Badge variant={config.variant} size="sm">
-        <span className="inline-flex items-center gap-1.5">
-          <config.IconComponent className="w-3.5 h-3.5" strokeWidth={2} />
-          <span>{config.label}</span>
-        </span>
-      </Badge>
-    );
-  };
-
-  const getUrgencyBadge = (urgency: string) => {
-    const configs: Record<string, { variant: 'default' | 'primary' | 'success' | 'warning' | 'danger', IconComponent: typeof AlertCircle }> = {
-      emergency: { variant: 'danger', IconComponent: AlertCircle },
-      high: { variant: 'danger', IconComponent: AlertCircle },
-      medium: { variant: 'warning', IconComponent: AlertCircle },
-      low: { variant: 'success', IconComponent: CheckCircle },
-    };
-    
-    const config = configs[urgency] || { variant: 'default' as const, IconComponent: AlertCircle };
-    
-    return (
-      <Badge variant={config.variant} size="sm">
-        <span className="inline-flex items-center gap-1.5">
-          <config.IconComponent className="w-3.5 h-3.5" strokeWidth={2} />
-          <span className="capitalize">{urgency}</span>
-        </span>
-      </Badge>
-    );
-  };
 
   const handleCancelRequest = async (requestId: number, title: string) => {
     confirmCancel(
@@ -293,73 +245,38 @@ export const MyRequests: React.FC = () => {
         
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-        <button 
+        <FilterStatCard
+          label="Pending"
+          count={pendingCount}
+          icon={Clock}
+          colorScheme="blue"
+          isActive={filter === 'pending'}
           onClick={() => setFilter('pending')}
-          className={`bg-blue-50 border rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow cursor-pointer text-left ${
-            filter === 'pending' ? 'border-blue-400 shadow-md ring-2 ring-blue-200' : 'border-blue-200'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <p className="text-slate-600 text-xs md:text-sm mb-1">Pending</p>
-              <p className="text-2xl md:text-3xl font-bold text-blue-900">{pendingCount}</p>
-            </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center ml-4 flex-shrink-0">
-              <Clock className="w-6 h-6 text-blue-600" strokeWidth={2} />
-            </div>
-          </div>
-        </button>
-        
-        <button 
+        />
+        <FilterStatCard
+          label="Active"
+          count={inProgressCount}
+          icon={Hammer}
+          colorScheme="amber"
+          isActive={filter === 'in_progress'}
           onClick={() => setFilter('in_progress')}
-          className={`bg-amber-50 border rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow cursor-pointer text-left ${
-            filter === 'in_progress' ? 'border-amber-400 shadow-md ring-2 ring-amber-200' : 'border-amber-200'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <p className="text-slate-600 text-xs md:text-sm mb-1">Active</p>
-              <p className="text-2xl md:text-3xl font-bold text-amber-900">{inProgressCount}</p>
-            </div>
-            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center ml-4 flex-shrink-0">
-              <Hammer className="w-6 h-6 text-amber-600" strokeWidth={2} />
-            </div>
-          </div>
-        </button>
-        
-        <button 
+        />
+        <FilterStatCard
+          label="Completed"
+          count={completedCount}
+          icon={CheckCircle2}
+          colorScheme="emerald"
+          isActive={filter === 'completed'}
           onClick={() => setFilter('completed')}
-          className={`bg-emerald-50 border rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow cursor-pointer text-left ${
-            filter === 'completed' ? 'border-emerald-400 shadow-md ring-2 ring-emerald-200' : 'border-emerald-200'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <p className="text-slate-600 text-xs md:text-sm mb-1">Completed</p>
-              <p className="text-2xl md:text-3xl font-bold text-emerald-900">{completedCount}</p>
-            </div>
-            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center ml-4 flex-shrink-0">
-              <CheckCircle2 className="w-6 h-6 text-emerald-600" strokeWidth={2} />
-            </div>
-          </div>
-        </button>
-        
-        <button 
+        />
+        <FilterStatCard
+          label="Total"
+          count={requests.length}
+          icon={BarChart3}
+          colorScheme="slate"
+          isActive={filter === 'all'}
           onClick={() => setFilter('all')}
-          className={`bg-slate-50 border rounded-lg p-4 md:p-6 hover:shadow-md transition-shadow cursor-pointer text-left ${
-            filter === 'all' ? 'border-slate-400 shadow-md ring-2 ring-slate-200' : 'border-slate-200'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <p className="text-slate-600 text-xs md:text-sm mb-1">Total</p>
-              <p className="text-2xl md:text-3xl font-bold text-slate-900">{requests.length}</p>
-            </div>
-            <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center ml-4 flex-shrink-0">
-              <BarChart3 className="w-6 h-6 text-slate-600" strokeWidth={2} />
-            </div>
-          </div>
-        </button>
+        />
       </div>
 
       {/* Filters */}
@@ -405,256 +322,16 @@ export const MyRequests: React.FC = () => {
       <div className="pt-2">
         {filteredRequests.length > 0 ? (
           <div className="space-y-3">
-          {filteredRequests.map((request) => {
-            const acceptedCount = acceptedProviderCounts[request.id] || 0;
-            const hasAcceptedProviders = acceptedCount > 0;
-            const isCompleted = request.status === 'completed';
-            const isPending = request.status === 'pending';
-            const isActive = request.status === 'in_progress' || request.status === 'assigned';
-            
-            // Status-based card styling
-            const getCardBackground = () => {
-              if (isCompleted) return 'bg-emerald-50/30 border-emerald-200/50';
-              if (isActive) return 'bg-amber-50/30 border-amber-200/50';
-              if (isPending && request.urgency === 'high') return 'bg-red-50/30 border-red-200/50';
-              if (isPending) return 'bg-blue-50/30 border-blue-200/50';
-              return 'bg-slate-50/30 border-slate-200';
-            };
-            
-            // Status-based left accent border
-            const getAccentBorder = () => {
-              if (isCompleted) return 'border-l-4 border-l-emerald-300';
-              if (isActive) return 'border-l-4 border-l-amber-300';
-              if (isPending && request.urgency === 'high') return 'border-l-4 border-l-red-300';
-              if (isPending) return 'border-l-4 border-l-blue-300';
-              return 'border-l-4 border-l-slate-300';
-            };
-            
-            return (
-              <Card 
-                key={request.id} 
-                className={`${getCardBackground()} ${getAccentBorder()} border shadow-md hover:shadow-xl transition-all duration-200`}
-              >
-                <div className="p-5">
-                  {/* Header: Title + Priority + Status */}
-                  <div className="flex items-start justify-between gap-3 mb-4 pb-3 border-b border-slate-200/60">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight">
-                        {request.title}
-                      </h3>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {getStatusBadge(request.status)}
-                        {getUrgencyBadge(request.urgency)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Body: Description, Category, Time Info */}
-                  {!isCompleted && (
-                    <>
-                      <p className="text-slate-600 text-sm mb-4 leading-relaxed">
-                        {request.description}
-                      </p>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Tag className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                          </div>
-                          <div>
-                            <p className="text-xs text-slate-500 font-medium">Category</p>
-                            <p className="text-sm text-slate-900">{request.category.name}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Clock className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                          </div>
-                          <div>
-                            <p className="text-xs text-slate-500 font-medium">Duration</p>
-                            <p className="text-sm text-slate-900">{request.estimatedHours}h estimated</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <MapPin className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-slate-500 font-medium">Location</p>
-                            <p className="text-sm text-slate-900 truncate">{request.address}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Calendar className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                          </div>
-                          <div>
-                            <p className="text-xs text-slate-500 font-medium">Created</p>
-                            <p className="text-sm text-slate-900">{formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Collapsed view for completed requests */}
-                  {isCompleted && (
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-3 text-slate-600">
-                          <span className="flex items-center gap-1.5">
-                            <Tag className="w-3.5 h-3.5" strokeWidth={2} />
-                            {request.category.name}
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
-                            {formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Accepted Providers Alert */}
-                  {isPending && hasAcceptedProviders && (
-                    <div className="mb-4 p-4 bg-emerald-50 border-l-4 border-emerald-600 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-200">
-                          <Users className="w-5 h-5 text-emerald-700" strokeWidth={2} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-slate-900 mb-1">
-                            {acceptedCount === 1 
-                              ? '1 Provider Ready!'
-                              : `${acceptedCount} Providers Ready!`
-                            }
-                          </p>
-                          <p className="text-sm text-slate-600 mb-3">
-                            Review profiles and select the best match for your project.
-                          </p>
-                          <Button
-                            size="sm"
-                            onClick={() => handleViewProviders(request.id, request.title)}
-                            className="bg-slate-700 text-white hover:bg-slate-800 font-medium flex items-center gap-2"
-                          >
-                            <User className="w-4 h-4" strokeWidth={2} />
-                            <span>View & Select Provider</span>
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Assigned/In Progress Status */}
-                  {isActive && (
-                    <div className={`mb-4 p-4 rounded-lg ${
-                      request.status === 'in_progress' 
-                        ? 'bg-amber-100 border border-amber-300' 
-                        : 'bg-blue-100 border border-blue-300'
-                    }`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          request.status === 'in_progress'
-                            ? 'bg-amber-200'
-                            : 'bg-blue-200'
-                        }`}>
-                          {request.status === 'in_progress' ? (
-                            <Wrench className="w-5 h-5 text-amber-700" strokeWidth={2} />
-                          ) : (
-                            <CheckCircle className="w-5 h-5 text-blue-700" strokeWidth={2} />
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-900">
-                            {request.status === 'in_progress' ? 'Work in Progress' : 'Provider Confirmed'}
-                          </p>
-                          <p className="text-sm text-slate-700">
-                            {request.status === 'in_progress' 
-                              ? 'Your provider is actively working on this request'
-                              : 'Work will begin soon'
-                            }
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Completed Status Banner */}
-                  {isCompleted && (
-                    <div className="mb-4 p-2.5 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" strokeWidth={2} />
-                      <p className="font-medium text-emerald-900 text-sm">Work Completed</p>
-                    </div>
-                  )}
-
-                  {/* Footer: Action Buttons with Clear Hierarchy */}
-                  <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-200/60">
-                    {/* Primary action based on status */}
-                    {isPending && hasAcceptedProviders && (
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => handleViewProviders(request.id, request.title)}
-                        className="flex items-center gap-2 font-medium"
-                      >
-                        <Users className="w-4 h-4" strokeWidth={2} />
-                        <span>Select Provider</span>
-                      </Button>
-                    )}
-                    
-                    {/* Secondary actions */}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => navigate(`/requests/${request.id}`)}
-                      className="flex items-center gap-2"
-                    >
-                      <FileText className="w-4 h-4" strokeWidth={2} />
-                      <span>View Details</span>
-                    </Button>
-                    
-                    {isPending && !hasAcceptedProviders && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleViewProviders(request.id, request.title)}
-                        className="flex items-center gap-2"
-                      >
-                        <Users className="w-4 h-4" strokeWidth={2} />
-                        <span>Check Providers</span>
-                      </Button>
-                    )}
-                    
-                    {isCompleted && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => navigate(`/requests/${request.id}/review`)}
-                        className="flex items-center gap-2"
-                      >
-                        <Star className="w-4 h-4" strokeWidth={2} />
-                        <span>Leave Review</span>
-                      </Button>
-                    )}
-                    
-                    {/* Destructive action */}
-                    {isPending && (
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => handleCancelRequest(request.id, request.title)}
-                        className="flex items-center gap-2 ml-auto"
-                      >
-                        <XCircle className="w-4 h-4" strokeWidth={2} />
-                        <span>Cancel</span>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+            {filteredRequests.map((request) => (
+              <ServiceRequestCard
+                key={request.id}
+                request={request}
+                acceptedProviderCount={acceptedProviderCounts[request.id] || 0}
+                onViewProviders={handleViewProviders}
+                onCancel={handleCancelRequest}
+              />
+            ))}
+          </div>
       ) : (
         <Card>
           <div className="p-8 sm:p-12 text-center">
