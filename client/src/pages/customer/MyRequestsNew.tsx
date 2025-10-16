@@ -12,11 +12,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { 
-  Card, 
-  Button, 
-  Input,
+  Button,
   PageHeader,
   LoadingSkeleton,
+  SearchBar,
+  FilterButtonGroup,
+  EmptyState,
 } from '../../components/ui';
 import { 
   AcceptedProvidersModal, 
@@ -34,7 +35,6 @@ import {
   BarChart3,
   RefreshCw,
   Plus,
-  Search,
   CheckCircle,
   Hammer,
   ClipboardList,
@@ -279,43 +279,26 @@ export const MyRequests: React.FC = () => {
         />
       </div>
 
-      {/* Filters */}
+      {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
-        <div className="flex-1 relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" strokeWidth={2} />
-          <Input
-            placeholder="Search by title, category, or location..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 text-sm h-10 border-slate-300 focus:border-slate-400"
-          />
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
-          {[
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Search by title, category, or location..."
+          className="flex-1"
+        />
+        <FilterButtonGroup
+          options={[
             { value: 'all', label: 'All Requests', icon: ClipboardList },
             { value: 'pending', label: 'Pending', icon: Clock },
             { value: 'assigned', label: 'Assigned', icon: CheckCircle },
             { value: 'in_progress', label: 'Active', icon: Hammer },
             { value: 'completed', label: 'Done', icon: CheckCircle2 }
-          ].map(option => {
-            const Icon = option.icon;
-            const isActive = filter === option.value;
-            return (
-              <Button
-                key={option.value}
-                variant={isActive ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilter(option.value)}
-                className={`whitespace-nowrap flex items-center gap-2 font-medium ${
-                  isActive ? 'shadow-md' : ''
-                }`}
-              >
-                <Icon className="w-4 h-4" strokeWidth={2} />
-                {option.label}
-              </Button>
-            );
-          })}
-        </div>
+          ]}
+          activeFilter={filter}
+          onChange={setFilter}
+          className="overflow-x-auto pb-1 sm:pb-0"
+        />
       </div>
 
       {/* Requests List */}
@@ -333,41 +316,20 @@ export const MyRequests: React.FC = () => {
             ))}
           </div>
       ) : (
-        <Card>
-          <div className="p-8 sm:p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-slate-50 rounded-full flex items-center justify-center">
-              <ClipboardList className="w-8 h-8 text-slate-400" strokeWidth={2} />
-            </div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">
-              {filter === 'all' ? 'No Requests Yet' : `No ${filter} Requests`}
-            </h3>
-            <p className="text-slate-600 mb-6 max-w-md mx-auto">
-              {filter === 'all' 
-                ? "You haven't created any service requests yet. Get started by browsing available services!"
-                : `You don't have any ${filter} requests at the moment.`
-              }
-            </p>
-            {filter === 'all' && (
-              <Button 
-                onClick={() => navigate('/request-service')} 
-                size="lg"
-                className="flex items-center gap-2 mx-auto"
-              >
-                <Search className="w-5 h-5" strokeWidth={2} />
-                <span>Browse Services</span>
-              </Button>
-            )}
-            {filter !== 'all' && (
-              <Button 
-                variant="outline" 
-                onClick={() => setFilter('all')}
-                className="mx-auto"
-              >
-                View All Requests
-              </Button>
-            )}
-          </div>
-        </Card>
+        <EmptyState
+          icon={ClipboardList}
+          title={filter === 'all' ? 'No Requests Yet' : `No ${filter} Requests`}
+          description={
+            filter === 'all' 
+              ? "You haven't created any service requests yet. Get started by browsing available services!"
+              : `You don't have any ${filter} requests at the moment.`
+          }
+          action={{
+            label: filter === 'all' ? 'Browse Services' : 'View All Requests',
+            onClick: filter === 'all' ? () => navigate('/request-service') : () => setFilter('all'),
+            variant: filter === 'all' ? 'primary' : 'outline',
+          }}
+        />
         )}
       </div>
 

@@ -24,4 +24,6 @@ export { ServiceRequestCard } from './ServiceRequestCard';
 export type { ServiceRequestCardProps } from './ServiceRequestCard';
 export { HelpCard } from './HelpCard';
 export type { HelpCardProps } from './HelpCard';
+export { ProviderSelectionCard } from './ProviderSelectionCard';
+export type { ProviderSelectionCardProps } from './ProviderSelectionCard';
 

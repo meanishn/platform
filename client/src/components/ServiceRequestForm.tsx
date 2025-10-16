@@ -1,10 +1,29 @@
+/**
+ * ServiceRequestForm Component
+ * 
+ * Multi-step form for creating service requests.
+ * REFACTORED: Following design system and refactor guidelines.
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button, Input } from './ui';
+import { 
+  Card, 
+  Button, 
+  Input,
+  LoadingSkeleton,
+  FormStepHeader,
+  FormFieldWithLabel,
+  CategorySelectionCard,
+  TierSelectionCard,
+  UrgencySelector,
+  CostEstimateCard,
+} from './ui';
+import type { UrgencyLevel } from './ui';
 import { useNotificationService } from '../services/notificationService';
 import { useAuth } from '../hooks/useAuth';
 import { serviceApi, requestApi } from '../services/realApi';
 import { ServiceCategoryDto, ServiceTierDto, CreateServiceRequestDto } from '../types/api';
-import { Calendar, Clock, Flame, AlertTriangle, CheckCircle2, DollarSign, Info, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 interface ServiceRequestFormData {
   categoryId: number | null;
@@ -14,49 +33,13 @@ interface ServiceRequestFormData {
   address: string;
   preferredDate: string;
   estimatedHours: number;
-  urgency: 'low' | 'medium' | 'high' | 'emergency';
+  urgency: UrgencyLevel;
 }
 
 interface ServiceRequestFormProps {
   onSubmit?: (data: ServiceRequestFormData) => void;
   onCancel?: () => void;
 }
-
-// Urgency configuration
-const urgencyConfig = {
-  low: { 
-    label: 'Low Priority', 
-    icon: Calendar, 
-    color: 'text-emerald-700', 
-    bgColor: 'bg-emerald-50', 
-    borderColor: 'border-emerald-200',
-    description: 'Can wait a few days'
-  },
-  medium: { 
-    label: 'Medium Priority', 
-    icon: Clock, 
-    color: 'text-amber-700', 
-    bgColor: 'bg-amber-50', 
-    borderColor: 'border-amber-200',
-    description: 'Within 1-2 days'
-  },
-  high: { 
-    label: 'High Priority', 
-    icon: Flame, 
-    color: 'text-red-600', 
-    bgColor: 'bg-red-50', 
-    borderColor: 'border-red-200',
-    description: 'Same day preferred'
-  },
-  emergency: { 
-    label: 'Emergency', 
-    icon: AlertTriangle, 
-    color: 'text-red-700', 
-    bgColor: 'bg-red-100', 
-    borderColor: 'border-red-300',
-    description: 'Immediate attention required'
-  }
-};
 
 export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
   onSubmit,
@@ -229,19 +212,7 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
     return (
       <div className="max-w-5xl mx-auto">
         <Card className="p-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-slate-200 rounded-lg mb-6"></div>
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="h-32 bg-slate-200 rounded-xl"></div>
-              <div className="h-32 bg-slate-200 rounded-xl"></div>
-              <div className="h-32 bg-slate-200 rounded-xl"></div>
-            </div>
-            <div className="space-y-4">
-              <div className="h-12 bg-slate-200 rounded-lg"></div>
-              <div className="h-12 bg-slate-200 rounded-lg"></div>
-              <div className="h-24 bg-slate-200 rounded-lg"></div>
-            </div>
-          </div>
+          <LoadingSkeleton type="card" count={3} />
         </Card>
       </div>
     );
@@ -259,158 +230,35 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
           {/* Step 1: Service Category Selection */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center justify-center w-8 h-8 bg-slate-700 text-white rounded-full font-bold text-sm">1</div>
-              <h3 className="text-xl font-semibold text-slate-900">Choose Service Category</h3>
-            </div>
+            <FormStepHeader stepNumber={1} title="Choose Service Category" />
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categories.map((category) => {
-                const isSelected = formData.categoryId === category.id;
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => handleCategoryChange(category.id.toString())}
-                    className={`
-                      relative p-6 rounded-xl border-2 transition-all text-left
-                      hover:shadow-lg
-                      ${isSelected 
-                        ? 'border-slate-700 bg-slate-50 shadow-md' 
-                        : 'border-slate-200 bg-white hover:border-slate-400'
-                      }
-                    `}
-                  >
-                    {isSelected && (
-                      <div className="absolute top-3 right-3">
-                        <div className="w-6 h-6 bg-slate-700 rounded-full flex items-center justify-center">
-                          <CheckCircle2 className="w-4 h-4 text-white" />
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="text-4xl mb-3">{category.icon || '🔧'}</div>
-                    <h4 className="font-semibold text-lg text-slate-900 mb-1">{category.name}</h4>
-                    {category.description && (
-                      <p className="text-sm text-slate-600 line-clamp-2">{category.description}</p>
-                    )}
-                  </button>
-                );
-              })}
+              {categories.map((category) => (
+                <CategorySelectionCard
+                  key={category.id}
+                  category={category}
+                  isSelected={formData.categoryId === category.id}
+                  onSelect={handleCategoryChange}
+                />
+              ))}
             </div>
           </div>
 
           {/* Step 2: Service Tier Selection */}
           {selectedCategory && tiers.length > 0 && (
             <div className="space-y-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-8 h-8 bg-slate-700 text-white rounded-full font-bold text-sm">2</div>
-                <h3 className="text-xl font-semibold text-slate-900">Select Service Tier</h3>
-              </div>
+              <FormStepHeader stepNumber={2} title="Select Service Tier" />
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {tiers.map((tier, index) => {
-                  const isSelected = formData.tierId === tier.id;
-                  const tierColors = [
-                    { bg: 'bg-emerald-50', border: 'border-emerald-200', accent: 'border-l-emerald-400', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: 'text-emerald-600' },
-                    { bg: 'bg-slate-50', border: 'border-slate-200', accent: 'border-l-slate-400', badge: 'bg-slate-100 text-slate-800 border-slate-200', icon: 'text-slate-600' },
-                    { bg: 'bg-amber-50', border: 'border-amber-200', accent: 'border-l-amber-400', badge: 'bg-amber-100 text-amber-800 border-amber-200', icon: 'text-amber-600' }
-                  ];
-                  const colors = tierColors[index % 3];
-                  
-                  return (
-                    <button
-                      key={tier.id}
-                      type="button"
-                      onClick={() => handleTierChange(tier.id.toString())}
-                      className={`
-                        relative p-6 rounded-xl border-2 transition-all text-left overflow-hidden
-                        hover:shadow-lg border-l-4 flex flex-col h-full
-                        ${isSelected 
-                          ? `border-slate-700 ${colors.bg} shadow-lg ${colors.accent}` 
-                          : `${colors.border} bg-white hover:border-slate-400 ${colors.accent}`
-                        }
-                      `}
-                    >
-                      {isSelected && (
-                        <div className="absolute top-4 right-4">
-                          <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center shadow-md">
-                            <CheckCircle2 className="w-5 h-5 text-white" />
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="flex-1 flex flex-col">
-                        <div className={`inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border mb-3 self-start ${colors.badge}`}>
-                          {tier.name}
-                        </div>
-                        
-                        <div className="mb-4">
-                          <div className="text-3xl font-bold text-slate-900">
-                            ${tier.baseHourlyRate}
-                            <span className="text-lg text-slate-600 font-normal">/hour</span>
-                          </div>
-                        </div>
-                        
-                        {tier.description && (
-                          <p className="text-sm text-slate-600 mb-4">{tier.description}</p>
-                        )}
-                        
-                        {/* Features based on tier */}
-                        <div className="space-y-2 text-sm text-slate-700 flex-1">
-                          {index === 0 && (
-                            <>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
-                                <span>Standard service</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
-                                <span>Basic tools & equipment</span>
-                              </div>
-                            </>
-                          )}
-                          {index === 1 && (
-                            <>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
-                                <span>Experienced professionals</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
-                                <span>Advanced tools</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
-                                <span>Faster service</span>
-                              </div>
-                            </>
-                          )}
-                          {index === 2 && (
-                            <>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
-                                <span>Top-tier experts</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
-                                <span>Premium equipment</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
-                                <span>Priority service</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
-                                <span>Extended warranty</span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
+                {tiers.map((tier, index) => (
+                  <TierSelectionCard
+                    key={tier.id}
+                    tier={tier}
+                    isSelected={formData.tierId === tier.id}
+                    tierIndex={index}
+                    onSelect={handleTierChange}
+                  />
+                ))}
               </div>
             </div>
           )}
@@ -418,17 +266,15 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
           {/* Step 3: Service Details */}
           {formData.tierId && (
             <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-8 h-8 bg-slate-700 text-white rounded-full font-bold text-sm">3</div>
-                <h3 className="text-xl font-semibold text-slate-900">Service Details</h3>
-              </div>
+              <FormStepHeader stepNumber={3} title="Service Details" />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Service Title */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Service Title <span className="text-red-600">*</span>
-                  </label>
+                <FormFieldWithLabel
+                  label="Service Title"
+                  required
+                  className="md:col-span-2"
+                >
                   <Input
                     type="text"
                     value={formData.title}
@@ -436,13 +282,14 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                     placeholder="e.g., Fix leaking kitchen faucet"
                     className="w-full text-lg"
                   />
-                </div>
+                </FormFieldWithLabel>
 
                 {/* Service Description */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Description <span className="text-red-600">*</span>
-                  </label>
+                <FormFieldWithLabel
+                  label="Description"
+                  required
+                  className="md:col-span-2"
+                >
                   <textarea
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
@@ -450,13 +297,14 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                     rows={4}
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all text-slate-900 placeholder-slate-400 bg-white"
                   />
-                </div>
+                </FormFieldWithLabel>
 
                 {/* Address */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Service Address <span className="text-red-600">*</span>
-                  </label>
+                <FormFieldWithLabel
+                  label="Service Address"
+                  required
+                  className="md:col-span-2"
+                >
                   <Input
                     type="text"
                     value={formData.address}
@@ -464,27 +312,27 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                     placeholder="Enter the address where service is needed"
                     className="w-full"
                   />
-                </div>
+                </FormFieldWithLabel>
 
                 {/* Preferred Date */}
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Preferred Date & Time
-                  </label>
+                <FormFieldWithLabel
+                  label="Preferred Date & Time"
+                  helpText="When would you like the service to be done?"
+                >
                   <Input
                     type="datetime-local"
                     value={formData.preferredDate}
                     onChange={(e) => handleInputChange('preferredDate', e.target.value)}
                     className="w-full"
                   />
-                  <p className="text-xs text-slate-500 mt-1">When would you like the service to be done?</p>
-                </div>
+                </FormFieldWithLabel>
 
                 {/* Estimated Hours */}
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Estimated Hours <span className="text-red-600">*</span>
-                  </label>
+                <FormFieldWithLabel
+                  label="Estimated Hours"
+                  required
+                  helpText="How many hours do you think this will take?"
+                >
                   <Input
                     type="number"
                     min="0.5"
@@ -492,9 +340,7 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                     value={formData.estimatedHours.toString()}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Allow empty string and any number while typing
                       if (value === '' || value === '0') {
-                        // Store 0 temporarily to allow user to type
                         handleInputChange('estimatedHours', 0);
                       } else {
                         const parsed = parseFloat(value);
@@ -502,7 +348,6 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                       }
                     }}
                     onBlur={(e) => {
-                      // Enforce minimum value of 1 when user leaves the field
                       const value = parseFloat(e.target.value);
                       if (isNaN(value) || value < 1) {
                         handleInputChange('estimatedHours', 1);
@@ -510,76 +355,30 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                     }}
                     className="w-full"
                   />
-                  <p className="text-xs text-gray-500 mt-1">How many hours do you think this will take?</p>
-                </div>
+                </FormFieldWithLabel>
 
                 {/* Urgency Level */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">
-                    Urgency Level
-                  </label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {(Object.keys(urgencyConfig) as Array<keyof typeof urgencyConfig>).map((urgencyKey) => {
-                      const config = urgencyConfig[urgencyKey];
-                      const isSelected = formData.urgency === urgencyKey;
-                      const IconComponent = config.icon;
-                      
-                      return (
-                        <button
-                          key={urgencyKey}
-                          type="button"
-                          onClick={() => handleInputChange('urgency', urgencyKey)}
-                          className={`
-                            p-4 rounded-xl border-2 transition-all text-center
-                            hover:shadow-md
-                            ${isSelected 
-                              ? `${config.borderColor} ${config.bgColor} shadow-md` 
-                              : 'border-slate-200 bg-white hover:border-slate-300'
-                            }
-                          `}
-                        >
-                          <div className="flex justify-center mb-2">
-                            <IconComponent className={`w-8 h-8 ${isSelected ? config.color : 'text-slate-400'}`} />
-                          </div>
-                          <div className={`font-semibold text-sm mb-1 ${isSelected ? config.color : 'text-slate-700'}`}>
-                            {config.label}
-                          </div>
-                          <div className="text-xs text-slate-500">{config.description}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                <FormFieldWithLabel
+                  label="Urgency Level"
+                  className="md:col-span-2"
+                >
+                  <UrgencySelector
+                    value={formData.urgency}
+                    onChange={(urgency) => handleInputChange('urgency', urgency)}
+                  />
+                </FormFieldWithLabel>
               </div>
             </div>
           )}
 
           {/* Cost Estimate */}
           {selectedTier && formData.tierId && (
-            <div className="bg-slate-50 p-6 rounded-xl border-2 border-slate-200">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-lg text-slate-900 mb-2 flex items-center gap-2">
-                    <DollarSign className="w-6 h-6 text-slate-600" />
-                    Cost Estimate
-                  </h3>
-                  <div className="text-3xl font-bold text-slate-900 mb-2">
-                    ${estimatedCost.toFixed(2)}
-                  </div>
-                  <p className="text-slate-700">
-                    {hours.toFixed(1)} hours × ${baseRate.toFixed(2)}/hour
-                  </p>
-                  <p className="text-sm text-slate-600 mt-3 flex items-center gap-1">
-                    <Info className="w-4 h-4" />
-                    <span>Final cost may vary based on actual work required</span>
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                  <div className="text-xs text-slate-500 mb-1">Selected Tier</div>
-                  <div className="font-semibold text-slate-700">{selectedTier?.name || 'N/A'}</div>
-                </div>
-              </div>
-            </div>
+            <CostEstimateCard
+              totalCost={estimatedCost}
+              hours={hours}
+              hourlyRate={baseRate}
+              tierName={selectedTier.name}
+            />
           )}
 
           {/* Form Actions */}

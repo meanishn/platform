@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, Button, Badge } from '../../components/ui';
+import { Card, Button, Badge, FilterButtonGroup, SortDropdown } from '../../components/ui';
 import { 
   MatchBadge, 
   StatCard, 
@@ -224,58 +224,28 @@ export const AvailableJobsEnhanced: React.FC = () => {
 
       {/* Filters and Sort */}
       <div className="flex flex-col md:flex-row gap-4">
-        {/* Filters */}
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            variant={filter === 'all' ? 'primary' : 'outline'}
-            onClick={() => setFilter('all')}
-            size="sm"
-          >
-            All ({jobs.length})
-          </Button>
-          <Button
-            variant={filter === 'nearby' ? 'primary' : 'outline'}
-            onClick={() => setFilter('nearby')}
-            size="sm"
-            className="flex items-center gap-1.5"
-          >
-            <MapPin className="w-4 h-4" strokeWidth={2} />
-            <span>Nearby ({nearbyCount})</span>
-          </Button>
-          <Button
-            variant={filter === 'high-match' ? 'primary' : 'outline'}
-            onClick={() => setFilter('high-match')}
-            size="sm"
-            className="flex items-center gap-1.5"
-          >
-            <Trophy className="w-4 h-4" strokeWidth={2} />
-            <span>High Match ({highMatchCount})</span>
-          </Button>
-          <Button
-            variant={filter === 'urgent' ? 'primary' : 'outline'}
-            onClick={() => setFilter('urgent')}
-            size="sm"
-            className="flex items-center gap-1.5"
-          >
-            <Zap className="w-4 h-4" strokeWidth={2} />
-            <span>Urgent</span>
-          </Button>
-        </div>
+        <FilterButtonGroup
+          options={[
+            { value: 'all', label: 'All', count: jobs.length },
+            { value: 'nearby', label: 'Nearby', icon: MapPin, count: nearbyCount },
+            { value: 'high-match', label: 'High Match', icon: Trophy, count: highMatchCount },
+            { value: 'urgent', label: 'Urgent', icon: Zap },
+          ]}
+          activeFilter={filter}
+          onChange={(value) => setFilter(value as FilterType)}
+        />
 
-        {/* Sort */}
-        <div className="flex items-center gap-2 ml-auto">
-          <span className="text-slate-600 text-sm whitespace-nowrap">Sort by:</span>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortType)}
-            className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="match-score">Match Score</option>
-            <option value="distance">Distance</option>
-            <option value="posted-date">Posted Date</option>
-            <option value="urgency">Urgency</option>
-          </select>
-        </div>
+        <SortDropdown
+          options={[
+            { value: 'match-score', label: 'Match Score' },
+            { value: 'distance', label: 'Distance' },
+            { value: 'posted-date', label: 'Posted Date' },
+            { value: 'urgency', label: 'Urgency' },
+          ]}
+          value={sortBy}
+          onChange={(value) => setSortBy(value as SortType)}
+          className="ml-auto"
+        />
       </div>
 
       {/* Jobs List */}

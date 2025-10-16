@@ -24,6 +24,34 @@ export { UpcomingJobCard } from './UpcomingJobCard';
 export { TabFilter } from './TabFilter';
 export type { TabOption } from './TabFilter';
 
+// Filter, Search, and Sort components
+export { SearchBar } from './SearchBar';
+export type { SearchBarProps } from './SearchBar';
+export { FilterButtonGroup } from './FilterButtonGroup';
+export type { FilterButtonGroupProps, FilterOption } from './FilterButtonGroup';
+export { SortDropdown } from './SortDropdown';
+export type { SortDropdownProps, SortOption } from './SortDropdown';
+
+// Provider-related UI components
+export { ProviderRating } from './ProviderRating';
+export type { ProviderRatingProps } from './ProviderRating';
+export { ProviderStatsGrid } from './ProviderStatsGrid';
+export type { ProviderStatsGridProps, StatItem } from './ProviderStatsGrid';
+
+// Form components
+export { FormStepHeader } from './FormStepHeader';
+export type { FormStepHeaderProps } from './FormStepHeader';
+export { FormFieldWithLabel } from './FormFieldWithLabel';
+export type { FormFieldWithLabelProps } from './FormFieldWithLabel';
+export { CategorySelectionCard } from './CategorySelectionCard';
+export type { CategorySelectionCardProps } from './CategorySelectionCard';
+export { TierSelectionCard } from './TierSelectionCard';
+export type { TierSelectionCardProps } from './TierSelectionCard';
+export { UrgencySelector, urgencyOptions } from './UrgencySelector';
+export type { UrgencySelectorProps, UrgencyLevel, UrgencyOption } from './UrgencySelector';
+export { CostEstimateCard } from './CostEstimateCard';
+export type { CostEstimateCardProps } from './CostEstimateCard';
+
 export type { StatCardProps } from './StatCard';
 export type { InfoBannerProps } from './InfoBanner';
 export type { EmptyStateProps } from './EmptyState';
