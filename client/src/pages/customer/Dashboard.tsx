@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Card } from '../../components/ui';
-import { customerApi } from '../../services/realApi';
-import type { CustomerStatsDto, ActivityItemDto } from '../../types/api';
-import {
-  DashboardStatCard,
+import { 
+  Card,
+  StatCard,
   LoadingSkeleton,
   PageHeader,
   ActivityList,
-  QuickActionsCard
+  QuickActionsCard,
+  PageContainer,
+  SectionHeader,
+  FeaturedActionCard,
 } from '../../components/ui';
+import { customerApi } from '../../services/realApi';
+import type { CustomerStatsDto, ActivityItemDto } from '../../types/api';
 import { HelpCard } from '../../components/customer';
-import { ClipboardList, CheckCircle2, DollarSign, Star, Search, User, MessageCircle } from 'lucide-react';
+import { ClipboardList, CheckCircle2, DollarSign, Star, User, MessageCircle, Sparkles } from 'lucide-react';
+import { responsiveGrids, responsiveSpacing } from '../../styles/responsive.config';
 
 export const CustomerDashboard: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<CustomerStatsDto>({
     activeRequests: 0,
     completedJobs: 0,
@@ -61,34 +67,33 @@ export const CustomerDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-        <PageHeader
-          title={`Welcome back, ${user?.firstName}!`}
-          description="Here's what's happening with your services"
-        />
+    <PageContainer maxWidth="7xl">
+      <PageHeader
+        title={`Welcome back, ${user?.firstName}!`}
+        description="Here's what's happening with your services"
+      />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
-        <DashboardStatCard
+      {/* Stats Cards - Show overview first for context */}
+      <div className={responsiveGrids.stats4}>
+        <StatCard
           icon={ClipboardList}
           label="Active Requests"
           value={stats.activeRequests}
           colorScheme="blue"
         />
-        <DashboardStatCard
+        <StatCard
           icon={CheckCircle2}
           label="Completed Jobs"
           value={stats.completedJobs}
           colorScheme="green"
         />
-        <DashboardStatCard
+        <StatCard
           icon={DollarSign}
           label="Total Spent"
           value={`$${stats.totalSpent.toLocaleString()}`}
           colorScheme="yellow"
         />
-        <DashboardStatCard
+        <StatCard
           icon={Star}
           label="Pending Reviews"
           value={stats.pendingReviews}
@@ -96,19 +101,36 @@ export const CustomerDashboard: React.FC = () => {
         />
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+      {/* Featured Primary Action - Request a Service */}
+      <FeaturedActionCard
+        icon={Sparkles}
+        title="Need a Service?"
+        description="Submit your service request and we'll automatically match you with qualified providers"
+        variant="primary"
+        primaryAction={{
+          label: 'Request Service',
+          onClick: () => navigate('/request-service'),
+        }}
+        secondaryAction={{
+          label: 'View My Requests',
+          onClick: () => navigate('/my-requests'),
+        }}
+      />
+
+      {/* Quick Actions & Help */}
+      <div className={responsiveGrids.content3}>
         <div className="lg:col-span-2">
           <Card>
-            <QuickActionsCard
-              title="Quick Actions"
-              actions={[
-                { icon: Search, label: 'Browse Services', href: '/services' },
-                { icon: ClipboardList, label: 'My Requests', href: '/my-requests' },
-                { icon: User, label: 'Edit Profile', href: '/profile' },
-                { icon: MessageCircle, label: 'Get Support', href: '/support' }
-              ]}
-            />
+            <div className={responsiveSpacing.cardPadding}>
+              <QuickActionsCard
+                title="Quick Actions"
+                actions={[
+                  { icon: ClipboardList, label: 'My Requests', href: '/my-requests' },
+                  { icon: User, label: 'Edit Profile', href: '/profile' },
+                  { icon: MessageCircle, label: 'Get Support', href: '/support' }
+                ]}
+              />
+            </div>
           </Card>
         </div>
 
@@ -118,11 +140,11 @@ export const CustomerDashboard: React.FC = () => {
             description="Our support team is here to help you find the right service providers."
             primaryAction={{
               label: 'Contact Support',
-              onClick: () => window.location.href = '/support'
+              onClick: () => navigate('/support')
             }}
             secondaryAction={{
               label: 'View FAQ',
-              onClick: () => window.location.href = '/faq'
+              onClick: () => navigate('/faq')
             }}
           />
         </div>
@@ -130,10 +152,8 @@ export const CustomerDashboard: React.FC = () => {
 
       {/* Recent Activity */}
       <Card>
-        <div className="p-4 sm:p-6">
-          <h3 className="text-lg font-medium text-slate-900 mb-4">
-            Recent Activity
-          </h3>
+        <div className={responsiveSpacing.cardPadding}>
+          <SectionHeader title="Recent Activity" />
           <ActivityList
             activities={recentActivity.map(activity => ({
               ...activity,
@@ -144,7 +164,6 @@ export const CustomerDashboard: React.FC = () => {
           />
         </div>
       </Card>
-      </div>
-    </div>
+    </PageContainer>
   );
 };

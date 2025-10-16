@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button, Badge } from '../../components/ui';
+import { Card, Button, Badge, PageContainer } from '../../components/ui';
 import { 
   MatchBadge, 
   JobDetailItem, 
@@ -91,8 +91,7 @@ export const AcceptedJobs: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+    <PageContainer maxWidth="7xl">
         {/* Header */}
         <PageHeader
           title="Accepted Jobs - Pending Selection"
@@ -116,7 +115,8 @@ export const AcceptedJobs: React.FC = () => {
       {jobs.length > 0 ? (
         <div className="space-y-4">
           {jobs.map((job) => (
-            <Card key={job.id} className="p-6 bg-white border-slate-200 hover:border-slate-300 transition-colors">
+            <Card key={job.id} className="bg-white border-slate-200 hover:border-slate-300 transition-colors">
+              <div className="p-5">
               {/* Status Badge */}
               <div className="flex items-center justify-between mb-4">
                 <Badge variant="warning" className="text-sm flex items-center gap-1.5">
@@ -212,6 +212,7 @@ export const AcceptedJobs: React.FC = () => {
                   <span>Decline Offer</span>
                 </Button>
               </div>
+              </div>
             </Card>
           ))}
         </div>
@@ -232,7 +233,6 @@ export const AcceptedJobs: React.FC = () => {
 
       {/* Decline Confirmation Modal */}
       {ConfirmationModalComponent}
-      </div>
-    </div>
+    </PageContainer>
   );
 };

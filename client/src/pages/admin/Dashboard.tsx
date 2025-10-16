@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RoleGuard } from '../../components/auth/RoleGuard';
-import { LoadingSkeleton, PageHeader } from '../../components/ui';
+import { LoadingSkeleton, PageHeader, PageContainer } from '../../components/ui';
 import { 
   AdminStatCard, 
   AdminQuickActionsGrid, 
@@ -11,6 +11,7 @@ import {
   type PendingAction
 } from '../../components/admin';
 import { adminApi } from '../../services/realApi';
+import { responsiveGrids } from '../../styles/responsive.config';
 
 interface AdminStats {
   totalUsers: number;
@@ -117,15 +118,14 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <RoleGuard allowedRoles={['admin']}>
-      <div className="min-h-screen bg-slate-50">
-        <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+      <PageContainer maxWidth="7xl">
           <PageHeader
             title="Admin Dashboard"
             description="Platform overview and management"
           />
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-6">
+          <div className={responsiveGrids.adminStats}>
             <AdminStatCard
               label="Total Users"
               value={stats.totalUsers.toLocaleString()}
@@ -174,12 +174,11 @@ export const AdminDashboard: React.FC = () => {
           <AdminQuickActionsGrid actions={quickActions} />
 
           {/* Activity Feed and Pending Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className={responsiveGrids.content2}>
             <AdminActivityFeed activities={recentActivity} />
             <AdminPendingActions actions={pendingActions} />
           </div>
-        </div>
-      </div>
+      </PageContainer>
     </RoleGuard>
   );
 };

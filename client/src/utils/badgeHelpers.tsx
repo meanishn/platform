@@ -1,39 +1,48 @@
 /**
  * Badge Helper Utilities
  * 
- * Extracted from MyRequestsNew to centralize status and urgency badge logic.
- * These utilities provide consistent badge rendering across the application.
+ * UNIFIED: Centralized badge rendering for all service request status and urgency badges.
+ * Provides consistent badge styling across the entire application.
+ * Following design system and refactor guidelines.
  */
 
 import React from 'react';
 import { Badge } from '../components/ui';
 import { 
-  Clock, 
-  CheckCircle, 
-  CheckCircle2, 
-  XCircle, 
+  Hourglass, 
+  Check, 
   Hammer, 
-  AlertCircle 
+  CheckCircle2, 
+  X, 
+  AlertTriangle, 
+  AlertCircle, 
+  Circle 
 } from 'lucide-react';
 
 /**
  * Get status badge component for service request status
+ * Used across: MyRequestsNew, RequestDetail, ServiceRequestCard
  */
 export const getStatusBadge = (status: string) => {
-  const configs: Record<string, { variant: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info', label: string, IconComponent: typeof Clock }> = {
-    pending: { variant: 'warning', label: 'Awaiting Providers', IconComponent: Clock },
-    assigned: { variant: 'info', label: 'Provider Assigned', IconComponent: CheckCircle },
+  const configs: Record<string, { 
+    variant: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info', 
+    label: string, 
+    IconComponent: typeof Hourglass 
+  }> = {
+    pending: { variant: 'warning', label: 'Awaiting Providers', IconComponent: Hourglass },
+    assigned: { variant: 'info', label: 'Provider Assigned', IconComponent: Check },
     in_progress: { variant: 'primary', label: 'In Progress', IconComponent: Hammer },
     completed: { variant: 'success', label: 'Completed', IconComponent: CheckCircle2 },
-    cancelled: { variant: 'danger', label: 'Cancelled', IconComponent: XCircle },
+    cancelled: { variant: 'danger', label: 'Cancelled', IconComponent: X },
   };
   
-  const config = configs[status] || { variant: 'default' as const, label: status, IconComponent: AlertCircle };
+  const config = configs[status] || { variant: 'default' as const, label: status, IconComponent: Circle };
+  const Icon = config.IconComponent;
   
   return (
     <Badge variant={config.variant} size="sm">
       <span className="inline-flex items-center gap-1.5">
-        <config.IconComponent className="w-3.5 h-3.5" strokeWidth={2} />
+        <Icon className="w-3.5 h-3.5" strokeWidth={2} />
         <span>{config.label}</span>
       </span>
     </Badge>
@@ -42,21 +51,26 @@ export const getStatusBadge = (status: string) => {
 
 /**
  * Get urgency badge component for service request urgency level
+ * Used across: MyRequestsNew, RequestDetail, ServiceRequestCard, AssignmentDetail
  */
 export const getUrgencyBadge = (urgency: string) => {
-  const configs: Record<string, { variant: 'default' | 'primary' | 'success' | 'warning' | 'danger', IconComponent: typeof AlertCircle }> = {
-    emergency: { variant: 'danger', IconComponent: AlertCircle },
+  const configs: Record<string, { 
+    variant: 'default' | 'primary' | 'success' | 'warning' | 'danger', 
+    IconComponent: typeof AlertTriangle 
+  }> = {
+    emergency: { variant: 'danger', IconComponent: AlertTriangle },
     high: { variant: 'danger', IconComponent: AlertCircle },
     medium: { variant: 'warning', IconComponent: AlertCircle },
-    low: { variant: 'success', IconComponent: CheckCircle },
+    low: { variant: 'success', IconComponent: Circle },
   };
   
-  const config = configs[urgency] || { variant: 'default' as const, IconComponent: AlertCircle };
+  const config = configs[urgency] || { variant: 'default' as const, IconComponent: Circle };
+  const Icon = config.IconComponent;
   
   return (
     <Badge variant={config.variant} size="sm">
       <span className="inline-flex items-center gap-1.5">
-        <config.IconComponent className="w-3.5 h-3.5" strokeWidth={2} />
+        <Icon className="w-3.5 h-3.5" strokeWidth={2} />
         <span className="capitalize">{urgency}</span>
       </span>
     </Badge>

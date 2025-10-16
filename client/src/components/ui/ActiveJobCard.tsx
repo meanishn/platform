@@ -6,8 +6,10 @@
 
 import React, { useMemo } from 'react';
 import { Button } from './Button';
+import { DetailRow } from './DetailRow';
+import { ContactActionRow } from './ContactActionRow';
 import { formatDistanceToNow } from 'date-fns';
-import { Clock, Hourglass, MapPin, User, Phone, Mail, CheckCircle, Hammer, Target } from 'lucide-react';
+import { Clock, Hourglass, MapPin, User, Phone, Mail, CheckCircle, Hammer, Target, FileText, AlertTriangle } from 'lucide-react';
 
 interface CustomerInfo {
   name: string;
@@ -21,6 +23,7 @@ interface CustomerInfo {
 interface ActiveJobCardProps {
   id: number;
   title: string;
+  description?: string;
   location: string;
   startedAt: string;
   estimatedHours?: number;
@@ -32,8 +35,9 @@ interface ActiveJobCardProps {
 }
 
 export const ActiveJobCard: React.FC<ActiveJobCardProps> = ({
-  id,
+  // id prop kept in interface for parent components but not used in display
   title,
+  description,
   location,
   startedAt,
   estimatedHours,
@@ -75,46 +79,38 @@ export const ActiveJobCard: React.FC<ActiveJobCardProps> = ({
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-slate-900 truncate mb-1">{title}</h3>
-            <p className="text-sm text-slate-600">#{id}</p>
+            {description && (
+              <p className="text-sm text-slate-600 truncate leading-normal">{description}</p>
+            )}
           </div>
         </div>
 
         <div className="space-y-2 text-sm mb-4">
-          <div className="flex items-center gap-2 text-slate-700">
-            <Clock className="w-4 h-4 text-slate-600" strokeWidth={2} />
-            <span>Started: {timeInfo.elapsed} ago</span>
-          </div>
+          <DetailRow icon={Clock}>Started: {timeInfo.elapsed} ago</DetailRow>
           {timeInfo.remaining && (
-            <div className="flex items-center gap-2 text-slate-700">
-              <Hourglass className="w-4 h-4 text-slate-600" strokeWidth={2} />
-              <span>{timeInfo.remaining} {timeInfo.total}</span>
-            </div>
+            <DetailRow icon={Hourglass}>{timeInfo.remaining} {timeInfo.total}</DetailRow>
           )}
-          <div className="flex items-center gap-2 text-slate-700">
-            <MapPin className="w-4 h-4 text-slate-600" strokeWidth={2} />
+          <DetailRow icon={MapPin}>
             <span className="truncate">{location}</span>
-          </div>
-          <div className="flex items-center gap-2 text-slate-700">
-            <User className="w-4 h-4 text-slate-600" strokeWidth={2} />
-            <span>
-              {customer.name} {customer.rating && `★ ${customer.rating}`}
-            </span>
-          </div>
+          </DetailRow>
+          <DetailRow icon={User}>
+            {customer.name} {customer.rating && `★ ${customer.rating}`}
+          </DetailRow>
           {customer.phone && (
-            <div className="flex items-center gap-2 text-slate-700">
-              <Phone className="w-4 h-4 text-slate-600" strokeWidth={2} />
+            <DetailRow icon={Phone}>
               <a href={`tel:${customer.phone}`} className="text-slate-700 hover:text-slate-900 hover:underline">
                 {customer.phone}
               </a>
-            </div>
+            </DetailRow>
           )}
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={onComplete} size="sm" className="flex-1">
-            Complete
+          <Button onClick={onComplete} variant="primary" size="sm" className="flex-1 flex items-center justify-center gap-1.5">
+            <CheckCircle className="w-4 h-4" strokeWidth={2} />
+            <span>Complete</span>
           </Button>
-          <Button onClick={onViewDetails} variant="outline" size="sm">
+          <Button onClick={onViewDetails} variant="outline" size="sm" className="flex items-center justify-center gap-1.5">
             Details
           </Button>
         </div>
@@ -129,7 +125,9 @@ export const ActiveJobCard: React.FC<ActiveJobCardProps> = ({
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-bold text-slate-900 mb-1">{title}</h2>
-            <p className="text-sm text-slate-600">Request #{id}</p>
+            {description && (
+              <p className="text-sm text-slate-600 truncate leading-normal">{description}</p>
+            )}
           </div>
           <div className="ml-4">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-sm font-medium border border-amber-200">
@@ -195,10 +193,7 @@ export const ActiveJobCard: React.FC<ActiveJobCardProps> = ({
           <h3 className="font-semibold text-slate-900 mb-3">Customer</h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-slate-700 flex items-center gap-1.5">
-                <User className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                <span>{customer.name}</span>
-              </span>
+              <DetailRow icon={User}>{customer.name}</DetailRow>
               {customer.rating && (
                 <span className="text-sm text-slate-600">
                   ★ {customer.rating} {customer.reviewCount && `(${customer.reviewCount} reviews)`}
@@ -207,27 +202,20 @@ export const ActiveJobCard: React.FC<ActiveJobCardProps> = ({
             </div>
             
             {customer.phone && (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-slate-700 flex items-center gap-1.5">
-                  <Phone className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                  <span>{customer.phone}</span>
-                </span>
-                <a href={`tel:${customer.phone}`}>
-                  <Button size="sm" variant="outline">Call Now</Button>
-                </a>
-              </div>
+              <ContactActionRow
+                icon={Phone}
+                value={customer.phone}
+                action={{ label: 'Call Now', href: `tel:${customer.phone}` }}
+              />
             )}
             
             {customer.email && (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-slate-700 truncate flex items-center gap-1.5">
-                  <Mail className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                  <span className="truncate">{customer.email}</span>
-                </span>
-                <a href={`mailto:${customer.email}`}>
-                  <Button size="sm" variant="outline">Message</Button>
-                </a>
-              </div>
+              <ContactActionRow
+                icon={Mail}
+                value={customer.email}
+                action={{ label: 'Message', href: `mailto:${customer.email}` }}
+                truncate
+              />
             )}
 
             {customer.notes && (
@@ -241,15 +229,17 @@ export const ActiveJobCard: React.FC<ActiveJobCardProps> = ({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button onClick={onComplete} className="flex-1 sm:flex-initial">
+          <Button onClick={onComplete} variant="primary" className="flex-1 sm:flex-initial flex items-center justify-center gap-2">
             <CheckCircle className="w-4 h-4" strokeWidth={2} />
             <span>Complete Job</span>
           </Button>
-          <Button onClick={onViewDetails} variant="outline" className="flex-1 sm:flex-initial">
-            View Full Details
+          <Button onClick={onViewDetails} variant="outline" className="flex-1 sm:flex-initial flex items-center justify-center gap-2">
+            <FileText className="w-4 h-4" strokeWidth={2} />
+            <span>View Full Details</span>
           </Button>
-          <Button onClick={onCancel} variant="danger" className="flex-1 sm:flex-initial">
-            Emergency Cancel
+          <Button onClick={onCancel} variant="danger" className="flex-1 sm:flex-initial flex items-center justify-center gap-2">
+            <AlertTriangle className="w-4 h-4" strokeWidth={2} />
+            <span>Emergency Cancel</span>
           </Button>
         </div>
       </div>

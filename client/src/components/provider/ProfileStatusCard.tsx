@@ -3,11 +3,13 @@
  * 
  * Extracted from Provider Dashboard to encapsulate profile status display.
  * Shows provider profile completion and verification status.
+ * Fully responsive with mobile-first design.
  */
 
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Button, Badge } from '../ui';
+import { responsiveSpacing, responsiveTypography } from '../../styles/responsive.config';
 
 export interface ProfileStatus {
   completionPercentage: number;
@@ -38,22 +40,22 @@ export const ProfileStatusCard: React.FC<ProfileStatusCardProps> = ({
 
   return (
     <Card>
-      <div className="p-4 sm:p-6">
-        <h3 className="text-lg font-medium text-slate-900 mb-4">
+      <div className={responsiveSpacing.cardPadding}>
+        <h3 className={`${responsiveTypography.subsectionHeading} mb-3 sm:mb-4`}>
           Profile Status
         </h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-700">Profile Complete</span>
+        <div className="space-y-2 sm:space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className={`${responsiveTypography.bodyPrimary}`}>Profile Complete</span>
             <Badge variant="success" size="sm">{status.completionPercentage}%</Badge>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-700">Verification</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className={`${responsiveTypography.bodyPrimary}`}>Verification</span>
             {getVerificationBadge()}
           </div>
-          <div className="mt-4">
+          <div className="mt-3 sm:mt-4">
             <Link to={editProfileHref}>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button variant="outline" size="sm" className="w-full text-xs sm:text-sm">
                 Complete Profile
               </Button>
             </Link>

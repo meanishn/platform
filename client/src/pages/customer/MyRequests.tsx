@@ -18,10 +18,11 @@ import {
   SearchBar,
   FilterButtonGroup,
   EmptyState,
+  PageContainer,
+  StatCard,
 } from '../../components/ui';
 import { 
   AcceptedProvidersModal, 
-  FilterStatCard, 
   ServiceRequestCard 
 } from '../../components/customer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -214,10 +215,9 @@ export const MyRequests: React.FC = () => {
   const completedCount = requests.filter(r => r.status === 'completed').length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+    <PageContainer maxWidth="7xl">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <PageHeader
           title="My Service Requests"
           description="Manage and track your service requests"
@@ -244,34 +244,34 @@ export const MyRequests: React.FC = () => {
       </div>
         
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-        <FilterStatCard
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard
           label="Pending"
-          count={pendingCount}
+          value={pendingCount}
           icon={Clock}
           colorScheme="blue"
           isActive={filter === 'pending'}
           onClick={() => setFilter('pending')}
         />
-        <FilterStatCard
+        <StatCard
           label="Active"
-          count={inProgressCount}
+          value={inProgressCount}
           icon={Hammer}
           colorScheme="amber"
           isActive={filter === 'in_progress'}
           onClick={() => setFilter('in_progress')}
         />
-        <FilterStatCard
+        <StatCard
           label="Completed"
-          count={completedCount}
+          value={completedCount}
           icon={CheckCircle2}
           colorScheme="emerald"
           isActive={filter === 'completed'}
           onClick={() => setFilter('completed')}
         />
-        <FilterStatCard
+        <StatCard
           label="Total"
-          count={requests.length}
+          value={requests.length}
           icon={BarChart3}
           colorScheme="slate"
           isActive={filter === 'all'}
@@ -280,12 +280,12 @@ export const MyRequests: React.FC = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-2">
+      <div className="flex flex-col gap-3">
         <SearchBar
           value={searchTerm}
           onChange={setSearchTerm}
           placeholder="Search by title, category, or location..."
-          className="flex-1"
+          className="w-full"
         />
         <FilterButtonGroup
           options={[
@@ -297,12 +297,11 @@ export const MyRequests: React.FC = () => {
           ]}
           activeFilter={filter}
           onChange={setFilter}
-          className="overflow-x-auto pb-1 sm:pb-0"
         />
       </div>
 
       {/* Requests List */}
-      <div className="pt-2">
+      <div>
         {filteredRequests.length > 0 ? (
           <div className="space-y-3">
             {filteredRequests.map((request) => (
@@ -346,7 +345,6 @@ export const MyRequests: React.FC = () => {
       
       {/* Cancel Request Confirmation Modal */}
       {CancelConfirmationModal}
-      </div>
-    </div>
+    </PageContainer>
   );
 };

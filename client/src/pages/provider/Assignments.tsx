@@ -13,6 +13,11 @@ import {
   ActiveJobCard,
   UpcomingJobCard,
   TabFilter,
+  PageContainer,
+  SectionHeaderWithCount,
+  InfoAlert,
+  DividerWithText,
+  InlineBadge,
   type TabOption 
 } from '../../components/ui';
 import { JobDetailsModal } from '../../components/provider';
@@ -20,7 +25,7 @@ import { providerApi } from '../../services/realApi';
 import { useNotificationService } from '../../services/notificationService';
 import { useConfirmationModal } from '../../hooks';
 import type { ProviderAssignmentDto } from '../../types/api';
-import { Hammer, CheckCircle2, AlertTriangle, RefreshCw, Sparkles, ClipboardList, ArrowDown, Zap, Lightbulb } from 'lucide-react';
+import { Hammer, CheckCircle2, AlertTriangle, RefreshCw, Sparkles, ClipboardList, ArrowDown, Zap, Lightbulb, History } from 'lucide-react';
 
 type ViewMode = 'split' | 'ongoing' | 'upcoming';
 
@@ -236,13 +241,10 @@ export const ProviderAssignments: React.FC = () => {
   // Empty state - no jobs at all
   if (ongoingJobs.length === 0 && upcomingJobs.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-          <div className="mb-4 sm:mb-6">
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Active Work</h1>
-          </div>
+      <PageContainer maxWidth="7xl">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight mb-6">Active Work</h1>
 
-          <EmptyState
+        <EmptyState
           icon={Sparkles}
           title="You're all caught up!"
           description="No ongoing or upcoming jobs"
@@ -252,8 +254,8 @@ export const ProviderAssignments: React.FC = () => {
           }}
         />
         
-        <div className="mt-4 text-center">
-          <p className="text-slate-600 mb-3">Ready to take on new work?</p>
+        <div className="mt-6 text-center">
+          <p className="text-sm text-slate-600 mb-3">Ready to take on new work?</p>
           <Link to="/provider/jobs/accepted">
             <Button variant="outline">
               View Accepted Jobs
@@ -262,8 +264,7 @@ export const ProviderAssignments: React.FC = () => {
         </div>
 
         {ConfirmationModalComponent}
-        </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -273,16 +274,17 @@ export const ProviderAssignments: React.FC = () => {
   const showUpcomingOnly = viewMode === 'upcoming' || (viewMode === 'split' && ongoingJobs.length === 0 && upcomingJobs.length > 0);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+    <PageContainer maxWidth="7xl">
         {/* Header with tabs */}
-        <div className="mb-4 sm:mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-            <h1 className="text-2xl font-bold text-slate-900">Active Work</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">Active Work</h1>
           
           <div className="flex gap-3">
             <Link to="/provider/history">
-              <Button variant="outline" size="sm">View History</Button>
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <History className="w-4 h-4" strokeWidth={2} />
+                <span>View History</span>
+              </Button>
             </Link>
           </div>
         </div>
@@ -295,23 +297,25 @@ export const ProviderAssignments: React.FC = () => {
             onChange={(tabId) => setViewMode(tabId as ViewMode)}
           />
         )}
-      </div>
 
       {/* Split View - Desktop (both ongoing and upcoming) */}
       {showSplitView && (
         <div className="hidden lg:grid lg:grid-cols-2 gap-4 mb-6">
           {/* Ongoing Jobs Column */}
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <Hammer className="w-5 h-5 text-amber-600" strokeWidth={2} />
-              <span>IN PROGRESS ({ongoingJobs.length})</span>
-            </h2>
+            <SectionHeaderWithCount
+              icon={Hammer}
+              iconColor="text-amber-600"
+              title="IN PROGRESS"
+              count={ongoingJobs.length}
+            />
             <div className="space-y-3">
               {ongoingJobs.map((assignment) => (
                 <ActiveJobCard
                   key={assignment.id}
                   id={assignment.request.id}
                   title={assignment.request.title}
+                  description={assignment.request.description}
                   location={assignment.request.address}
                   startedAt={assignment.respondedAt || assignment.notifiedAt}
                   estimatedHours={assignment.request.estimatedHours}
@@ -327,16 +331,18 @@ export const ProviderAssignments: React.FC = () => {
 
           {/* Upcoming Jobs Column */}
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-slate-600" strokeWidth={2} />
-              <span>UPCOMING ({upcomingJobs.length})</span>
-            </h2>
+            <SectionHeaderWithCount
+              icon={ClipboardList}
+              title="UPCOMING"
+              count={upcomingJobs.length}
+            />
             <div className="space-y-3">
               {upcomingJobs.map((assignment) => (
                 <UpcomingJobCard
                   key={assignment.id}
                   id={assignment.request.id}
                   title={assignment.request.title}
+                  description={assignment.request.description}
                   location={assignment.request.address}
                   startTime={assignment.request.preferredDate || new Date().toISOString()}
                   estimatedHours={assignment.request.estimatedHours}
@@ -359,45 +365,35 @@ export const ProviderAssignments: React.FC = () => {
         <div className="lg:hidden space-y-6">
           {/* Ongoing Jobs */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Hammer className="w-5 h-5 text-amber-600" strokeWidth={2} />
-                <span>IN PROGRESS</span>
-              </h2>
-              {upcomingJobs.length > 0 && (
-                <span className="px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-medium flex items-center gap-1 border border-slate-200">
-                  <ClipboardList className="w-3.5 h-3.5" strokeWidth={2} />
-                  <span>Next: {upcomingJobs.length}</span>
-                </span>
+            <SectionHeaderWithCount
+              icon={Hammer}
+              iconColor="text-amber-600"
+              title="IN PROGRESS"
+              badge={upcomingJobs.length > 0 && (
+                <InlineBadge icon={ClipboardList}>Next: {upcomingJobs.length}</InlineBadge>
               )}
-            </div>
+            />
             
             {ongoingJobs.map((assignment, index) => (
               <div key={assignment.id} className={index > 0 ? 'mt-4' : ''}>
-                <ActiveJobCard
-                  id={assignment.request.id}
-                  title={assignment.request.title}
-                  location={assignment.request.address}
-                  startedAt={assignment.respondedAt || assignment.notifiedAt}
-                  estimatedHours={assignment.request.estimatedHours}
-                  customer={getCustomerInfo(assignment)}
-                  onComplete={() => handleCompleteJob(assignment.id, assignment.request.id)}
-                  onViewDetails={() => handleViewDetails(assignment.request.id)}
-                  onCancel={() => handleCancelJob(assignment.id, assignment.request.id, true)}
-                />
+              <ActiveJobCard
+                id={assignment.request.id}
+                title={assignment.request.title}
+                description={assignment.request.description}
+                location={assignment.request.address}
+                startedAt={assignment.respondedAt || assignment.notifiedAt}
+                estimatedHours={assignment.request.estimatedHours}
+                customer={getCustomerInfo(assignment)}
+                onComplete={() => handleCompleteJob(assignment.id, assignment.request.id)}
+                onViewDetails={() => handleViewDetails(assignment.request.id)}
+                onCancel={() => handleCancelJob(assignment.id, assignment.request.id, true)}
+              />
               </div>
             ))}
           </div>
 
           {/* Next Up Separator */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-slate-200"></div>
-            <span className="text-slate-600 font-medium flex items-center gap-1.5">
-              <ArrowDown className="w-4 h-4" strokeWidth={2} />
-              <span>NEXT UP</span>
-            </span>
-            <div className="flex-1 h-px bg-slate-200"></div>
-          </div>
+          <DividerWithText icon={ArrowDown}>NEXT UP</DividerWithText>
 
           {/* Upcoming Jobs */}
           <div className="space-y-4">
@@ -406,6 +402,7 @@ export const ProviderAssignments: React.FC = () => {
                 key={assignment.id}
                 id={assignment.request.id}
                 title={assignment.request.title}
+                description={assignment.request.description}
                 location={assignment.request.address}
                 startTime={assignment.request.preferredDate || new Date().toISOString()}
                 estimatedHours={assignment.request.estimatedHours}
@@ -425,21 +422,21 @@ export const ProviderAssignments: React.FC = () => {
       {/* Ongoing Only View (Focus Mode) */}
       {showOngoingOnly && !showSplitView && (
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-              <Hammer className="w-5 h-5 text-amber-600" strokeWidth={2} />
-              <span>IN PROGRESS</span>
-            </h2>
-            {upcomingJobs.length > 0 && (
+          <SectionHeaderWithCount
+            icon={Hammer}
+            iconColor="text-amber-600"
+            title="IN PROGRESS"
+            action={upcomingJobs.length > 0 && (
               <button
                 onClick={() => setViewMode('upcoming')}
-                className="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                className="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors duration-200"
               >
                 <Zap className="w-4 h-4" strokeWidth={2} />
                 <span>Next: {upcomingJobs.length}</span>
               </button>
             )}
-          </div>
+            className="mb-4"
+          />
 
           <div className="space-y-4">
             {ongoingJobs.map((assignment) => (
@@ -447,6 +444,7 @@ export const ProviderAssignments: React.FC = () => {
                 key={assignment.id}
                 id={assignment.request.id}
                 title={assignment.request.title}
+                description={assignment.request.description}
                 location={assignment.request.address}
                 startedAt={assignment.respondedAt || assignment.notifiedAt}
                 estimatedHours={assignment.request.estimatedHours}
@@ -459,24 +457,25 @@ export const ProviderAssignments: React.FC = () => {
           </div>
 
           {upcomingJobs.length > 0 && (
-            <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <p className="text-slate-700 text-sm flex items-center gap-2">
-                <Lightbulb className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                <span>
-                  Your next job starts at{' '}
-                  {new Date(upcomingJobs[0].request.preferredDate || '').toLocaleTimeString([], { 
-                    hour: 'numeric', 
-                    minute: '2-digit' 
-                  })}
-                </span>
-              </p>
-              <button
-                onClick={() => setViewMode('upcoming')}
-                className="text-slate-700 hover:text-slate-900 text-sm mt-2 font-medium"
-              >
-                [Tap "Upcoming" to see details]
-              </button>
-            </div>
+            <InfoAlert 
+              icon={Lightbulb} 
+              variant="info"
+              className="mt-6"
+              action={
+                <button
+                  onClick={() => setViewMode('upcoming')}
+                  className="text-slate-700 hover:text-slate-900 text-sm font-medium transition-colors duration-200"
+                >
+                  Tap "Upcoming" to see details
+                </button>
+              }
+            >
+              Your next job starts at{' '}
+              {new Date(upcomingJobs[0].request.preferredDate || '').toLocaleTimeString([], { 
+                hour: 'numeric', 
+                minute: '2-digit' 
+              })}
+            </InfoAlert>
           )}
         </div>
       )}
@@ -484,29 +483,25 @@ export const ProviderAssignments: React.FC = () => {
       {/* Upcoming Only View (Planning Mode) */}
       {showUpcomingOnly && !showSplitView && (
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-slate-600" strokeWidth={2} />
-              <span>UPCOMING ASSIGNMENTS</span>
-            </h2>
-            {ongoingJobs.length > 0 && (
+          <SectionHeaderWithCount
+            icon={ClipboardList}
+            title="UPCOMING ASSIGNMENTS"
+            action={ongoingJobs.length > 0 && (
               <button
                 onClick={() => setViewMode('ongoing')}
-                className="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                className="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-1 transition-colors duration-200"
               >
                 <Hammer className="w-4 h-4 text-amber-600" strokeWidth={2} />
                 <span>Active: {ongoingJobs.length}</span>
               </button>
             )}
-          </div>
+            className="mb-4"
+          />
 
           {ongoingJobs.length === 0 && (
-            <div className="mb-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <p className="text-slate-700 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-slate-500" strokeWidth={2} />
-                <span>No active work - All clear!</span>
-              </p>
-            </div>
+            <InfoAlert icon={CheckCircle2} variant="info" className="mb-4">
+              No active work - All clear!
+            </InfoAlert>
           )}
 
           <div className="space-y-4">
@@ -514,16 +509,16 @@ export const ProviderAssignments: React.FC = () => {
               <div key={assignment.id}>
                 {index === 0 && (
                   <div className="mb-2">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-sm font-medium border border-slate-200">
-                      <ClipboardList className="w-3.5 h-3.5" strokeWidth={2} />
-                      <span>NEXT ASSIGNMENT - Ready to Start</span>
-                    </span>
+                    <InlineBadge icon={ClipboardList}>
+                      NEXT ASSIGNMENT - Ready to Start
+                    </InlineBadge>
                   </div>
                 )}
                 
                 <UpcomingJobCard
                   id={assignment.request.id}
                   title={assignment.request.title}
+                  description={assignment.request.description}
                   location={assignment.request.address}
                   startTime={assignment.request.preferredDate || new Date().toISOString()}
                   estimatedHours={assignment.request.estimatedHours}
@@ -539,19 +534,22 @@ export const ProviderAssignments: React.FC = () => {
           </div>
 
           {ongoingJobs.length > 0 && (
-            <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <p className="text-amber-900 text-sm flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-600" strokeWidth={2} />
-                <span>Finish current job first before starting this one</span>
-              </p>
-              <button
-                onClick={() => setViewMode('ongoing')}
-                className="text-slate-700 hover:text-slate-900 text-sm mt-2 flex items-center gap-1.5 font-medium"
-              >
-                <RefreshCw className="w-3.5 h-3.5" strokeWidth={2} />
-                <span>Back to Ongoing</span>
-              </button>
-            </div>
+            <InfoAlert 
+              icon={AlertTriangle} 
+              variant="warning"
+              className="mt-6"
+              action={
+                <button
+                  onClick={() => setViewMode('ongoing')}
+                  className="text-slate-700 hover:text-slate-900 text-sm flex items-center gap-1.5 font-medium transition-colors duration-200"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" strokeWidth={2} />
+                  <span>Back to Ongoing</span>
+                </button>
+              }
+            >
+              Finish current job first before starting this one
+            </InfoAlert>
           )}
         </div>
       )}
@@ -567,8 +565,7 @@ export const ProviderAssignments: React.FC = () => {
           onActionComplete={handleModalActionComplete}
         />
       )}
-      </div>
-    </div>
+    </PageContainer>
   );
 };
 

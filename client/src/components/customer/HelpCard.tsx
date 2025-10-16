@@ -3,10 +3,12 @@
  * 
  * Extracted from Customer Dashboard to encapsulate help/support card.
  * Displays helpful information and action buttons for customer support.
+ * Fully responsive with mobile-first design.
  */
 
 import React from 'react';
 import { Card, Button } from '../ui';
+import { responsiveSpacing, responsiveTypography } from '../../styles/responsive.config';
 
 export interface HelpCardProps {
   title: string;
@@ -29,18 +31,18 @@ export const HelpCard: React.FC<HelpCardProps> = ({
 }) => {
   return (
     <Card>
-      <div className="p-4 sm:p-6">
-        <h3 className="text-lg font-medium text-slate-900 mb-4">
+      <div className={responsiveSpacing.cardPadding}>
+        <h3 className={`${responsiveTypography.subsectionHeading} mb-3 sm:mb-4`}>
           {title}
         </h3>
-        <div className="space-y-3">
-          <div className="text-sm text-slate-600">
+        <div className="space-y-2 sm:space-y-3">
+          <p className={`${responsiveTypography.bodyPrimary}`}>
             {description}
-          </div>
+          </p>
           <Button 
             variant="primary" 
             size="sm" 
-            className="w-full"
+            className="w-full text-xs sm:text-sm"
             onClick={primaryAction.onClick}
           >
             {primaryAction.label}
@@ -48,7 +50,7 @@ export const HelpCard: React.FC<HelpCardProps> = ({
           <Button 
             variant="outline" 
             size="sm" 
-            className="w-full"
+            className="w-full text-xs sm:text-sm"
             onClick={secondaryAction.onClick}
           >
             {secondaryAction.label}

@@ -6,8 +6,10 @@
 
 import React, { useMemo } from 'react';
 import { Button } from './Button';
+import { DetailRow } from './DetailRow';
+import { ContactActionRow } from './ContactActionRow';
 import { format } from 'date-fns';
-import { Calendar, Clock, MapPin, User, Phone, Mail, DollarSign, ClipboardList, AlertTriangle, Car, Navigation } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Phone, Mail, DollarSign, ClipboardList, AlertTriangle, Car, Navigation, Zap, FileText, X } from 'lucide-react';
 
 interface CustomerInfo {
   name: string;
@@ -21,6 +23,7 @@ interface CustomerInfo {
 interface UpcomingJobCardProps {
   id: number;
   title: string;
+  description?: string;
   location: string;
   startTime: string; // ISO date string
   estimatedHours?: number;
@@ -35,8 +38,9 @@ interface UpcomingJobCardProps {
 }
 
 export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
-  id,
+  // id prop kept in interface for parent components but not used in display
   title,
+  description,
   location,
   startTime,
   estimatedHours,
@@ -95,47 +99,42 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-slate-900 truncate mb-1">{title}</h3>
-            <p className="text-sm text-slate-600">#{id}</p>
+            {description && (
+              <p className="text-sm text-slate-600 truncate leading-normal">{description}</p>
+            )}
           </div>
         </div>
 
         <div className="space-y-2 text-sm mb-4">
-          <div className="flex items-center gap-2 text-slate-700">
-            <Calendar className="w-4 h-4 text-slate-600" strokeWidth={2} />
-            <span>Start: {formattedTime}</span>
-          </div>
-          <div className="flex items-center gap-2 text-slate-700">
-            <Clock className="w-4 h-4 text-slate-600" strokeWidth={2} />
+          <DetailRow icon={Calendar}>Start: {formattedTime}</DetailRow>
+          <DetailRow icon={Clock}>
             <span className={timeUntilStart.isUrgent ? 'text-amber-600 font-semibold' : ''}>
               {timeUntilStart.text}
             </span>
-          </div>
-          <div className="flex items-center gap-2 text-slate-700">
-            <MapPin className="w-4 h-4 text-slate-600" strokeWidth={2} />
+          </DetailRow>
+          <DetailRow icon={MapPin}>
             <span className="truncate">{location}</span>
-          </div>
-          <div className="flex items-center gap-2 text-slate-700">
-            <User className="w-4 h-4 text-slate-600" strokeWidth={2} />
-            <span>
-              {customer.name} {customer.rating && `★ ${customer.rating}`}
-            </span>
-          </div>
+          </DetailRow>
+          <DetailRow icon={User}>
+            {customer.name} {customer.rating && `★ ${customer.rating}`}
+          </DetailRow>
           {customer.phone && (
-            <div className="flex items-center gap-2 text-slate-700">
-              <Phone className="w-4 h-4 text-slate-600" strokeWidth={2} />
+            <DetailRow icon={Phone}>
               <a href={`tel:${customer.phone}`} className="text-slate-700 hover:text-slate-900 hover:underline">
                 {customer.phone}
               </a>
-            </div>
+            </DetailRow>
           )}
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={onViewDetails} variant="outline" size="sm" className="flex-1">
-            View
+          <Button onClick={onViewDetails} variant="outline" size="sm" className="flex-1 flex items-center justify-center gap-1.5">
+            <FileText className="w-3.5 h-3.5" strokeWidth={2} />
+            <span>View</span>
           </Button>
-          <Button onClick={onCancel} variant="outline" size="sm">
-            Cancel
+          <Button onClick={onCancel} variant="danger" size="sm" className="flex items-center justify-center gap-1.5">
+            <X className="w-3.5 h-3.5" strokeWidth={2} />
+            <span>Cancel</span>
           </Button>
         </div>
       </div>
@@ -149,7 +148,9 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-bold text-slate-900 mb-1">{title}</h2>
-            <p className="text-sm text-slate-600">Request #{id}</p>
+            {description && (
+              <p className="text-sm text-slate-600 truncate leading-normal">{description}</p>
+            )}
           </div>
           <div className="ml-4">
             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${
@@ -252,10 +253,7 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
           <h3 className="font-semibold text-slate-900 mb-3">Customer</h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-slate-700 flex items-center gap-1.5">
-                <User className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                <span>{customer.name}</span>
-              </span>
+              <DetailRow icon={User}>{customer.name}</DetailRow>
               {customer.rating && (
                 <span className="text-sm text-slate-600">
                   ★ {customer.rating} {customer.reviewCount && `(${customer.reviewCount} reviews)`}
@@ -264,27 +262,20 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
             </div>
             
             {customer.phone && (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-slate-700 flex items-center gap-1.5">
-                  <Phone className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                  <span>{customer.phone}</span>
-                </span>
-                <a href={`tel:${customer.phone}`}>
-                  <Button size="sm" variant="outline">Call</Button>
-                </a>
-              </div>
+              <ContactActionRow
+                icon={Phone}
+                value={customer.phone}
+                action={{ label: 'Call', href: `tel:${customer.phone}` }}
+              />
             )}
             
             {customer.email && (
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-slate-700 truncate flex items-center gap-1.5">
-                  <Mail className="w-4 h-4 text-slate-600" strokeWidth={2} />
-                  <span className="truncate">{customer.email}</span>
-                </span>
-                <a href={`mailto:${customer.email}`}>
-                  <Button size="sm" variant="outline">Message</Button>
-                </a>
-              </div>
+              <ContactActionRow
+                icon={Mail}
+                value={customer.email}
+                action={{ label: 'Message', href: `mailto:${customer.email}` }}
+                truncate
+              />
             )}
 
             {customer.notes && (
@@ -299,20 +290,24 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
           {timeUntilStart.canStart && (
-            <Button onClick={onStart} className="flex-1 sm:flex-initial">
-              Start Now
+            <Button onClick={onStart} variant="primary" className="flex-1 sm:flex-initial flex items-center justify-center gap-2">
+              <Zap className="w-4 h-4" strokeWidth={2} />
+              <span>Start Now</span>
             </Button>
           )}
           {!timeUntilStart.canStart && (
-            <Button onClick={onStart} variant="outline" className="flex-1 sm:flex-initial">
-              Start Early
+            <Button onClick={onStart} variant="primary" className="flex-1 sm:flex-initial flex items-center justify-center gap-2">
+              <Zap className="w-4 h-4" strokeWidth={2} />
+              <span>Start Early</span>
             </Button>
           )}
-          <Button onClick={onViewDetails} variant="outline" className="flex-1 sm:flex-initial">
-            View Full Details
+          <Button onClick={onViewDetails} variant="outline" className="flex-1 sm:flex-initial flex items-center justify-center gap-2">
+            <FileText className="w-4 h-4" strokeWidth={2} />
+            <span>View Full Details</span>
           </Button>
-          <Button onClick={onCancel} variant="danger" className="flex-1 sm:flex-initial">
-            Cancel Assignment
+          <Button onClick={onCancel} variant="danger" className="flex-1 sm:flex-initial flex items-center justify-center gap-2">
+            <X className="w-4 h-4" strokeWidth={2} />
+            <span>Cancel Assignment</span>
           </Button>
         </div>
 

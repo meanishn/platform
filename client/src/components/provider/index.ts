@@ -7,6 +7,7 @@ export { MatchBadge, CompactMatchBadge } from './MatchBadge';
 export { JobDetailsModal } from './JobDetailsModal';
 export { JobCard } from './JobCard';
 export { ProfileStatusCard } from './ProfileStatusCard';
+export { CustomerInfoHeader } from './CustomerInfoHeader';
 
 // Re-export shared UI components for convenience
 // These components are now imported from ui/ to avoid duplication
@@ -24,3 +25,4 @@ export {
 
 export type { JobCardProps } from './JobCard';
 export type { ProfileStatusCardProps, ProfileStatus } from './ProfileStatusCard';
+export type { CustomerInfoHeaderProps } from './CustomerInfoHeader';

@@ -1,6 +1,6 @@
 # Platform Design System
 
-**Version 1.0** | Last Updated: October 15, 2025
+**Version 1.1.1** | Last Updated: October 16, 2025
 
 A comprehensive design system for building consistent, accessible, and professional UI across the platform application.
 
@@ -15,7 +15,8 @@ Our design system embodies a **minimalistic, professional, and accessible** appr
 - **Calm color palette** - Soft, muted tones that reduce cognitive load
 - **Subtle depth** - Light shadows and borders create hierarchy without overwhelming
 - **Generous whitespace** - Breathing room improves readability and focus
-- **Accessibility first** - WCAG AA compliance in all color combinations
+- **Accessibility** - WCAG AA compliance in all color combinations
+- **Mobile first** - Responsive design that works beautifully on all devices
 
 ### Core Values
 
@@ -522,6 +523,63 @@ States:
 
 ---
 
+### Checkboxes & Radio Buttons
+
+#### Standard Checkbox
+```jsx
+<Checkbox 
+  checked={isChecked}
+  onChange={setIsChecked}
+  label="Option label"
+/>
+
+Classes: w-4 h-4 rounded border-2 border-slate-300 
+         bg-white checked:bg-slate-600 checked:border-slate-600
+         hover:border-slate-400 focus:outline-none focus:ring-2 
+         focus:ring-slate-500/20 focus:ring-offset-2
+         transition-all duration-200 cursor-pointer
+
+States:
+- Default: White bg, slate-300 border (2px)
+- Hover: Slate-400 border
+- Focus: Subtle slate ring (20% opacity, no harsh outline)
+- Checked: Slate-600 background and border (muted, professional)
+- Disabled: opacity-50 cursor-not-allowed
+```
+
+#### Checkbox with Label
+```jsx
+<label className="flex items-center gap-2 cursor-pointer">
+  <Checkbox 
+    id="option-1"
+    checked={isChecked}
+    onChange={setIsChecked}
+  />
+  <span className="text-sm text-slate-700">Option label</span>
+</label>
+
+Label Styling:
+- Text: text-sm text-slate-700 (14px, readable)
+- Gap: gap-2 (8px between checkbox and text)
+- Cursor: cursor-pointer (entire label clickable)
+- Hover: Optional hover:text-slate-900 for emphasis
+```
+
+#### Checkbox Sizing
+```
+Standard:  w-4 h-4    (16px × 16px) - Default for forms
+Large:     w-5 h-5    (20px × 20px) - Better for touch targets
+```
+
+#### Design Rationale
+- **Muted checked color**: Using `bg-slate-600` instead of bright blue maintains the calm, professional aesthetic
+- **Subtle focus ring**: `ring-slate-500/20` provides feedback without harsh outlines
+- **2px border**: Slightly thicker border (border-2) makes unchecked state more visible
+- **Smooth transitions**: `transition-all duration-200` for polished interactions
+- **No harsh outlines**: `focus:outline-none` removes browser defaults, replaced with soft ring
+
+---
+
 ### Icon Containers
 
 #### Default Icon Container
@@ -865,7 +923,397 @@ Letter Spacing:
 
 ---
 
-## ⚙️ 8. Implementation Example
+## 📱 8. Responsive Design System
+
+### Mobile-First Philosophy
+
+Our design system follows a **mobile-first approach**, ensuring optimal experience across all device sizes:
+- Start with mobile (320px+) and enhance for larger screens
+- Touch-friendly targets (minimum 44px on mobile)
+- Readable typography at all sizes
+- Progressive enhancement for desktop features
+
+### Breakpoint System
+
+#### Standard Breakpoints (Tailwind)
+```
+xs:  0px - 639px     (Mobile phones, portrait)
+sm:  640px - 767px   (Large phones, small tablets)
+md:  768px - 1023px  (Tablets, landscape)
+lg:  1024px - 1279px (Small laptops, desktops)
+xl:  1280px+         (Large desktops)
+2xl: 1536px+         (Extra large displays)
+```
+
+#### Usage in Code
+All breakpoints are centralized in `client/src/styles/responsive.config.ts` for easy modification:
+
+```typescript
+import { responsiveGrids, responsiveSpacing, responsiveTypography } from '@/styles/responsive.config';
+
+// Use predefined responsive classes
+<div className={responsiveGrids.stats4}>
+  {/* 2 cols on mobile, 4 on desktop */}
+</div>
+```
+
+### Responsive Layout Patterns
+
+#### Navigation & Sidebar
+
+**Desktop (lg+):**
+- Persistent sidebar (256px width)
+- Visible navigation in header
+- Full horizontal space
+
+**Mobile/Tablet (< lg):**
+- Hamburger menu button
+- Slide-in sidebar overlay
+- Collapsible navigation
+- Auto-close on route change
+
+```tsx
+// Sidebar visibility
+className="hidden lg:block"  // Desktop only
+className="lg:hidden"         // Mobile only
+```
+
+#### Header Adaptation
+
+**Desktop:**
+```
+[Menu] [Logo + Name] | [Nav Links] | [Notifications] [User Avatar + Name] [Logout]
+```
+
+**Tablet:**
+```
+[Menu] [Logo + Name] | [Notifications] [User Avatar] [Logout]
+```
+
+**Mobile:**
+```
+[Menu] [Logo] | [Bell] [Avatar] [Exit]
+```
+
+### Responsive Grid Systems
+
+#### Stats Cards
+```tsx
+// 4-column stats (2 on mobile, 4 on desktop)
+<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+// 3-column stats (1 on mobile, 2 on tablet, 3 on desktop)
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+
+// Admin stats (2-3-4-7 progression)
+<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+```
+
+#### Content Grids
+```tsx
+// Two-column content (stacked on mobile)
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+
+// Three-column content
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+```
+
+#### Form Layouts
+```tsx
+// Two-column form
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+```
+
+### Responsive Spacing
+
+#### Page-Level Spacing
+```
+Mobile:  p-3      (12px padding)
+Tablet:  p-4      (16px padding)
+Desktop: p-6      (24px padding)
+
+Usage: className={responsiveSpacing.page}
+```
+
+#### Section Spacing
+```
+Mobile:  space-y-3  (12px between sections)
+Tablet:  space-y-4  (16px between sections)
+Desktop: space-y-6  (24px between sections)
+
+Usage: className={responsiveSpacing.sectionY}
+```
+
+#### Card Padding
+```
+Mobile:  p-3      (12px)
+Tablet:  p-4      (16px)
+Desktop: p-5      (20px)
+
+Usage: className={responsiveSpacing.cardPadding}
+```
+
+#### Component Gaps
+```
+Small:     gap-1.5 sm:gap-2        (6px → 8px)
+Component: gap-2 sm:gap-3 md:gap-4 (8px → 12px → 16px)
+Section:   gap-3 sm:gap-4 md:gap-6 (12px → 16px → 24px)
+```
+
+### Responsive Typography
+
+#### Page Titles
+```tsx
+className="text-xl sm:text-2xl md:text-3xl font-bold"
+// 20px → 24px → 30px
+
+Usage: className={responsiveTypography.pageTitle}
+```
+
+#### Section Headings
+```tsx
+className="text-lg sm:text-xl font-bold"
+// 18px → 20px
+
+Usage: className={responsiveTypography.sectionHeading}
+```
+
+#### Card Titles
+```tsx
+className="text-base sm:text-lg font-bold"
+// 16px → 18px
+
+Usage: className={responsiveTypography.cardTitle}
+```
+
+#### Body Text
+```tsx
+className="text-xs sm:text-sm text-slate-700"
+// 12px → 14px
+
+Usage: className={responsiveTypography.bodyPrimary}
+```
+
+#### Stat Values
+```tsx
+className="text-xl sm:text-2xl md:text-3xl font-bold"
+// 20px → 24px → 30px
+
+Usage: className={responsiveTypography.statValue}
+```
+
+#### Labels & Metadata
+```tsx
+className="text-[10px] sm:text-xs text-slate-500"
+// 10px → 12px
+
+Usage: className={responsiveTypography.label}
+```
+
+### Responsive Component Sizing
+
+#### Icon Containers
+```tsx
+// Small
+<div className="w-7 h-7 sm:w-8 sm:h-8">
+  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+</div>
+
+// Medium
+<div className="w-9 h-9 sm:w-10 sm:h-10">
+  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+</div>
+
+// Large
+<div className="w-10 h-10 sm:w-11 sm:h-11">
+  <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+</div>
+
+Usage: className={responsiveSizes.iconMedium}
+```
+
+#### Buttons
+```tsx
+// Small
+className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 text-xs sm:text-sm"
+
+// Medium
+className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm"
+
+// Large
+className="px-4 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base"
+```
+
+#### Avatars
+```tsx
+// Small:  w-8 h-8 sm:w-9 sm:h-9
+// Medium: w-10 h-10 sm:w-12 sm:h-12
+// Large:  w-12 h-12 sm:w-16 sm:h-16
+```
+
+### Common Responsive Patterns
+
+#### Flex Row (Mobile Column)
+```tsx
+// Stacks vertically on mobile, horizontal on tablet+
+<div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+
+Usage: className={commonPatterns.flexRow}
+```
+
+#### Flex Between (Responsive)
+```tsx
+// Stacks on mobile with start alignment, space-between on larger
+<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+
+Usage: className={commonPatterns.flexBetween}
+```
+
+#### Button Groups
+```tsx
+// Wraps buttons with consistent spacing
+<div className="flex flex-wrap items-center gap-2">
+
+Usage: className={commonPatterns.buttonGroup}
+```
+
+#### Card Headers
+```tsx
+<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 sm:mb-4 pb-3 border-b border-slate-200/60">
+
+Usage: className={commonPatterns.cardHeader}
+```
+
+### Touch Target Guidelines
+
+#### Minimum Sizes
+```
+Mobile Buttons:  min-h-[44px] min-w-[44px]  (iOS guideline)
+Desktop Buttons: min-h-[36px]               (comfortable clicking)
+Icon Buttons:    p-2                        (8px padding around icon)
+Links:           py-2 px-3                  (adequate touch area)
+```
+
+#### Implementation
+```tsx
+// Touch-friendly button
+<button className="px-4 py-2.5 sm:py-2">
+  {/* 44px height on mobile, 36px on desktop */}
+</button>
+
+// Touch-friendly icon button
+<button className="p-2 hover:bg-slate-100 rounded-lg">
+  <Icon className="w-5 h-5" />
+</button>
+```
+
+### Responsive Content Strategy
+
+#### Show/Hide Content
+```tsx
+// Desktop only
+<div className="hidden lg:block">Desktop content</div>
+
+// Mobile only
+<div className="lg:hidden">Mobile content</div>
+
+// Show different content per breakpoint
+<span className="hidden sm:inline">Full Text</span>
+<span className="sm:hidden">Short</span>
+```
+
+#### Truncate Text
+```tsx
+// Single line truncation
+<p className="truncate">Long text will be cut off...</p>
+
+// With max width on mobile
+<p className="truncate max-w-[100px] sm:max-w-none">
+  Text with responsive width
+</p>
+```
+
+### Testing Responsive Designs
+
+#### Key Breakpoints to Test
+- **320px**: iPhone SE, older phones
+- **375px**: iPhone 12/13/14 standard
+- **390px**: iPhone 12/13/14 Pro
+- **414px**: iPhone Plus models
+- **768px**: iPad portrait
+- **1024px**: iPad landscape, small laptops
+- **1280px**: Standard desktop
+- **1920px**: Full HD displays
+
+#### Common Issues to Check
+- ✅ Text doesn't overflow containers
+- ✅ Buttons remain tappable (44px minimum)
+- ✅ Grid layouts don't break
+- ✅ Images scale properly
+- ✅ Navigation is accessible
+- ✅ Content hierarchy is maintained
+- ✅ No horizontal scrolling (unless intentional)
+
+### Responsive Best Practices
+
+#### Do's ✅
+- Use mobile-first CSS (base styles, then `sm:`, `md:`, etc.)
+- Test on real devices when possible
+- Use `min-w-0` and `flex-shrink-0` to prevent layout breaks
+- Provide adequate spacing for touch targets
+- Use `truncate` for text that might overflow
+- Test with long content (names, addresses, etc.)
+- Use responsive images with proper aspect ratios
+- Ensure forms are easy to fill on mobile
+
+#### Don'ts ❌
+- Don't rely on hover states for mobile
+- Don't use fixed pixel widths without responsiveness
+- Don't make text too small on mobile (min 12px)
+- Don't hide critical content on mobile
+- Don't use tiny touch targets
+- Don't forget about landscape orientation
+- Don't assume viewport size
+- Don't test only on one device
+
+### Quick Reference: Common Responsive Classes
+
+```tsx
+// Padding
+p-3 sm:p-4 md:p-6           // Page padding
+p-3 sm:p-4 md:p-5           // Card padding
+px-3 sm:px-4 md:px-6        // Horizontal only
+
+// Spacing
+space-y-3 sm:space-y-4 md:space-y-6    // Vertical spacing
+gap-2 sm:gap-3 md:gap-4                // Grid/Flex gap
+
+// Grid columns
+grid-cols-1 sm:grid-cols-2              // 1 → 2
+grid-cols-2 md:grid-cols-4              // 2 → 4
+grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  // 1 → 2 → 3
+
+// Typography
+text-xs sm:text-sm                      // 12px → 14px
+text-sm sm:text-base                    // 14px → 16px
+text-xl sm:text-2xl md:text-3xl        // 20px → 24px → 30px
+
+// Flex direction
+flex-col sm:flex-row                    // Vertical → Horizontal
+
+// Visibility
+hidden lg:block                         // Show on desktop
+lg:hidden                               // Show on mobile/tablet
+hidden sm:inline-block                  // Show on tablet+
+
+// Width
+w-full sm:w-auto                        // Full → Auto
+max-w-[100px] sm:max-w-none            // Limited → Unlimited
+```
+
+---
+
+## ⚙️ 9. Implementation Example
 
 ### Tailwind Configuration
 
@@ -1138,7 +1586,7 @@ export const Dashboard = () => {
 
 ---
 
-## 📚 Quick Reference Cheat Sheet
+## 📚 10. Quick Reference Cheat Sheet
 
 ### Common Patterns
 
@@ -1198,6 +1646,21 @@ Error:          bg-red-100 text-red-800
 ---
 
 ## 🔄 Version History
+
+**v1.1.1** (October 16, 2025)
+- Added comprehensive checkbox and radio button design guidelines
+- Defined muted checkbox color scheme (slate-600 for checked state)
+- Specified subtle focus ring styling (20% opacity, no harsh outlines)
+- Documented checkbox sizing options (standard 16px, large 20px)
+
+**v1.1** (October 16, 2025)
+- Added comprehensive responsive design system
+- Implemented mobile-first approach
+- Created centralized responsive configuration system
+- Added hamburger menu and collapsible sidebar
+- Updated all dashboard components for mobile/tablet
+- Touch-friendly UI with proper target sizes
+- Responsive typography and spacing scales
 
 **v1.0** (October 15, 2025)
 - Initial design system documentation

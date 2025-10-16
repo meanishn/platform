@@ -3,8 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui';
 import { NotificationBell } from '../notifications/NotificationBell';
+import { Menu } from 'lucide-react';
+import { headerConfig, responsiveSizes } from '../../styles/responsive.config';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -15,15 +21,27 @@ export const Header: React.FC = () => {
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                <span className="text-white font-bold text-lg">S</span>
+      <div className="mx-auto px-3 sm:px-4 md:px-6">
+        <div className={`flex justify-between items-center ${headerConfig.height}`}>
+          {/* Left section: Menu button (mobile) + Logo */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Hamburger Menu Button - Only show when user is logged in */}
+            {user && (
+              <button
+                onClick={onMenuClick}
+                className="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                aria-label="Open menu"
+              >
+                <Menu className="w-5 h-5 text-slate-600" />
+              </button>
+            )}
+            
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+              <div className={`${headerConfig.logoSize} bg-slate-700 rounded-lg sm:rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow`}>
+                <span className="text-white font-bold text-sm sm:text-base md:text-lg">S</span>
               </div>
-              <span className="text-2xl font-bold text-slate-900">ServiceHub</span>
+              <span className={`${headerConfig.logoText} font-bold text-slate-900`}>ServiceHub</span>
             </Link>
           </div>
 
@@ -70,33 +88,45 @@ export const Header: React.FC = () => {
           </nav>
 
           {/* User menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             {user ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
                 {/* Notifications */}
                 <NotificationBell />
                 
-                <div className="flex items-center space-x-3 bg-slate-50 rounded-xl px-3 py-2 border border-slate-200">
-                  <div className="w-9 h-9 bg-slate-700 rounded-xl flex items-center justify-center shadow-sm">
-                    <span className="text-sm font-bold text-white">
+                {/* User Profile Display */}
+                <div className="flex items-center gap-2 sm:gap-3 bg-slate-50 rounded-lg sm:rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 border border-slate-200">
+                  <div className={`${headerConfig.avatarSize} bg-slate-700 rounded-lg sm:rounded-xl flex items-center justify-center shadow-sm flex-shrink-0`}>
+                    <span className="text-[10px] sm:text-xs md:text-sm font-bold text-white">
                       {user.firstName?.[0]}{user.lastName?.[0]}
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-slate-900">
+                  <span className={`text-xs sm:text-sm font-medium text-slate-900 ${headerConfig.userName} max-w-[100px] sm:max-w-none truncate`}>
                     {user.firstName} {user.lastName}
                   </span>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleLogout}>
+                
+                {/* Logout Button */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  className="hidden sm:flex"
+                >
                   Logout
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Link to="/login">
-                  <Button variant="outline" size="sm">Login</Button>
+                  <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-3">
+                    Login
+                  </Button>
                 </Link>
                 <Link to="/register">
-                  <Button size="sm">Sign Up</Button>
+                  <Button size="sm" className="text-xs sm:text-sm px-2.5 sm:px-3">
+                    Sign Up
+                  </Button>
                 </Link>
               </div>
             )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, Button, Badge, FilterButtonGroup, SortDropdown } from '../../components/ui';
+import { Card, Button, Badge, FilterButtonGroup, SortDropdown, PageContainer } from '../../components/ui';
 import { 
   MatchBadge, 
   StatCard, 
@@ -16,7 +16,7 @@ import { useNotificationService } from '../../services/notificationService';
 import { useJobDetailsModal } from '../../hooks';
 import type { JobDto, ProviderActionRequest } from '../../types/api';
 import { SocketEvents, useSocketEvent } from '../../hooks/useWebSocket';
-import { Target, RefreshCw, Clock, CheckCircle2, MapPin, Trophy, Timer, Calendar, DollarSign, Search, Zap, FileText, Check, X } from 'lucide-react';
+import { Target, RefreshCw, Clock, MapPin, Trophy, Timer, Calendar, DollarSign, Search, Zap, FileText, Check, X, CheckCircle2 } from 'lucide-react';
 
 type FilterType = 'all' | 'nearby' | 'high-match' | 'urgent';
 type SortType = 'match-score' | 'distance' | 'posted-date' | 'urgency';
@@ -170,7 +170,7 @@ export const AvailableJobsEnhanced: React.FC = () => {
 
   const filteredJobs = getSortedJobs(getFilteredJobs());
   const pendingCount = jobs.filter(j => j.status === 'pending').length;
-  const acceptedCount = jobs.filter(j => j.status === 'accepted').length;
+  const urgentCount = jobs.filter(j => j.urgency === 'high').length;
   const nearbyCount = jobs.filter(j => (j.distanceMiles ?? 999) <= 10).length;
   const highMatchCount = jobs.filter(j => (j.matchScore ?? 0) >= 80).length;
 
@@ -179,8 +179,7 @@ export const AvailableJobsEnhanced: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+    <PageContainer maxWidth="7xl">
         {/* Header */}
         <PageHeader
           icon={Target}
@@ -194,58 +193,69 @@ export const AvailableJobsEnhanced: React.FC = () => {
           }}
         />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      {/* Stats - Clickable filters */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard
-          label="New"
+          label="All Jobs"
           value={pendingCount}
           icon={Clock}
-          colorScheme="yellow"
+          colorScheme="primary"
+          isActive={filter === 'all'}
+          onClick={() => setFilter('all')}
         />
         <StatCard
-          label="Accepted"
-          value={acceptedCount}
-          icon={CheckCircle2}
-          colorScheme="green"
+          label="Urgent"
+          value={urgentCount}
+          icon={Zap}
+          colorScheme="yellow"
+          isActive={filter === 'urgent'}
+          onClick={() => setFilter('urgent')}
         />
         <StatCard
           label="Nearby"
           value={nearbyCount}
           icon={MapPin}
           colorScheme="blue"
+          isActive={filter === 'nearby'}
+          onClick={() => setFilter('nearby')}
         />
         <StatCard
           label="High Match"
           value={highMatchCount}
           icon={Trophy}
-          colorScheme="purple"
+          colorScheme="green"
+          isActive={filter === 'high-match'}
+          onClick={() => setFilter('high-match')}
         />
       </div>
 
       {/* Filters and Sort */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <FilterButtonGroup
-          options={[
-            { value: 'all', label: 'All', count: jobs.length },
-            { value: 'nearby', label: 'Nearby', icon: MapPin, count: nearbyCount },
-            { value: 'high-match', label: 'High Match', icon: Trophy, count: highMatchCount },
-            { value: 'urgent', label: 'Urgent', icon: Zap },
-          ]}
-          activeFilter={filter}
-          onChange={(value) => setFilter(value as FilterType)}
-        />
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-start">
+        <div className="flex-1 min-w-0">
+          <FilterButtonGroup
+            options={[
+              { value: 'all', label: 'All', count: jobs.length },
+              { value: 'urgent', label: 'Urgent', icon: Zap, count: urgentCount },
+              { value: 'nearby', label: 'Nearby', icon: MapPin, count: nearbyCount },
+              { value: 'high-match', label: 'High Match', icon: Trophy, count: highMatchCount },
+            ]}
+            activeFilter={filter}
+            onChange={(value) => setFilter(value as FilterType)}
+          />
+        </div>
 
-        <SortDropdown
-          options={[
-            { value: 'match-score', label: 'Match Score' },
-            { value: 'distance', label: 'Distance' },
-            { value: 'posted-date', label: 'Posted Date' },
-            { value: 'urgency', label: 'Urgency' },
-          ]}
-          value={sortBy}
-          onChange={(value) => setSortBy(value as SortType)}
-          className="ml-auto"
-        />
+        <div className="sm:ml-auto shrink-0">
+          <SortDropdown
+            options={[
+              { value: 'match-score', label: 'Match Score' },
+              { value: 'distance', label: 'Distance' },
+              { value: 'posted-date', label: 'Posted Date' },
+              { value: 'urgency', label: 'Urgency' },
+            ]}
+            value={sortBy}
+            onChange={(value) => setSortBy(value as SortType)}
+          />
+        </div>
       </div>
 
       {/* Jobs List */}
@@ -364,7 +374,6 @@ export const AvailableJobsEnhanced: React.FC = () => {
 
       {/* Job Details Modal - Opened via hook */}
       {JobDetailsModalComponent}
-      </div>
-    </div>
+    </PageContainer>
   );
 };

@@ -4,11 +4,13 @@
  * Extracted from Admin Dashboard to encapsulate stat card presentation.
  * Displays a single statistic with an icon and value.
  * Follows design system: minimal, clean card with icon container.
+ * Fully responsive with mobile-first design.
  */
 
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { Card } from '../ui';
+import { responsiveSpacing, responsiveSizes, responsiveTypography } from '../../styles/responsive.config';
 
 export interface AdminStatCardProps {
   label: string;
@@ -58,15 +60,15 @@ export const AdminStatCard: React.FC<AdminStatCardProps> = ({
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <div className="flex items-center">
+      <div className="flex items-center gap-2 sm:gap-3">
         <div className="flex-shrink-0">
-          <div className={`w-8 h-8 ${colors.bg} rounded-lg flex items-center justify-center`}>
-            <span className={`${colors.text} text-sm font-medium`}>{icon}</span>
+          <div className={`${responsiveSizes.iconSmall} ${colors.bg} rounded-lg flex items-center justify-center`}>
+            <span className={`${colors.text} text-xs sm:text-sm font-medium`}>{icon}</span>
           </div>
         </div>
-        <div className="ml-3">
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="text-lg font-semibold text-slate-900">{value}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] sm:text-xs md:text-sm font-medium text-slate-500 truncate">{label}</p>
+          <p className="text-base sm:text-lg font-semibold text-slate-900 truncate">{value}</p>
         </div>
       </div>
     </Card>

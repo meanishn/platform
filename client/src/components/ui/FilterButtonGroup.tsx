@@ -3,11 +3,13 @@
  * 
  * Reusable filter button group following design system.
  * Displays a row of filter buttons with icons and active state.
+ * Fully responsive with mobile-first design.
  */
 
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { Button } from './Button';
+import { responsiveSizes, commonPatterns } from '../../styles/responsive.config';
 
 export interface FilterOption {
   value: string;
@@ -30,7 +32,7 @@ export const FilterButtonGroup: React.FC<FilterButtonGroupProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`flex gap-2 flex-wrap ${className}`}>
+    <div className={`${commonPatterns.buttonGroup} ${className}`}>
       {options.map((option) => {
         const Icon = option.icon;
         const isActive = activeFilter === option.value;
@@ -41,12 +43,12 @@ export const FilterButtonGroup: React.FC<FilterButtonGroupProps> = ({
             variant={isActive ? 'primary' : 'outline'}
             size="sm"
             onClick={() => onChange(option.value)}
-            className={`whitespace-nowrap flex items-center gap-2 font-medium ${
+            className={`whitespace-nowrap flex items-center gap-1.5 sm:gap-2 font-medium px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm ${
               isActive ? 'shadow-md' : ''
             }`}
           >
-            {Icon && <Icon className="w-4 h-4" strokeWidth={2} />}
-            <span>
+            {Icon && <Icon className={`${responsiveSizes.iconSizeSmall} flex-shrink-0`} strokeWidth={2} />}
+            <span className="truncate">
               {option.label}
               {option.count !== undefined && ` (${option.count})`}
             </span>

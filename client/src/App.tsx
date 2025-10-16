@@ -15,7 +15,7 @@ import { RoleBasedRedirect } from './components/auth/RoleBasedRedirect';
 // Customer Pages
 import { CustomerDashboard } from './pages/customer/Dashboard';
 import { Services } from './pages/customer/Services';
-import { MyRequests } from './pages/customer/MyRequestsNew';
+import { MyRequests } from './pages/customer/MyRequests';
 import { ServiceRequestPage } from './pages/customer/ServiceRequest';
 import { RequestDetail } from './pages/customer/RequestDetail';
 
@@ -23,8 +23,7 @@ import { RequestDetail } from './pages/customer/RequestDetail';
 import { ProviderDashboard } from './pages/provider/Dashboard';
 import { ProviderAssignments } from './pages/provider/Assignments';
 
-import { ProviderRequestDetail } from './pages/provider/RequestDetail';
-import { AvailableJobsEnhanced } from './pages/provider/AvailableJobsEnhanced';
+import { AvailableJobsEnhanced } from './pages/provider/AvailableJobs';
 import { AcceptedJobs } from './pages/provider/AcceptedJobs';
 
 // Admin Pages
@@ -35,7 +34,6 @@ import { Profile } from './pages/shared/Profile';
 import { NotificationsPage } from './pages/shared/Notifications';
 
 // Test Pages
-import { TestSCSS } from './pages/TestSCSS';
 import { AuthDebug } from './components/AuthDebug';
 
 
@@ -71,8 +69,6 @@ const AppContent = () => {
           <Route path="/provider/available-jobs" element={<AvailableJobsEnhanced />} />
           <Route path="/provider/accepted-jobs" element={<AcceptedJobs />} />
           <Route path="/provider/assignments" element={<ProviderAssignments />} />
-          <Route path="/provider/requests/:id" element={<ProviderRequestDetail />} />
-          <Route path="/provider/jobs/:id" element={<ProviderRequestDetail />} />
           
           {/* Admin routes */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -81,8 +77,6 @@ const AppContent = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           
-          {/* Test routes */}
-          <Route path="/test-scss" element={<TestSCSS />} />
         </Route>
       </Routes>
 
@@ -90,7 +84,7 @@ const AppContent = () => {
       <ToastContainer notifications={toasts} onRemove={removeToast} />
       
       {/* Debug component for development */}
-      {import.meta.env.DEV && <AuthDebug />}
+      {/* {import.meta.env.DEV && <AuthDebug />} */}
     </>
   );
 };

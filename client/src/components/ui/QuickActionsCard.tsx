@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from './Button';
 import { LucideIcon } from 'lucide-react';
+import { responsiveTypography, responsiveSizes } from '../../styles/responsive.config';
 
 export interface QuickActionProps {
   icon: LucideIcon | string;
@@ -12,7 +13,7 @@ export interface QuickActionProps {
 }
 
 export interface QuickActionsCardProps {
-  title: string;
+  title?: string;
   actions: QuickActionProps[];
   columns?: 1 | 2 | 3;
 }
@@ -22,38 +23,43 @@ export const QuickActionsCard: React.FC<QuickActionsCardProps> = ({
   actions,
   columns = 2
 }) => {
+  // Responsive grid classes based on columns prop
   const gridCols = {
     1: 'grid-cols-1',
-    2: 'grid-cols-2',
-    3: 'grid-cols-3'
+    2: 'grid-cols-1 sm:grid-cols-2',
+    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
   };
 
   return (
-    <div className="p-6 bg-white border border-slate-200 rounded-lg shadow-md">
-      {title && <h3 className="text-lg font-semibold text-slate-900 leading-snug mb-4">{title}</h3>}
-      <div className={`grid ${gridCols[columns]} gap-3`}>
+    <div>
+      {title && (
+        <h3 className={`${responsiveTypography.subsectionHeading} mb-3 sm:mb-4`}>
+          {title}
+        </h3>
+      )}
+      <div className={`grid ${gridCols[columns]} gap-2 sm:gap-3`}>
         {actions.map((action, index) => {
           const IconComponent = typeof action.icon === 'string' ? null : action.icon;
           
           const ButtonComponent = (
             <Button
-              className={`w-full justify-start gap-2 ${action.customClassName || ''}`}
+              className={`w-full justify-start ${responsiveSizes.buttonPaddingMd} text-xs sm:text-sm ${action.customClassName || ''}`}
               variant={action.variant || 'outline'}
               onClick={action.onClick}
             >
               {IconComponent ? (
-                <IconComponent className="w-4 h-4" strokeWidth={2} />
+                <IconComponent className={`${responsiveSizes.iconSizeSmall} flex-shrink-0`} strokeWidth={2} />
               ) : typeof action.icon === 'string' ? (
-                <span>{action.icon}</span>
+                <span className="flex-shrink-0">{action.icon}</span>
               ) : null}
-              <span>
+              <span className="truncate text-left">
                 {action.label}
               </span>
             </Button>
           );
 
           return action.href ? (
-            <a key={index} href={action.href}>
+            <a key={index} href={action.href} className="block">
               {ButtonComponent}
             </a>
           ) : (

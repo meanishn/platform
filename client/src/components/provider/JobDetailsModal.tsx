@@ -11,8 +11,8 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Button, Badge } from '../ui';
-import { MatchBadge } from '../provider';
+import { Modal, Button, Badge, InfoBox, ContactLinkCard, InfoAlert } from '../ui';
+import { MatchBadge, CustomerInfoHeader } from '../provider';
 import { providerApi } from '../../services/realApi';
 import { useNotificationService } from '../../services/notificationService';
 import type { ProviderJobDetailDto, ProviderActionRequest } from '../../types/api';
@@ -27,13 +27,12 @@ import {
   User,
   Phone,
   Mail,
-  Star,
   AlertCircle,
   CheckCircle,
-  FileText,
   Rocket,
   ExternalLink,
-  X
+  X,
+  Star
 } from 'lucide-react';
 
 interface JobDetailsModalProps {
@@ -157,11 +156,10 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
             {/* Header */}
             <div>
               <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
                     {job.title}
                   </h2>
-                  <p className="text-slate-600 text-sm">Request #{job.id}</p>
                 </div>
               </div>
 
@@ -224,50 +222,34 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
             <div>
               <h3 className="text-lg font-semibold text-slate-900 mb-3">Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                  <p className="text-slate-600 text-sm mb-1 flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4" />
-                    Location
-                  </p>
-                  <p className="text-slate-900 font-medium">
-                    {isAssigned ? job.address : 'General Area: Downtown'}
-                  </p>
-                </div>
-                <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                  <p className="text-slate-600 text-sm mb-1 flex items-center gap-1.5">
-                    <Clock className="w-4 h-4" />
-                    Estimated Duration
-                  </p>
-                  <p className="text-slate-900 font-medium">
-                    {job.estimatedHours ? `${job.estimatedHours} hours` : 'TBD'}
-                  </p>
-                </div>
-                <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                  <p className="text-slate-600 text-sm mb-1 flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4" />
-                    Preferred Date
-                  </p>
-                  <p className="text-slate-900 font-medium">
-                    {job.preferredDate 
-                      ? new Date(job.preferredDate).toLocaleDateString('en-US', { 
-                          weekday: 'short', 
-                          month: 'short', 
-                          day: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit'
-                        })
-                      : 'Flexible'}
-                  </p>
-                </div>
-                <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-                  <p className="text-slate-600 text-sm mb-1 flex items-center gap-1.5">
-                    <DollarSign className="w-4 h-4" />
-                    Rate
-                  </p>
-                  <p className="text-slate-900 font-medium">
-                    ${job.tier.baseHourlyRate}/hour ({job.tier.name} Tier)
-                  </p>
-                </div>
+                <InfoBox 
+                  icon={MapPin}
+                  label="Location"
+                  value={isAssigned ? job.address : 'General Area: Downtown'}
+                />
+                <InfoBox 
+                  icon={Clock}
+                  label="Estimated Duration"
+                  value={job.estimatedHours ? `${job.estimatedHours} hours` : 'TBD'}
+                />
+                <InfoBox 
+                  icon={Calendar}
+                  label="Preferred Date"
+                  value={job.preferredDate 
+                    ? new Date(job.preferredDate).toLocaleDateString('en-US', { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                      })
+                    : 'Flexible'}
+                />
+                <InfoBox 
+                  icon={DollarSign}
+                  label="Rate"
+                  value={`$${job.tier.baseHourlyRate}/hour (${job.tier.name} Tier)`}
+                />
               </div>
             </div>
 
@@ -298,107 +280,62 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
               {isAvailable ? (
                 /* BEFORE Assignment - Partial Info */
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-lg">
-                      {job.customer.firstName?.[0] || 'C'}
-                    </div>
-                    <div>
-                      <p className="text-slate-900 font-semibold">
-                        {job.customer.firstName} {job.customer.lastName?.[0]}.
-                      </p>
-                      {job.customer.averageRating && (
-                        <p className="text-slate-600 text-sm flex items-center gap-1">
-                          <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                          {job.customer.averageRating.toFixed(1)} stars
-                          {job.customer.totalJobsCompleted && ` (${job.customer.totalJobsCompleted} jobs)`}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <CustomerInfoHeader 
+                    firstName={job.customer.firstName}
+                    lastName={job.customer.lastName}
+                    averageRating={job.customer.averageRating}
+                    totalJobsCompleted={job.customer.totalJobsCompleted}
+                    showFullLastName={false}
+                  />
                   
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="success" className="text-xs flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" />
+                      <CheckCircle className="w-3 h-3" strokeWidth={2} />
                       Verified Customer
                     </Badge>
                     <Badge variant="default" className="text-xs">Always Pays On Time</Badge>
                   </div>
 
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
-                    <p className="text-amber-900 text-sm flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                      <span>Full contact details (phone, email, exact address) will be shown after customer assigns this job to you.</span>
-                    </p>
-                  </div>
+                  <InfoAlert icon={AlertCircle} variant="warning" className="mt-4">
+                    Full contact details (phone, email, exact address) will be shown after customer assigns this job to you.
+                  </InfoAlert>
                 </div>
               ) : (
                 /* AFTER Assignment - Full Contact Info */
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-lg">
-                      {job.customer.firstName?.[0] || 'C'}
-                    </div>
-                    <div>
-                      <p className="text-slate-900 font-semibold">
-                        {job.customer.firstName} {job.customer.lastName}
-                      </p>
-                      {job.customer.averageRating && (
-                        <p className="text-slate-600 text-sm flex items-center gap-1">
-                          <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                          {job.customer.averageRating.toFixed(1)} stars ({job.customer.totalJobsCompleted || 0} jobs)
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <CustomerInfoHeader 
+                    firstName={job.customer.firstName}
+                    lastName={job.customer.lastName}
+                    averageRating={job.customer.averageRating}
+                    totalJobsCompleted={job.customer.totalJobsCompleted}
+                    showFullLastName={true}
+                  />
 
                   <div className="space-y-2">
-                    <a 
+                    <ContactLinkCard 
+                      icon={Phone}
+                      label="Phone"
+                      value={customerWithContact?.phone || 'Not available'}
                       href={`tel:${customerWithContact?.phone || ''}`}
-                      className="flex items-center gap-3 bg-white rounded-lg p-3 border border-slate-200 hover:bg-slate-50 transition-colors"
-                    >
-                      <Phone className="w-5 h-5 text-slate-600" />
-                      <div>
-                        <p className="text-slate-600 text-xs">Phone</p>
-                        <p className="text-slate-900 font-medium">{customerWithContact?.phone || 'Not available'}</p>
-                      </div>
-                    </a>
+                    />
 
-                    <a 
+                    <ContactLinkCard 
+                      icon={Mail}
+                      label="Email"
+                      value={customerWithContact?.email || 'Not available'}
                       href={`mailto:${customerWithContact?.email || ''}`}
-                      className="flex items-center gap-3 bg-white rounded-lg p-3 border border-slate-200 hover:bg-slate-50 transition-colors"
-                    >
-                      <Mail className="w-5 h-5 text-slate-600" />
-                      <div>
-                        <p className="text-slate-600 text-xs">Email</p>
-                        <p className="text-slate-900 font-medium">{customerWithContact?.email || 'Not available'}</p>
-                      </div>
-                    </a>
+                    />
 
-                    <a 
+                    <ContactLinkCard 
+                      icon={MapPin}
+                      label="Address"
+                      value={job.address}
                       href={`https://maps.google.com/?q=${encodeURIComponent(job.address)}`}
+                      rightIcon={ExternalLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 bg-white rounded-lg p-3 border border-slate-200 hover:bg-slate-50 transition-colors"
-                    >
-                      <MapPin className="w-5 h-5 text-slate-600" />
-                      <div className="flex-1">
-                        <p className="text-slate-600 text-xs">Address</p>
-                        <p className="text-slate-900 font-medium">{job.address}</p>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-slate-500" />
-                    </a>
+                    />
                   </div>
-
-                  {/* Customer Notes - from job description */}
-                  {job.description && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
-                      <p className="text-slate-900 text-sm mb-1 font-semibold flex items-center gap-1.5">
-                        <FileText className="w-4 h-4" />
-                        Customer Details:
-                      </p>
-                      <p className="text-slate-700 text-sm">{job.description}</p>
-                    </div>
-                  )}
                 </div>
               )}
             </div>

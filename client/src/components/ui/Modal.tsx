@@ -127,17 +127,17 @@ interface CardProps {
 export const Card: React.FC<CardProps> = ({
   children,
   className = '',
-  padding = 'md',
+  padding = 'none',
 }) => {
   const paddingClasses = {
     none: '',
     sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8',
+    md: 'p-5',
+    lg: 'p-6',
   };
 
   return (
-    <div className={`bg-white border border-slate-200 rounded-lg shadow-sm ${paddingClasses[padding]} ${className}`}>
+    <div className={`bg-white border border-slate-200 rounded-lg shadow-md hover:shadow-xl transition-all duration-200 ${paddingClasses[padding]} ${className}`}>
       {children}
     </div>
   );
@@ -171,13 +171,13 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const sizeClasses = {
-    sm: 'px-2 py-1 text-xs',
-    md: 'px-3 py-1 text-sm',
+    sm: 'px-2 py-0.5 text-xs',
+    md: 'px-2.5 py-1 text-xs',
   };
 
   return (
     <span className={`
-      inline-flex items-center font-medium rounded-full
+      inline-flex items-center font-medium rounded-md
       ${variantClasses[variant]} ${sizeClasses[size]} ${className}
     `}>
       {children}
