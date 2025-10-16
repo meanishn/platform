@@ -20,6 +20,7 @@ import { useNotificationService } from '../../services/notificationService';
 import { useJobDetailsModal, useConfirmationModal } from '../../hooks';
 import type { JobDto } from '../../types/api';
 import { formatDistanceToNow } from 'date-fns';
+import { RefreshCw, Info, AlertTriangle, MapPin, Timer, DollarSign, Lightbulb, Sparkles, Clock, Trophy, CheckCircle2, BarChart3, Users, FileText, X } from 'lucide-react';
 
 export const AcceptedJobs: React.FC = () => {
   const notify = useNotificationService();
@@ -62,7 +63,7 @@ export const AcceptedJobs: React.FC = () => {
         reasonLabel: 'Reason for declining',
         reasonPlaceholder: 'e.g., Schedule conflict, Too far from my location, Not my specialty, Better opportunity...',
         warningMessage: 'Once declined, this job will be available for other providers. You won\'t be able to accept it again unless the customer reopens it.',
-        icon: '⚠️',
+        icon: AlertTriangle,
       },
       async (reason) => {
         try {
@@ -90,21 +91,22 @@ export const AcceptedJobs: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <PageHeader
-        title="Accepted Jobs - Pending Selection"
-        description="Jobs you've accepted. Customer is reviewing providers and will select one soon."
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        {/* Header */}
+        <PageHeader
+          title="Accepted Jobs - Pending Selection"
+          description="Jobs you've accepted. Customer is reviewing providers and will select one soon."
         action={{
           label: 'Refresh',
-          icon: '🔄',
+          icon: RefreshCw,
           onClick: fetchAcceptedJobs,
         }}
       />
 
       {/* Info Banner */}
       <InfoBanner
-        icon="ℹ️"
+        icon={Info}
         title="What happens next?"
         message="The customer is reviewing all providers who accepted this job. If selected, you'll receive a notification and the job will move to your Active Work. If not selected, the job will be removed from this list."
         variant="info"
@@ -114,15 +116,17 @@ export const AcceptedJobs: React.FC = () => {
       {jobs.length > 0 ? (
         <div className="space-y-4">
           {jobs.map((job) => (
-            <Card key={job.id} className="p-6 hover:border-primary-400/50 transition-all duration-300">
+            <Card key={job.id} className="p-6 bg-white border-slate-200 hover:border-slate-300 transition-colors">
               {/* Status Badge */}
               <div className="flex items-center justify-between mb-4">
-                <Badge variant="warning" className="text-sm">
-                  ⏳ PENDING SELECTION
+                <Badge variant="warning" className="text-sm flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" strokeWidth={2} />
+                  <span>PENDING SELECTION</span>
                 </Badge>
                 {job.rank && job.rank === 1 && (
-                  <Badge variant="success" className="text-sm animate-pulse-glow">
-                    🏆 You're Rank #1!
+                  <Badge variant="success" className="text-sm flex items-center gap-1.5">
+                    <Trophy className="w-3.5 h-3.5" strokeWidth={2} />
+                    <span>You're Rank #1!</span>
                   </Badge>
                 )}
               </div>
@@ -130,10 +134,10 @@ export const AcceptedJobs: React.FC = () => {
               {/* Job Title & Match Badge */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-white mb-2">
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2">
                     {job.title}
                   </h3>
-                  <p className="text-white/70 text-sm line-clamp-2 mb-3">
+                  <p className="text-slate-600 text-sm line-clamp-2 mb-3">
                     {job.description}
                   </p>
                 </div>
@@ -149,24 +153,26 @@ export const AcceptedJobs: React.FC = () => {
               </div>
 
               {/* Job Details Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-white/10">
-                <JobDetailItem label="Location" value={job.address} icon="📍" />
-                <JobDetailItem label="Duration" value={`${job.estimatedHours}h est.`} icon="⏱️" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-slate-200">
+                <JobDetailItem label="Location" value={job.address} icon={MapPin} />
+                <JobDetailItem label="Duration" value={`${job.estimatedHours}h est.`} icon={Timer} />
                 <JobDetailItem 
                   label="Urgency" 
                   value={<UrgencyBadge urgency={job.urgency} />} 
                 />
-                <JobDetailItem label="Rate" value={`$${job.tier?.baseHourlyRate}/hr`} icon="💵" />
+                <JobDetailItem label="Rate" value={`$${job.tier?.baseHourlyRate}/hr`} icon={DollarSign} />
               </div>
 
               {/* Acceptance Info */}
               <div className="mb-4">
-                <p className="text-white/80 text-sm">
-                  ✅ You accepted {job.createdAt ? formatDistanceToNow(new Date(job.createdAt), { addSuffix: true }) : 'recently'}
+                <p className="text-slate-700 text-sm flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" strokeWidth={2} />
+                  <span>You accepted {job.createdAt ? formatDistanceToNow(new Date(job.createdAt), { addSuffix: true }) : 'recently'}</span>
                 </p>
                 {job.matchScore && (
-                  <p className="text-white/70 text-sm mt-1">
-                    📊 Match: {job.matchScore}% • {job.distanceMiles ? `${job.distanceMiles.toFixed(1)} miles` : 'Distance unknown'}
+                  <p className="text-slate-600 text-sm mt-1 flex items-center gap-1.5">
+                    <BarChart3 className="w-4 h-4 text-slate-500" strokeWidth={2} />
+                    <span>Match: {job.matchScore}% • {job.distanceMiles ? `${job.distanceMiles.toFixed(1)} miles` : 'Distance unknown'}</span>
                   </p>
                 )}
               </div>
@@ -174,33 +180,36 @@ export const AcceptedJobs: React.FC = () => {
               {/* Rank-based tip */}
               {job.rank === 1 && (
                 <InfoBanner
-                  icon="💡"
+                  icon={Lightbulb}
                   message={<><strong>Tip:</strong> Being Rank #1 means you're the top match! You have a great chance of being selected.</>}
                   variant="warning"
-                  className="mb-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20"
+                  className="mb-4"
                 />
               )}
               {job.rank && job.rank > 1 && (
-                <p className="text-white/70 text-sm mb-4">
-                  👥 You're ranked #{job.rank} - Other providers may also be considered
+                <p className="text-slate-600 text-sm mb-4 flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-slate-500" strokeWidth={2} />
+                  <span>You're ranked #{job.rank} - Other providers may also be considered</span>
                 </p>
               )}
 
               {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t border-white/10">
+              <div className="flex gap-3 pt-4 border-t border-slate-200">
                 <Button
                   onClick={() => openJobDetails(job.id, fetchAcceptedJobs)}
                   variant="primary"
-                  className="flex-1"
+                  className="flex-1 flex items-center justify-center gap-2"
                 >
-                  📋 View Details
+                  <FileText className="w-4 h-4" strokeWidth={2} />
+                  <span>View Details</span>
                 </Button>
                 <Button
                   onClick={() => handleDecline(job.id)}
-                  variant="outline"
-                  className="flex-1 border-red-400/30 text-red-300 hover:bg-red-500/20"
+                  variant="danger"
+                  className="flex-1 flex items-center justify-center gap-2"
                 >
-                  ❌ Decline Offer
+                  <X className="w-4 h-4" strokeWidth={2} />
+                  <span>Decline Offer</span>
                 </Button>
               </div>
             </Card>
@@ -208,7 +217,7 @@ export const AcceptedJobs: React.FC = () => {
         </div>
       ) : (
         <EmptyState
-          icon="✨"
+          icon={Sparkles}
           title="No Accepted Jobs"
           description="You haven't accepted any jobs yet, or all accepted jobs have been processed."
           action={{
@@ -223,6 +232,7 @@ export const AcceptedJobs: React.FC = () => {
 
       {/* Decline Confirmation Modal */}
       {ConfirmationModalComponent}
+      </div>
     </div>
   );
 };

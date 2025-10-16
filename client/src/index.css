@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
+@import "./styles/tokens.css";
 
 /* CSS Variables for consistent theming */
 :root {
@@ -317,17 +318,15 @@
   text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
 }
 
-/* Layout utilities */
+/* Layout utilities - Updated for Design System */
 .page-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, rgb(88 28 135) 0%, rgb(15 23 42) 50%, rgb(80 24 67) 100%);
+  background: rgb(248 250 252); /* bg-slate-50 */
   position: relative;
-  overflow: hidden;
 }
 
 .content-container {
   position: relative;
-  z-index: 10;
   max-width: 80rem;
   margin: 0 auto;
   padding: 0 1rem;
@@ -340,26 +339,27 @@
   animation: shimmer 2s infinite;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - Updated for Design System */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgb(241 245 249); /* bg-slate-100 */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.6);
+  background: rgb(100 116 139); /* bg-slate-500 */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.8);
+  background: rgb(71 85 105); /* bg-slate-600 */
 }
 
-/* Base styles */
+/* Base styles - Updated for Design System */
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -367,8 +367,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--gradient-dark);
-  color: white;
+  background: rgb(248 250 252); /* bg-slate-50 */
+  color: rgb(15 23 42); /* text-slate-900 */
 }
 
 code {
@@ -376,13 +376,13 @@ code {
     monospace;
 }
 
-/* Selection styles */
+/* Selection styles - Updated for Design System */
 ::selection {
-  background: rgba(168, 85, 247, 0.3);
-  color: white;
+  background: rgb(191 219 254); /* bg-blue-200 */
+  color: rgb(30 58 138); /* text-blue-900 */
 }
 
 ::-moz-selection {
-  background: rgba(168, 85, 247, 0.3);
-  color: white;
+  background: rgb(191 219 254); /* bg-blue-200 */
+  color: rgb(30 58 138); /* text-blue-900 */
 }

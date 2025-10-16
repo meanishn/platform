@@ -10,6 +10,7 @@ import {
   ActivityList,
   QuickActionsCard
 } from '../../components/ui';
+import { ClipboardList, CheckCircle2, DollarSign, Star, Search, User, MessageCircle } from 'lucide-react';
 
 export const CustomerDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -59,34 +60,35 @@ export const CustomerDashboard: React.FC = () => {
   }
 
   return (
-    <div className="p-3 sm:p-6">
-      <PageHeader
-        title={`Welcome back, ${user?.firstName}!`}
-        description="Here's what's happening with your services"
-      />
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        <PageHeader
+          title={`Welcome back, ${user?.firstName}!`}
+          description="Here's what's happening with your services"
+        />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
         <DashboardStatCard
-          icon="📋"
+          icon={ClipboardList}
           label="Active Requests"
           value={stats.activeRequests}
           colorScheme="blue"
         />
         <DashboardStatCard
-          icon="✅"
+          icon={CheckCircle2}
           label="Completed Jobs"
           value={stats.completedJobs}
           colorScheme="green"
         />
         <DashboardStatCard
-          icon="💰"
+          icon={DollarSign}
           label="Total Spent"
           value={`$${stats.totalSpent.toLocaleString()}`}
           colorScheme="yellow"
         />
         <DashboardStatCard
-          icon="⭐"
+          icon={Star}
           label="Pending Reviews"
           value={stats.pendingReviews}
           colorScheme="purple"
@@ -100,10 +102,10 @@ export const CustomerDashboard: React.FC = () => {
             <QuickActionsCard
               title="Quick Actions"
               actions={[
-                { icon: '🔍', label: 'Browse Services', href: '/services' },
-                { icon: '📋', label: 'My Requests', href: '/my-requests' },
-                { icon: '👤', label: 'Edit Profile', href: '/profile' },
-                { icon: '💬', label: 'Get Support', href: '/support' }
+                { icon: Search, label: 'Browse Services', href: '/services' },
+                { icon: ClipboardList, label: 'My Requests', href: '/my-requests' },
+                { icon: User, label: 'Edit Profile', href: '/profile' },
+                { icon: MessageCircle, label: 'Get Support', href: '/support' }
               ]}
             />
           </Card>
@@ -111,12 +113,12 @@ export const CustomerDashboard: React.FC = () => {
 
         <div>
           <Card>
-            <div className="p-4 sm:p-6 glass-card">
-              <h3 className="text-lg font-medium text-black mb-4">
+            <div className="p-4 sm:p-6">
+              <h3 className="text-lg font-medium text-slate-900 mb-4">
                 Need Help?
               </h3>
               <div className="space-y-3">
-                <div className="text-sm text-black/70">
+                <div className="text-sm text-slate-600">
                   Our support team is here to help you find the right service providers.
                 </div>
                 <Button variant="primary" size="sm" className="w-full">
@@ -133,8 +135,8 @@ export const CustomerDashboard: React.FC = () => {
 
       {/* Recent Activity */}
       <Card>
-        <div className="p-4 sm:p-6 glass-card">
-          <h3 className="text-lg font-medium text-black mb-4">
+        <div className="p-4 sm:p-6">
+          <h3 className="text-lg font-medium text-slate-900 mb-4">
             Recent Activity
           </h3>
           <ActivityList
@@ -147,6 +149,7 @@ export const CustomerDashboard: React.FC = () => {
           />
         </div>
       </Card>
+      </div>
     </div>
   );
 };

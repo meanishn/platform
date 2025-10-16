@@ -42,14 +42,14 @@ export const ServiceRequestPage: React.FC = () => {
 
   return (
     <RoleGuard allowedRoles={['customer', 'provider']}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-800 to-indigo-900 p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
           {/* Page Header */}
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
               Request a Service
             </h1>
-            <p className="text-white/70">
+            <p className="text-slate-600">
               Choose your service category and provider level to get started
             </p>
           </div>
@@ -62,11 +62,11 @@ export const ServiceRequestPage: React.FC = () => {
 
           {/* Help Text */}
           <div className="mt-8 text-center">
-            <p className="text-white/60 text-sm">
+            <p className="text-slate-600 text-sm">
               Need help? Contact our support team or{' '}
               <button 
                 onClick={() => navigate(user?.role === 'provider' ? '/provider/dashboard' : '/dashboard')}
-                className="text-blue-300 hover:text-blue-200 underline"
+                className="text-slate-700 hover:text-slate-900 underline font-medium"
               >
                 return to dashboard
               </button>

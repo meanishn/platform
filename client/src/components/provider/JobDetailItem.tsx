@@ -4,14 +4,15 @@
  */
 
 import React from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 export interface JobDetailItemProps {
   /** Label text */
   label: string;
   /** Value to display */
   value: string | React.ReactNode;
-  /** Optional icon/emoji to show before value */
-  icon?: string;
+  /** Optional Lucide icon to show before value */
+  icon?: LucideIcon;
   /** Additional className */
   className?: string;
 }
@@ -19,14 +20,14 @@ export interface JobDetailItemProps {
 export const JobDetailItem: React.FC<JobDetailItemProps> = ({
   label,
   value,
-  icon,
+  icon: IconComponent,
   className = '',
 }) => {
   return (
     <div className={className}>
-      <p className="text-white/60 text-xs mb-1">{label}</p>
-      <p className="text-white text-sm flex items-center gap-1">
-        {icon && <span>{icon}</span>}
+      <p className="text-slate-500 text-xs mb-1">{label}</p>
+      <p className="text-slate-900 text-sm flex items-center gap-1.5">
+        {IconComponent && <IconComponent className="w-4 h-4 text-slate-600" strokeWidth={2} />}
         {value}
       </p>
     </div>

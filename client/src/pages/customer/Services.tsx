@@ -3,6 +3,7 @@ import { Card, Button, Input, Select, Badge } from '../../components/ui';
 import { Link } from 'react-router-dom';
 import { serviceApi } from '../../services/realApi';
 import { ServiceCategoryDto } from '../../types/service';
+import { Zap, Wrench, Sparkles, Palette, Wind, Trees, MapPin, Search, Star, CheckCircle2 } from 'lucide-react';
 
 interface Service {
   id: number;
@@ -70,28 +71,29 @@ export const Services: React.FC = () => {
   };
 
   const popularCategories = [
-    { name: 'Electrical', icon: '⚡', count: 245 },
-    { name: 'Plumbing', icon: '🔧', count: 189 },
-    { name: 'Cleaning', icon: '🧹', count: 167 },
-    { name: 'Painting', icon: '🎨', count: 143 },
-    { name: 'HVAC', icon: '❄️', count: 98 },
-    { name: 'Landscaping', icon: '🌿', count: 87 }
+    { name: 'Electrical', icon: Zap, count: 245 },
+    { name: 'Plumbing', icon: Wrench, count: 189 },
+    { name: 'Cleaning', icon: Sparkles, count: 167 },
+    { name: 'Painting', icon: Palette, count: 143 },
+    { name: 'HVAC', icon: Wind, count: 98 },
+    { name: 'Landscaping', icon: Trees, count: 87 }
   ];
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        <div className="mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white mb-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight mb-2">
               Browse Services
             </h1>
-            <p className="text-white/70">
+            <p className="text-sm text-slate-600 leading-normal">
               Find verified professionals for all your utility needs
             </p>
           </div>
           <Link to="/request-service">
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
+            <Button className="bg-slate-700 hover:bg-slate-800 text-white font-medium">
               + Request Service
             </Button>
           </Link>
@@ -100,31 +102,35 @@ export const Services: React.FC = () => {
 
       {/* Popular Categories */}
       <div className="mb-8">
-        <h2 className="text-lg font-medium text-white mb-4">
+        <h2 className="text-lg font-semibold text-slate-900 leading-snug mb-4">
           Popular Categories
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {popularCategories.map((category) => (
-            <button
-              key={category.name}
-              onClick={() => handleFilterChange('category', category.name)}
-              className="p-4 glass-card hover:bg-white/20 transition-all duration-200 transform hover:scale-105"
-            >
-              <div className="text-2xl mb-2">{category.icon}</div>
-              <div className="font-medium text-black">{category.name}</div>
-              <div className="text-sm text-black/70">{category.count} services</div>
-            </button>
-          ))}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {popularCategories.map((category) => {
+            const IconComponent = category.icon;
+            return (
+              <button
+                key={category.name}
+                onClick={() => handleFilterChange('category', category.name)}
+                className="p-4 bg-white border border-slate-200 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                  <IconComponent className="w-5 h-5 text-slate-600" strokeWidth={2} />
+                </div>
+                <div className="font-medium text-slate-900 text-sm">{category.name}</div>
+                <div className="text-xs text-slate-600">{category.count} services</div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Search and Filters */}
-      <Card className="mb-6 text-black/60">
-        <div className="p-6 glass-card text-black">
+      <Card className="mb-6">
+        <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2">
               <Input
-                className='text-black/60 focus:text-black/60 placeholder:text-black/40'
                 placeholder="Search services..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
@@ -169,16 +175,16 @@ export const Services: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map(i => (
             <div key={i} className="animate-pulse">
-              <div className="bg-white/10 h-48 rounded-lg mb-4 border border-white/20"></div>
-              <div className="h-4 bg-white/20 rounded mb-2"></div>
-              <div className="h-4 bg-white/20 rounded w-3/4"></div>
+              <div className="bg-slate-200 h-48 rounded-lg mb-4 border border-slate-300"></div>
+              <div className="h-4 bg-slate-200 rounded mb-2"></div>
+              <div className="h-4 bg-slate-200 rounded w-3/4"></div>
             </div>
           ))}
         </div>
       ) : services.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service) => (
-            <Card key={service.id} className="glass-card hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
+            <Card key={service.id} className="hover:shadow-lg transition-shadow">
               <div className="relative">
                 {service.images.length > 0 && (
                   <img
@@ -202,27 +208,33 @@ export const Services: React.FC = () => {
               
               <div className="p-6">
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-medium text-black line-clamp-2">
+                  <h3 className="font-medium text-slate-900 line-clamp-2">
                     {service.title}
                   </h3>
                   <div className="text-right">
-                    <div className="font-semibold text-green-600">
+                    <div className="font-semibold text-emerald-600">
                       {renderPriceRange(service.price)}
                     </div>
                   </div>
                 </div>
 
-                <p className="text-sm text-black/70 mb-3 line-clamp-2">
+                <p className="text-sm text-slate-600 mb-3 line-clamp-2">
                   {service.description}
                 </p>
 
                 <div className="flex items-center mb-3">
-                  <div className="flex items-center">
-                    <div className="flex items-center text-yellow-400">
-                      {'★'.repeat(Math.floor(service.rating))}
-                      {'☆'.repeat(5 - Math.floor(service.rating))}
-                    </div>
-                    <span className="ml-1 text-sm text-black/70">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < Math.floor(service.rating)
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-slate-300'
+                        }`}
+                      />
+                    ))}
+                    <span className="ml-2 text-sm text-slate-600">
                       {service.rating} ({service.reviewCount} reviews)
                     </span>
                   </div>
@@ -237,22 +249,23 @@ export const Services: React.FC = () => {
                         className="w-6 h-6 rounded-full"
                       />
                     ) : (
-                      <div className="w-6 h-6 bg-black/20 rounded-full border border-black/30"></div>
+                      <div className="w-6 h-6 bg-slate-200 rounded-full border border-slate-300"></div>
                     )}
-                    <span className="ml-2 text-sm text-black/80">
+                    <span className="ml-2 text-sm text-slate-700">
                       {service.provider.name}
                     </span>
                     {service.provider.verified && (
-                      <span className="ml-1 text-blue-400" title="Verified Provider">
-                        ✓
+                      <span title="Verified Provider">
+                        <CheckCircle2 className="ml-1 w-4 h-4 text-blue-500" />
                       </span>
                     )}
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-black/60">
-                    📍 {service.location}
+                  <span className="text-sm text-slate-600 flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    {service.location}
                   </span>
                   <div className="flex gap-2">
                     <Link to={`/services/${service.id}`}>
@@ -273,12 +286,12 @@ export const Services: React.FC = () => {
         </div>
       ) : (
         <Card>
-          <div className="p-12 text-center glass-card">
-            <div className="text-black/40 text-4xl mb-4">🔍</div>
-            <h3 className="text-lg font-medium text-black mb-2">
+          <div className="p-12 text-center">
+            <Search className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-slate-900 mb-2">
               No services found
             </h3>
-            <p className="text-black/70 mb-4">
+            <p className="text-slate-600 mb-4">
               Try adjusting your search criteria or browse our popular categories
             </p>
             <Button onClick={() => setFilters({
@@ -293,6 +306,7 @@ export const Services: React.FC = () => {
           </div>
         </Card>
       )}
+      </div>
     </div>
   );
 };

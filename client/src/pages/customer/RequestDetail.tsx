@@ -7,6 +7,24 @@ import { api, handleResponse } from '../../services/apiClient';
 import type { ServiceRequestDetailDto, ProviderWithContactDto } from '../../types/api';
 import { formatDistanceToNow } from 'date-fns';
 import { useSocketEvent, SocketEvents } from '../../hooks/useWebSocket';
+import { useConfirmationModal } from '../../hooks/useConfirmationModal';
+import { 
+  Users, 
+  Clock, 
+  CheckCircle2, 
+  Phone, 
+  Hourglass, 
+  Check, 
+  Hammer, 
+  X, 
+  AlertTriangle, 
+  AlertCircle, 
+  Circle, 
+  Tag, 
+  MapPin, 
+  Calendar, 
+  Star 
+} from 'lucide-react';
 
 interface SocketEventData {
   requestId?: number | string;
@@ -23,6 +41,8 @@ export const RequestDetail: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptedProviderCount, setAcceptedProviderCount] = useState<number>(0);
   const [isProvidersModalOpen, setIsProvidersModalOpen] = useState(false);
+  
+  const { confirm: confirmCancel, ConfirmationModalComponent: CancelConfirmationModal } = useConfirmationModal();
 
   const fetchAcceptedProviderCount = useCallback(async () => {
     if (!id) return;
@@ -152,24 +172,38 @@ export const RequestDetail: React.FC = () => {
   };
 
   const handleCancelRequest = async () => {
-    if (!id || !request || !confirm(`Are you sure you want to cancel "${request.title}"?`)) {
+    if (!id || !request) {
       return;
     }
     
-    const reason = prompt('Please provide a reason for cancellation (optional):');
-    
-    setIsProcessing(true);
-    try {
-      const response = await api.patch(`/api/service-requests/${id}/cancel`, { reason });
-      await handleResponse(response);
-      await fetchRequestDetail();
-      alert('Request cancelled successfully.');
-    } catch (error) {
-      console.error('Failed to cancel request:', error);
-      alert('Failed to cancel request. Please try again.');
-    } finally {
-      setIsProcessing(false);
-    }
+    confirmCancel(
+      {
+        title: 'Cancel Request',
+        message: `Are you sure you want to cancel "${request.title}"? This action cannot be undone.`,
+        confirmText: 'Cancel Request',
+        cancelText: 'Go Back',
+        confirmVariant: 'danger',
+        requireReason: false,
+        reasonLabel: 'Cancellation Reason (Optional)',
+        reasonPlaceholder: 'Please provide a reason for cancellation...',
+        warningMessage: 'The service provider will be notified of this cancellation.',
+        icon: AlertTriangle,
+      },
+      async (reason) => {
+        setIsProcessing(true);
+        try {
+          const response = await api.patch(`/api/service-requests/${id}/cancel`, { reason });
+          await handleResponse(response);
+          await fetchRequestDetail();
+          alert('Request cancelled successfully.');
+        } catch (error) {
+          console.error('Failed to cancel request:', error);
+          alert('Failed to cancel request. Please try again.');
+        } finally {
+          setIsProcessing(false);
+        }
+      }
+    );
   };
 
   const handleViewProviders = () => {
@@ -186,20 +220,25 @@ export const RequestDetail: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const configs: Record<string, { variant: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info', label: string, icon: string }> = {
-      pending: { variant: 'warning', label: 'Awaiting Providers', icon: '⏳' },
-      assigned: { variant: 'info', label: 'Provider Assigned', icon: '✓' },
-      in_progress: { variant: 'primary', label: 'In Progress', icon: '🔨' },
-      completed: { variant: 'success', label: 'Completed', icon: '✅' },
-      cancelled: { variant: 'danger', label: 'Cancelled', icon: '✕' },
+    const configs: Record<string, { 
+      variant: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info', 
+      label: string, 
+      IconComponent: typeof Clock 
+    }> = {
+      pending: { variant: 'warning', label: 'Awaiting Providers', IconComponent: Hourglass },
+      assigned: { variant: 'info', label: 'Provider Assigned', IconComponent: Check },
+      in_progress: { variant: 'primary', label: 'In Progress', IconComponent: Hammer },
+      completed: { variant: 'success', label: 'Completed', IconComponent: CheckCircle2 },
+      cancelled: { variant: 'danger', label: 'Cancelled', IconComponent: X },
     };
     
-    const config = configs[status] || { variant: 'default' as const, label: status, icon: '•' };
+    const config = configs[status] || { variant: 'default' as const, label: status, IconComponent: Circle };
+    const Icon = config.IconComponent;
     
     return (
       <Badge variant={config.variant} size="sm">
-        <span className="inline-flex items-center gap-1">
-          <span>{config.icon}</span>
+        <span className="inline-flex items-center gap-1.5">
+          <Icon className="w-3.5 h-3.5" strokeWidth={2} />
           <span>{config.label}</span>
         </span>
       </Badge>
@@ -207,19 +246,23 @@ export const RequestDetail: React.FC = () => {
   };
 
   const getUrgencyBadge = (urgency: string) => {
-    const configs: Record<string, { variant: 'default' | 'primary' | 'success' | 'warning' | 'danger', icon: string }> = {
-      emergency: { variant: 'danger', icon: '🚨' },
-      high: { variant: 'danger', icon: '🔴' },
-      medium: { variant: 'warning', icon: '🟡' },
-      low: { variant: 'success', icon: '🟢' },
+    const configs: Record<string, { 
+      variant: 'default' | 'primary' | 'success' | 'warning' | 'danger', 
+      IconComponent: typeof AlertTriangle 
+    }> = {
+      emergency: { variant: 'danger', IconComponent: AlertTriangle },
+      high: { variant: 'danger', IconComponent: AlertCircle },
+      medium: { variant: 'warning', IconComponent: AlertCircle },
+      low: { variant: 'success', IconComponent: Circle },
     };
     
-    const config = configs[urgency] || { variant: 'default' as const, icon: '•' };
+    const config = configs[urgency] || { variant: 'default' as const, IconComponent: Circle };
+    const Icon = config.IconComponent;
     
     return (
       <Badge variant={config.variant} size="sm">
-        <span className="inline-flex items-center gap-1">
-          <span>{config.icon}</span>
+        <span className="inline-flex items-center gap-1.5">
+          <Icon className="w-3.5 h-3.5" strokeWidth={2} />
           <span className="capitalize">{urgency}</span>
         </span>
       </Badge>
@@ -248,9 +291,11 @@ export const RequestDetail: React.FC = () => {
       <div className="p-8">
         <Card>
           <div className="p-8 text-center">
-            <div className="text-4xl mb-4">❌</div>
-            <h2 className="text-xl font-bold text-white-900 mb-2">Request Not Found</h2>
-            <p className="text-white-600 mb-4">
+            <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <X className="w-8 h-8 text-red-600" strokeWidth={2} />
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Request Not Found</h2>
+            <p className="text-slate-600 mb-4">
               This request may have been removed or you don't have access to it.
             </p>
             <Link to="/requests">
@@ -263,14 +308,15 @@ export const RequestDetail: React.FC = () => {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <Link to="/requests" className="text-blue-600 hover:text-blue-700 mb-4 inline-block">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        {/* Header */}
+        <div className="mb-6">
+        <Link to="/requests" className="text-slate-700 hover:text-slate-900 mb-4 inline-block">
           ← Back to My Requests
         </Link>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white-900">Request Details</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Request Details</h1>
           <div className="flex gap-2">
             {getStatusBadge(request.status)}
             {getUrgencyBadge(request.urgency)}
@@ -283,35 +329,53 @@ export const RequestDetail: React.FC = () => {
         {/* Request Info Card */}
         <Card>
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-white-900 mb-4">{request.title}</h2>
-            <p className="text-white-700 mb-6">{request.description}</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">{request.title}</h2>
+            <p className="text-slate-700 mb-6">{request.description}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
-                <p className="text-sm font-medium text-white-500 mb-1">🏷️ Category</p>
-                <p className="text-white-900">{request.category?.name || `Category ID: ${request.categoryId}`}</p>
+                <p className="text-sm font-medium text-slate-600 mb-1 flex items-center gap-1.5">
+                  <Tag className="w-4 h-4" strokeWidth={2} />
+                  <span>Category</span>
+                </p>
+                <p className="text-slate-900">{request.category?.name || `Category ID: ${request.categoryId}`}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-white-500 mb-1">⏰ Estimated Hours</p>
-                <p className="text-white-900">{request.estimatedHours}h estimated</p>
+                <p className="text-sm font-medium text-slate-600 mb-1 flex items-center gap-1.5">
+                  <Clock className="w-4 h-4" strokeWidth={2} />
+                  <span>Estimated Hours</span>
+                </p>
+                <p className="text-slate-900">{request.estimatedHours}h estimated</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-white-500 mb-1">📍 Location</p>
-                <p className="text-white-900">{request.address}</p>
+                <p className="text-sm font-medium text-slate-600 mb-1 flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4" strokeWidth={2} />
+                  <span>Location</span>
+                </p>
+                <p className="text-slate-900">{request.address}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-white-500 mb-1">📅 Created</p>
-                <p className="text-white-900">{formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}</p>
+                <p className="text-sm font-medium text-slate-600 mb-1 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4" strokeWidth={2} />
+                  <span>Created</span>
+                </p>
+                <p className="text-slate-900">{formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}</p>
               </div>
               {request.preferredDate && (
                 <div>
-                  <p className="text-sm font-medium text-white-500 mb-1">📅 Preferred Date</p>
-                  <p className="text-white-900">{new Date(request.preferredDate).toLocaleDateString()}</p>
+                  <p className="text-sm font-medium text-slate-600 mb-1 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4" strokeWidth={2} />
+                    <span>Preferred Date</span>
+                  </p>
+                  <p className="text-slate-900">{new Date(request.preferredDate).toLocaleDateString()}</p>
                 </div>
               )}
               <div>
-                <p className="text-sm font-medium text-white-500 mb-1">⭐ Service Tier</p>
-                <p className="text-white-900">{request.tier?.name || `Tier ID: ${request.tierId}`}</p>
+                <p className="text-sm font-medium text-slate-600 mb-1 flex items-center gap-1.5">
+                  <Star className="w-4 h-4" strokeWidth={2} />
+                  <span>Service Tier</span>
+                </p>
+                <p className="text-slate-900">{request.tier?.name || `Tier ID: ${request.tierId}`}</p>
               </div>
             </div>
           </div>
@@ -321,25 +385,27 @@ export const RequestDetail: React.FC = () => {
         {request.status === 'pending' && acceptedProviderCount > 0 && (
           <Card>
             <div className="p-6">
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg p-4 animate-pulse">
+              <div className="bg-emerald-50 border-l-4 border-emerald-600 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">👋</span>
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-200">
+                    <Users className="w-5 h-5 text-emerald-700" strokeWidth={2} />
+                  </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-blue-900 mb-1">
+                    <p className="font-semibold text-slate-900 mb-1">
                       {acceptedProviderCount === 1 
                         ? '1 provider has accepted!'
                         : `${acceptedProviderCount} providers have accepted!`
                       }
                     </p>
-                    <p className="text-sm text-blue-700 mb-3">
+                    <p className="text-sm text-slate-600 mb-3">
                       Review their profiles and choose the best match for your needs.
                     </p>
                     <Button
                       size="sm"
                       onClick={handleViewProviders}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-slate-700 hover:bg-slate-800 text-white font-medium"
                     >
-                      👤 View & Select Provider
+                      View & Select Provider
                     </Button>
                   </div>
                 </div>
@@ -351,20 +417,27 @@ export const RequestDetail: React.FC = () => {
         {/* Assigned/In Progress Status */}
         {(request.status === 'assigned' || request.status === 'in_progress') && (
           <Card>
-            <div className={`p-6 rounded-lg border-2 ${
+            <div className={`p-6 rounded-lg border ${
               request.status === 'in_progress' 
-                ? 'bg-yellow-50 border-yellow-200' 
+                ? 'bg-amber-50 border-amber-200' 
                 : 'bg-blue-50 border-blue-200'
             }`}>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">
-                  {request.status === 'in_progress' ? '🔨' : '✓'}
-                </span>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                  request.status === 'in_progress'
+                    ? 'bg-amber-100 text-amber-600'
+                    : 'bg-blue-100 text-blue-600'
+                }`}>
+                  {request.status === 'in_progress' 
+                    ? <Hammer className="w-5 h-5" strokeWidth={2} />
+                    : <Check className="w-5 h-5" strokeWidth={2} />
+                  }
+                </div>
                 <div>
-                  <p className="font-semibold text-white-900">
+                  <p className="font-semibold text-slate-900">
                     {request.status === 'in_progress' ? 'Work in Progress' : 'Provider Confirmed'}
                   </p>
-                  <p className="text-sm text-white-600">
+                  <p className="text-sm text-slate-700">
                     {request.status === 'in_progress' 
                       ? 'Your service provider is currently working on this request'
                       : 'A provider has been assigned and will start soon'
@@ -380,12 +453,14 @@ export const RequestDetail: React.FC = () => {
         {request.status === 'completed' && (
           <Card>
             <div className="p-6">
-              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">✅</span>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" strokeWidth={2} />
+                  </div>
                   <div>
-                    <p className="font-semibold text-green-900">Work Completed!</p>
-                    <p className="text-sm text-green-700">
+                    <p className="font-semibold text-emerald-900">Work Completed!</p>
+                    <p className="text-sm text-emerald-700">
                       Please review your service provider's work
                     </p>
                   </div>
@@ -399,24 +474,37 @@ export const RequestDetail: React.FC = () => {
         {provider && (
           <Card>
             <div className="p-6">
-              <h3 className="text-xl font-bold text-white-900 mb-4">
-                {request.status === 'pending' && request.assignedProviderId ? '⏳ Provider Awaiting Your Confirmation' : '👷‍♂️ Assigned Provider'}
+              <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                {request.status === 'pending' && request.assignedProviderId ? (
+                  <>
+                    <Clock className="w-5 h-5 text-amber-600" strokeWidth={2} />
+                    <span>Provider Awaiting Your Confirmation</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" strokeWidth={2} />
+                    <span>Assigned Provider</span>
+                  </>
+                )}
               </h3>
               
               <div className="flex items-start gap-4 mb-6">
-                <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                <div className="flex-shrink-0 w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center text-slate-700 text-2xl font-bold border-2 border-slate-300">
                   {provider.firstName[0]}{provider.lastName[0]}
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-lg font-semibold text-white-900">
+                  <h4 className="text-lg font-semibold text-slate-900">
                     {provider.firstName} {provider.lastName}
                   </h4>
-                  <p className="text-white-600">{provider.email}</p>
-                  <p className="text-white-600">📞 {provider.phone}</p>
+                  <p className="text-slate-600">{provider.email}</p>
+                  <p className="text-slate-600 flex items-center gap-1.5">
+                    <Phone className="w-4 h-4" strokeWidth={2} />
+                    <span>{provider.phone}</span>
+                  </p>
                   {provider.averageRating && (
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="text-yellow-500">★ {provider.averageRating.toFixed(1)}</span>
-                      <span className="text-white-500 text-sm">• {provider.totalJobsCompleted} jobs completed</span>
+                      <span className="text-amber-600">★ {provider.averageRating.toFixed(1)}</span>
+                      <span className="text-slate-500 text-sm">• {provider.totalJobsCompleted} jobs completed</span>
                     </div>
                   )}
                 </div>
@@ -434,15 +522,27 @@ export const RequestDetail: React.FC = () => {
                       disabled={isProcessing}
                       className="flex-1 bg-purple-600 hover:bg-purple-700"
                     >
-                      {isProcessing ? 'Processing...' : '✓ Confirm Provider'}
+                      <span className="inline-flex items-center gap-1.5">
+                        {isProcessing ? (
+                          'Processing...'
+                        ) : (
+                          <>
+                            <Check className="w-4 h-4" strokeWidth={2} />
+                            <span>Confirm Provider</span>
+                          </>
+                        )}
+                      </span>
                     </Button>
                     <Button
                       variant="outline"
                       onClick={handleRejectProvider}
                       disabled={isProcessing}
-                      className="flex-1 border-purple-300 text-purple-700 hover:bg-purple-50"
+                      className="flex-1 bg-red-50 hover:bg-red-100 text-red-700 border-red-200"
                     >
-                      ✕ Reject & Find Another
+                      <span className="inline-flex items-center gap-1.5">
+                        <X className="w-4 h-4" strokeWidth={2} />
+                        <span>Reject & Find Another</span>
+                      </span>
                     </Button>
                   </div>
                 </div>
@@ -454,28 +554,28 @@ export const RequestDetail: React.FC = () => {
         {/* Status Timeline */}
         <Card>
           <div className="p-6">
-            <h3 className="text-xl font-bold text-white-900 mb-4">Status Timeline</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-4">Status Timeline</h3>
             <div className="space-y-4">
               {/* Created */}
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                  ✓
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Check className="w-4 h-4 text-blue-600" strokeWidth={2} />
                 </div>
                 <div>
-                  <p className="font-medium text-white-900">Request Created</p>
-                  <p className="text-sm text-white-500">{new Date(request.createdAt).toLocaleString()}</p>
+                  <p className="font-medium text-slate-900">Request Created</p>
+                  <p className="text-sm text-slate-600">{new Date(request.createdAt).toLocaleString()}</p>
                 </div>
               </div>
 
               {/* Provider Assigned */}
               {request.assignedAt && (
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
-                    ✓
+                  <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Check className="w-4 h-4 text-purple-600" strokeWidth={2} />
                   </div>
                   <div>
-                    <p className="font-medium text-white-900">Provider Assigned</p>
-                    <p className="text-sm text-white-500">{new Date(request.assignedAt).toLocaleString()}</p>
+                    <p className="font-medium text-slate-900">Provider Assigned</p>
+                    <p className="text-sm text-slate-600">{new Date(request.assignedAt).toLocaleString()}</p>
                   </div>
                 </div>
               )}
@@ -483,12 +583,12 @@ export const RequestDetail: React.FC = () => {
               {/* Work Started */}
               {request.startedAt && (
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600">
-                    ✓
+                  <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                    <Check className="w-4 h-4 text-amber-600" strokeWidth={2} />
                   </div>
                   <div>
-                    <p className="font-medium text-white-900">Work Started</p>
-                    <p className="text-sm text-white-500">{new Date(request.startedAt).toLocaleString()}</p>
+                    <p className="font-medium text-slate-900">Work Started</p>
+                    <p className="text-sm text-slate-600">{new Date(request.startedAt).toLocaleString()}</p>
                   </div>
                 </div>
               )}
@@ -496,12 +596,12 @@ export const RequestDetail: React.FC = () => {
               {/* Completed */}
               {request.completedAt && (
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                    ✓
+                  <div className="flex-shrink-0 w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <Check className="w-4 h-4 text-emerald-600" strokeWidth={2} />
                   </div>
                   <div>
-                    <p className="font-medium text-white-900">Work Completed</p>
-                    <p className="text-sm text-white-500">{new Date(request.completedAt).toLocaleString()}</p>
+                    <p className="font-medium text-slate-900">Work Completed</p>
+                    <p className="text-sm text-slate-600">{new Date(request.completedAt).toLocaleString()}</p>
                   </div>
                 </div>
               )}
@@ -512,7 +612,7 @@ export const RequestDetail: React.FC = () => {
         {/* Action Buttons */}
         <Card>
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-white-900 mb-4">Actions</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Actions</h3>
             <div className="flex flex-wrap gap-2">
               {request.status === 'pending' && acceptedProviderCount === 0 && (
                 <Button
@@ -520,7 +620,10 @@ export const RequestDetail: React.FC = () => {
                   variant="outline"
                   onClick={handleViewProviders}
                 >
-                  👥 Check for Providers
+                  <span className="inline-flex items-center gap-1.5">
+                    <Users className="w-4 h-4" strokeWidth={2} />
+                    <span>Check for Providers</span>
+                  </span>
                 </Button>
               )}
               
@@ -532,17 +635,29 @@ export const RequestDetail: React.FC = () => {
                   disabled={isProcessing}
                   className="text-red-600 border-red-300 hover:bg-red-50"
                 >
-                  {isProcessing ? 'Processing...' : '✕ Cancel Request'}
+                  <span className="inline-flex items-center gap-1.5">
+                    {isProcessing ? (
+                      'Processing...'
+                    ) : (
+                      <>
+                        <X className="w-4 h-4" strokeWidth={2} />
+                        <span>Cancel Request</span>
+                      </>
+                    )}
+                  </span>
                 </Button>
               )}
               
               {request.status === 'completed' && (
                 <Button 
                   size="sm"
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-emerald-600 hover:bg-emerald-700"
                   onClick={() => navigate(`/requests/${request.id}/review`)}
                 >
-                  ⭐ Leave Review
+                  <span className="inline-flex items-center gap-1.5">
+                    <Star className="w-4 h-4" strokeWidth={2} />
+                    <span>Leave Review</span>
+                  </span>
                 </Button>
               )}
               
@@ -568,6 +683,10 @@ export const RequestDetail: React.FC = () => {
           onProviderConfirmed={handleProviderConfirmed}
         />
       )}
+      
+      {/* Cancel Request Confirmation Modal */}
+      {CancelConfirmationModal}
+      </div>
     </div>
   );
 };

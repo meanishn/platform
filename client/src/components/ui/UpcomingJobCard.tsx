@@ -7,6 +7,7 @@
 import React, { useMemo } from 'react';
 import { Button } from './Button';
 import { format } from 'date-fns';
+import { Calendar, Clock, MapPin, User, Phone, Mail, DollarSign, ClipboardList, AlertTriangle, Car, Navigation } from 'lucide-react';
 
 interface CustomerInfo {
   name: string;
@@ -90,39 +91,39 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
   if (compact) {
     // Compact view for split-screen layout
     return (
-      <div className="border-2 border-green-500/30 rounded-lg p-4 bg-green-50/50">
+      <div className="border-2 border-emerald-500/30 rounded-lg p-4 bg-emerald-50/50">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-black truncate mb-1">{title}</h3>
-            <p className="text-sm text-black/60">#{id}</p>
+            <h3 className="font-semibold text-slate-900 truncate mb-1">{title}</h3>
+            <p className="text-sm text-slate-600">#{id}</p>
           </div>
         </div>
 
         <div className="space-y-2 text-sm mb-4">
-          <div className="flex items-center gap-2 text-black/70">
-            <span>📅</span>
+          <div className="flex items-center gap-2 text-slate-700">
+            <Calendar className="w-4 h-4 text-slate-600" strokeWidth={2} />
             <span>Start: {formattedTime}</span>
           </div>
-          <div className="flex items-center gap-2 text-black/70">
-            <span>⏰</span>
-            <span className={timeUntilStart.isUrgent ? 'text-orange-600 font-semibold' : ''}>
+          <div className="flex items-center gap-2 text-slate-700">
+            <Clock className="w-4 h-4 text-slate-600" strokeWidth={2} />
+            <span className={timeUntilStart.isUrgent ? 'text-amber-600 font-semibold' : ''}>
               {timeUntilStart.text}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-black/70">
-            <span>📍</span>
+          <div className="flex items-center gap-2 text-slate-700">
+            <MapPin className="w-4 h-4 text-slate-600" strokeWidth={2} />
             <span className="truncate">{location}</span>
           </div>
-          <div className="flex items-center gap-2 text-black/70">
-            <span>👤</span>
+          <div className="flex items-center gap-2 text-slate-700">
+            <User className="w-4 h-4 text-slate-600" strokeWidth={2} />
             <span>
-              {customer.name} {customer.rating && `⭐ ${customer.rating}`}
+              {customer.name} {customer.rating && `★ ${customer.rating}`}
             </span>
           </div>
           {customer.phone && (
-            <div className="flex items-center gap-2 text-black/70">
-              <span>📞</span>
-              <a href={`tel:${customer.phone}`} className="text-blue-600 hover:underline">
+            <div className="flex items-center gap-2 text-slate-700">
+              <Phone className="w-4 h-4 text-slate-600" strokeWidth={2} />
+              <a href={`tel:${customer.phone}`} className="text-slate-700 hover:text-slate-900 hover:underline">
                 {customer.phone}
               </a>
             </div>
@@ -143,44 +144,54 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
 
   // Full view for focus mode
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="bg-white rounded-lg shadow-sm border border-slate-200">
       <div className="p-4 sm:p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-black mb-1">{title}</h2>
-            <p className="text-sm text-black/60">Request #{id}</p>
+            <h2 className="text-xl font-bold text-slate-900 mb-1">{title}</h2>
+            <p className="text-sm text-slate-600">Request #{id}</p>
           </div>
           <div className="ml-4">
-            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${
               timeUntilStart.isUrgent 
-                ? 'bg-orange-100 text-orange-700' 
-                : 'bg-green-100 text-green-700'
+                ? 'bg-amber-100 text-amber-700 border-amber-200' 
+                : 'bg-emerald-100 text-emerald-700 border-emerald-200'
             }`}>
-              📋 {timeUntilStart.isUrgent ? 'URGENT - Starts Soon!' : 'Upcoming'}
+              <ClipboardList className="w-3.5 h-3.5" strokeWidth={2} />
+              <span>{timeUntilStart.isUrgent ? 'URGENT - Starts Soon!' : 'Upcoming'}</span>
             </span>
           </div>
         </div>
 
         {/* Time Information */}
-        <div className={`rounded-lg p-4 mb-4 ${
-          timeUntilStart.isUrgent ? 'bg-orange-50' : 'bg-green-50'
+        <div className={`rounded-lg p-4 mb-4 border ${
+          timeUntilStart.isUrgent ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'
         }`}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
             <div>
-              <p className="text-black/60 mb-1">📅 Scheduled Time</p>
-              <p className="font-semibold text-black">{formattedDate}</p>
-              <p className="text-black/70">{formattedTime}</p>
+              <p className="text-slate-600 mb-1 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" strokeWidth={2} />
+                <span>Scheduled Time</span>
+              </p>
+              <p className="font-semibold text-slate-900">{formattedDate}</p>
+              <p className="text-slate-700">{formattedTime}</p>
             </div>
             <div>
-              <p className="text-black/60 mb-1">⏰ Time Until Start</p>
-              <p className={`font-semibold ${timeUntilStart.isUrgent ? 'text-orange-700' : 'text-black'}`}>
+              <p className="text-slate-600 mb-1 flex items-center gap-1.5">
+                <Clock className="w-4 h-4" strokeWidth={2} />
+                <span>Time Until Start</span>
+              </p>
+              <p className={`font-semibold ${timeUntilStart.isUrgent ? 'text-amber-700' : 'text-slate-900'}`}>
                 {timeUntilStart.text}
               </p>
             </div>
             {estimatedHours && (
               <div>
-                <p className="text-black/60 mb-1">⏱️ Estimated Duration</p>
-                <p className="font-semibold text-black">{estimatedHours} hours</p>
+                <p className="text-slate-600 mb-1 flex items-center gap-1.5">
+                  <Clock className="w-4 h-4" strokeWidth={2} />
+                  <span>Estimated Duration</span>
+                </p>
+                <p className="font-semibold text-slate-900">{estimatedHours} hours</p>
               </div>
             )}
           </div>
@@ -188,14 +199,14 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
 
         {/* Rate Information */}
         {(hourlyRate || tierName) && (
-          <div className="bg-blue-50 rounded-lg p-3 mb-4">
+          <div className="bg-slate-50 rounded-lg p-3 mb-4 border border-slate-200">
             <div className="flex items-center gap-2 text-sm">
-              <span>💵</span>
-              <span className="font-semibold text-black">
+              <DollarSign className="w-4 h-4 text-slate-600" strokeWidth={2} />
+              <span className="font-semibold text-slate-900">
                 ${hourlyRate}/hour
               </span>
               {tierName && (
-                <span className="text-black/60">({tierName} Tier)</span>
+                <span className="text-slate-600">({tierName} Tier)</span>
               )}
             </div>
           </div>
@@ -204,28 +215,32 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
         {/* Location */}
         <div className="mb-4">
           <div className="flex items-start gap-2">
-            <span className="text-lg mt-0.5">📍</span>
+            <MapPin className="w-5 h-5 text-slate-600 mt-0.5" strokeWidth={2} />
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-black mb-1">{location}</p>
+              <p className="font-medium text-slate-900 mb-1">{location}</p>
               <div className="flex flex-wrap gap-3">
                 {distanceFromCurrent && (
-                  <span className="text-sm text-black/60">🚗 {distanceFromCurrent}</span>
+                  <span className="text-sm text-slate-600 flex items-center gap-1">
+                    <Car className="w-3.5 h-3.5" strokeWidth={2} />
+                    <span>{distanceFromCurrent}</span>
+                  </span>
                 )}
                 <a 
                   href={`https://maps.google.com/?q=${encodeURIComponent(location)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-slate-700 hover:text-slate-900 hover:underline"
                 >
-                  🗺️ Open in Maps
+                  Open in Maps
                 </a>
                 <a 
                   href={`https://maps.google.com/?daddr=${encodeURIComponent(location)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-slate-700 hover:text-slate-900 hover:underline flex items-center gap-1"
                 >
-                  Get Directions
+                  <Navigation className="w-3.5 h-3.5" strokeWidth={2} />
+                  <span>Get Directions</span>
                 </a>
               </div>
             </div>
@@ -233,21 +248,27 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
         </div>
 
         {/* Customer Details */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-          <h3 className="font-semibold text-black mb-3">Customer</h3>
+        <div className="bg-slate-50 rounded-lg p-4 mb-4 border border-slate-200">
+          <h3 className="font-semibold text-slate-900 mb-3">Customer</h3>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-black/70">👤 {customer.name}</span>
+              <span className="text-slate-700 flex items-center gap-1.5">
+                <User className="w-4 h-4 text-slate-600" strokeWidth={2} />
+                <span>{customer.name}</span>
+              </span>
               {customer.rating && (
-                <span className="text-sm text-black/60">
-                  ⭐ {customer.rating} {customer.reviewCount && `(${customer.reviewCount} reviews)`}
+                <span className="text-sm text-slate-600">
+                  ★ {customer.rating} {customer.reviewCount && `(${customer.reviewCount} reviews)`}
                 </span>
               )}
             </div>
             
             {customer.phone && (
               <div className="flex items-center justify-between gap-4">
-                <span className="text-black/70">📞 {customer.phone}</span>
+                <span className="text-slate-700 flex items-center gap-1.5">
+                  <Phone className="w-4 h-4 text-slate-600" strokeWidth={2} />
+                  <span>{customer.phone}</span>
+                </span>
                 <a href={`tel:${customer.phone}`}>
                   <Button size="sm" variant="outline">Call</Button>
                 </a>
@@ -256,7 +277,10 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
             
             {customer.email && (
               <div className="flex items-center justify-between gap-4">
-                <span className="text-black/70 truncate">📧 {customer.email}</span>
+                <span className="text-slate-700 truncate flex items-center gap-1.5">
+                  <Mail className="w-4 h-4 text-slate-600" strokeWidth={2} />
+                  <span className="truncate">{customer.email}</span>
+                </span>
                 <a href={`mailto:${customer.email}`}>
                   <Button size="sm" variant="outline">Message</Button>
                 </a>
@@ -264,9 +288,9 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
             )}
 
             {customer.notes && (
-              <div className="mt-3 pt-3 border-t border-gray-200">
-                <p className="text-sm text-black/60 mb-1">Notes:</p>
-                <p className="text-sm text-black/80 italic">"{customer.notes}"</p>
+              <div className="mt-3 pt-3 border-t border-slate-200">
+                <p className="text-sm text-slate-600 mb-1">Notes:</p>
+                <p className="text-sm text-slate-700 italic">"{customer.notes}"</p>
               </div>
             )}
           </div>
@@ -294,9 +318,10 @@ export const UpcomingJobCard: React.FC<UpcomingJobCardProps> = ({
 
         {/* Warning if not ready */}
         {!timeUntilStart.canStart && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-sm text-yellow-800">
-              ⚠️ This job is scheduled for later. Make sure to finish any current work first before starting.
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-900 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600" strokeWidth={2} />
+              <span>This job is scheduled for later. Make sure to finish any current work first before starting.</span>
             </p>
           </div>
         )}

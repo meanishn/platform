@@ -1,8 +1,9 @@
 import React from 'react';
 import { Button } from './Button';
+import { LucideIcon } from 'lucide-react';
 
 export interface QuickActionProps {
-  icon: string;
+  icon: LucideIcon | string;
   label: string;
   onClick?: () => void;
   href?: string;
@@ -28,18 +29,24 @@ export const QuickActionsCard: React.FC<QuickActionsCardProps> = ({
   };
 
   return (
-    <div className="p-6 glass-card">
-      <h3 className="text-lg font-medium text-black mb-4">{title}</h3>
+    <div className="p-6 bg-white border border-slate-200 rounded-lg shadow-md">
+      {title && <h3 className="text-lg font-semibold text-slate-900 leading-snug mb-4">{title}</h3>}
       <div className={`grid ${gridCols[columns]} gap-3`}>
         {actions.map((action, index) => {
+          const IconComponent = typeof action.icon === 'string' ? null : action.icon;
+          
           const ButtonComponent = (
             <Button
-              className={`w-full justify-start ${action.customClassName || ''}`}
+              className={`w-full justify-start gap-2 ${action.customClassName || ''}`}
               variant={action.variant || 'outline'}
               onClick={action.onClick}
             >
-              <span className="mr-2">{action.icon}</span>
-              <span className={action.variant === 'outline' ? 'text-black/70' : ''}>
+              {IconComponent ? (
+                <IconComponent className="w-4 h-4" strokeWidth={2} />
+              ) : typeof action.icon === 'string' ? (
+                <span>{action.icon}</span>
+              ) : null}
+              <span>
                 {action.label}
               </span>
             </Button>

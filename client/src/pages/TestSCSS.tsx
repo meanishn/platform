@@ -1,4 +1,5 @@
 import React from 'react';
+import { BarChart3 } from 'lucide-react';
 
 export const TestSCSS: React.FC = () => {
   return (
@@ -10,7 +11,9 @@ export const TestSCSS: React.FC = () => {
       
       <div className="grid cols-3 mb-6">
         <div className="stat-card">
-          <div className="icon blue">📊</div>
+          <div className="icon blue">
+            <BarChart3 className="w-5 h-5" strokeWidth={2} />
+          </div>
           <div className="content">
             <div className="label">Test Stat</div>
             <div className="value">123</div>

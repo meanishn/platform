@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Card, Button, Badge } from '../../components/ui';
 import { api, handleResponse } from '../../services/apiClient';
+import { CheckCircle, X } from 'lucide-react';
 
 interface Assignment {
   notification: {
@@ -154,9 +155,10 @@ export const AssignmentDetail: React.FC = () => {
   const { notification, request } = assignment;
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        {/* Header */}
+        <div className="mb-6">
         <Link to="/provider/assignments" className="text-blue-600 hover:text-blue-700 mb-4 inline-block">
           ← Back to Assignments
         </Link>
@@ -267,22 +269,29 @@ export const AssignmentDetail: React.FC = () => {
                 <Button
                   onClick={handleAccept}
                   disabled={isProcessing}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2"
                 >
-                  {isProcessing ? 'Processing...' : '✓ Accept Assignment'}
+                  {isProcessing ? 'Processing...' : (
+                    <>
+                      <CheckCircle className="w-4 h-4" strokeWidth={2} />
+                      <span>Accept Assignment</span>
+                    </>
+                  )}
                 </Button>
                 <Button
                   onClick={handleDecline}
                   disabled={isProcessing}
-                  variant="outline"
-                  className="flex-1 border-red-600 text-red-600 hover:bg-red-50"
+                  variant="danger"
+                  className="flex-1 flex items-center justify-center gap-2"
                 >
-                  ✗ Decline
+                  <X className="w-4 h-4" strokeWidth={2} />
+                  <span>Decline</span>
                 </Button>
               </div>
             </div>
           </Card>
         )}
+      </div>
       </div>
     </div>
   );

@@ -6,10 +6,11 @@
 import React from 'react';
 import { Card } from './Modal';
 import { Button } from './Button';
+import type { LucideIcon } from 'lucide-react';
 
 export interface EmptyStateProps {
-  /** Icon/emoji to display */
-  icon: string;
+  /** Lucide icon component to display */
+  icon: LucideIcon;
   /** Title text */
   title: string;
   /** Description text */
@@ -25,19 +26,21 @@ export interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  icon,
+  icon: IconComponent,
   title,
   description,
   action,
   className = '',
 }) => {
   return (
-    <Card className={`p-8 md:p-12 text-center ${className}`}>
-      <div className="text-5xl md:text-6xl mb-4">{icon}</div>
-      <h3 className="text-lg md:text-xl font-semibold text-white mb-2">
+    <Card className={`p-8 md:p-12 text-center bg-white border-slate-200 ${className}`}>
+      <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <IconComponent className="w-10 h-10 text-slate-400" strokeWidth={2} />
+      </div>
+      <h3 className="text-lg md:text-xl font-semibold text-slate-900 mb-2">
         {title}
       </h3>
-      <p className="text-sm md:text-base text-white/70 mb-6 max-w-md mx-auto">
+      <p className="text-sm md:text-base text-slate-600 mb-6 max-w-md mx-auto">
         {description}
       </p>
       {action && (

@@ -100,15 +100,16 @@ export const Profile: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-        <p className="text-gray-600">Manage your account information and preferences</p>
-      </div>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
+          <p className="text-gray-600">Manage your account information and preferences</p>
+        </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-8">
-        <div className="flex space-x-8">
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200 mb-8">
+          <div className="flex space-x-8">
           {[
             { id: 'personal', label: 'Personal Information' },
             { id: 'contact', label: 'Contact & Address' },
@@ -127,12 +128,12 @@ export const Profile: React.FC = () => {
               {tab.label}
             </button>
           ))}
+          </div>
         </div>
-      </div>
 
-      {/* Personal Information Tab */}
-      {activeTab === 'personal' && (
-        <Card>
+        {/* Personal Information Tab */}
+        {activeTab === 'personal' && (
+          <Card>
           <div className="p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-6">Personal Information</h3>
             
@@ -185,12 +186,12 @@ export const Profile: React.FC = () => {
               />
             </div>
           </div>
-        </Card>
-      )}
+          </Card>
+        )}
 
-      {/* Contact & Address Tab */}
-      {activeTab === 'contact' && (
-        <Card>
+        {/* Contact & Address Tab */}
+        {activeTab === 'contact' && (
+          <Card>
           <div className="p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-6">Contact & Address</h3>
             
@@ -236,12 +237,12 @@ export const Profile: React.FC = () => {
               </div>
             </div>
           </div>
-        </Card>
-      )}
+          </Card>
+        )}
 
-      {/* Preferences Tab */}
-      {activeTab === 'preferences' && (
-        <Card>
+        {/* Preferences Tab */}
+        {activeTab === 'preferences' && (
+          <Card>
           <div className="p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-6">Notification Preferences</h3>
             
@@ -295,12 +296,12 @@ export const Profile: React.FC = () => {
               </div>
             </div>
           </div>
-        </Card>
-      )}
+          </Card>
+        )}
 
-      {/* Security Tab */}
-      {activeTab === 'security' && (
-        <Card>
+        {/* Security Tab */}
+        {activeTab === 'security' && (
+          <Card>
           <div className="p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-6">Security Settings</h3>
             
@@ -336,18 +337,19 @@ export const Profile: React.FC = () => {
               </div>
             </div>
           </div>
-        </Card>
-      )}
+          </Card>
+        )}
 
-      {/* Save Button */}
-      <div className="mt-8 flex justify-end">
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="w-32"
-        >
-          {isSaving ? 'Saving...' : 'Save Changes'}
-        </Button>
+        {/* Save Button */}
+        <div className="mt-8 flex justify-end">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="w-32"
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
       </div>
     </div>
   );

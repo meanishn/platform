@@ -1,10 +1,11 @@
 /**
  * MatchBadge Component
  * Displays provider match quality with score, rank, and distance
- * Visual indicators for top 3 ranks
+ * Visual indicators for top 3 ranks - Following Design System v1.0
  */
 
 import React from 'react';
+import { Trophy, Award, Medal, BarChart3, MapPin } from 'lucide-react';
 
 interface MatchBadgeProps {
   score?: number;      // 0-100 match score
@@ -27,12 +28,12 @@ export const MatchBadge: React.FC<MatchBadgeProps> = ({
   // Ensure distance is a number
   const distanceNum = distance !== undefined ? Number(distance) : undefined;
 
-  // Get rank emoji
-  const getRankEmoji = () => {
-    if (rank === 1) return '🏆';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
-    return '📊';
+  // Get rank icon component
+  const getRankIcon = () => {
+    if (rank === 1) return Trophy;
+    if (rank === 2) return Award;
+    if (rank === 3) return Medal;
+    return BarChart3;
   };
 
   // Get rank text
@@ -43,58 +44,65 @@ export const MatchBadge: React.FC<MatchBadgeProps> = ({
     return `#${rank}`;
   };
 
-  // Get badge background classes based on rank
+  // Get badge background classes based on rank - Design System compliant (subtle version)
   const getBadgeClasses = () => {
     if (rank === 1) {
-      return 'bg-gradient-to-r from-yellow-500/40 to-orange-500/40 border-yellow-500/60 shadow-lg shadow-yellow-500/30 animate-pulse-subtle';
+      return 'bg-white border-amber-200';
     }
     if (rank === 2) {
-      return 'bg-gradient-to-r from-gray-400/40 to-gray-500/40 border-gray-400/60';
+      return 'bg-white border-slate-200';
     }
     if (rank === 3) {
-      return 'bg-gradient-to-r from-orange-700/40 to-orange-800/40 border-orange-700/60';
+      return 'bg-white border-orange-200';
     }
-    return 'bg-white/15 border-white/30';
+    return 'bg-white border-slate-200';
   };
 
-  // Get rank text color
+  // Get rank text color - Design System compliant (more subtle)
   const getRankTextColor = () => {
-    if (rank === 1) return 'text-yellow-300';
-    if (rank === 2) return 'text-gray-300';
-    if (rank === 3) return 'text-orange-300';
-    return 'text-white/90';
+    if (rank === 1) return 'text-amber-700';
+    if (rank === 2) return 'text-slate-600';
+    if (rank === 3) return 'text-orange-700';
+    return 'text-slate-700';
   };
 
-  // Get score color classes
-  const getScoreClasses = () => {
-    if (!score) return 'bg-white/20';
-    if (score >= 90) return 'bg-green-500/30 text-green-300';
-    if (score >= 75) return 'bg-blue-500/30 text-blue-300';
-    if (score >= 60) return 'bg-yellow-500/30 text-yellow-300';
-    return 'bg-gray-500/30 text-gray-300';
+  // Get rank icon color - Design System compliant (more subtle)
+  const getRankIconColor = () => {
+    if (rank === 1) return 'text-amber-500';
+    if (rank === 2) return 'text-slate-500';
+    if (rank === 3) return 'text-orange-500';
+    return 'text-slate-500';
   };
+
+  // Get score badge classes - Design System compliant
+  const getScoreBadgeClasses = () => {
+    if (!score) return 'bg-slate-100 text-slate-700 border-slate-200';
+    if (score >= 90) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    if (score >= 75) return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (score >= 60) return 'bg-amber-100 text-amber-800 border-amber-200';
+    return 'bg-slate-100 text-slate-700 border-slate-200';
+  };
+
+  const RankIcon = getRankIcon();
 
   return (
     <div className={`
       inline-flex items-center justify-center 
-      px-3 py-2 md:px-4 md:py-2.5
-      rounded-2xl
-      backdrop-blur-md
+      px-2.5 py-1.5 md:px-3 md:py-2
+      rounded-lg
       border
-      shadow-md
-      text-xs md:text-sm
-      font-semibold
-      transition-all duration-300
-      hover:shadow-xl hover:-translate-y-0.5
+      text-xs
+      font-medium
+      transition-colors duration-200
       ${getBadgeClasses()}
       ${className}
     `}>
-      <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
         {/* Rank Indicator */}
         {rank && (
           <div className="flex items-center gap-1">
-            <span className="text-base md:text-lg">{getRankEmoji()}</span>
-            <span className={`font-bold uppercase tracking-wide ${getRankTextColor()}`}>
+            <RankIcon className={`w-3.5 h-3.5 ${getRankIconColor()}`} strokeWidth={2} />
+            <span className={`font-semibold uppercase tracking-wide text-[0.6875rem] ${getRankTextColor()}`}>
               {getRankText()}
             </span>
           </div>
@@ -103,11 +111,13 @@ export const MatchBadge: React.FC<MatchBadgeProps> = ({
         {/* Score */}
         {score !== undefined && (
           <div className={`
-            flex items-center 
-            px-2 py-0.5 
-            rounded-lg 
-            font-bold
-            ${getScoreClasses()}
+            inline-flex items-center 
+            px-1.5 py-0.5 
+            rounded
+            border
+            font-semibold
+            text-[0.6875rem]
+            ${getScoreBadgeClasses()}
           `}>
             {score}%
           </div>
@@ -115,9 +125,9 @@ export const MatchBadge: React.FC<MatchBadgeProps> = ({
 
         {/* Distance */}
         {distanceNum !== undefined && !isNaN(distanceNum) && (
-          <div className="flex items-center gap-1 text-white/90">
-            <span className="text-sm">📍</span>
-            <span className="font-semibold">
+          <div className="flex items-center gap-1 text-slate-600">
+            <MapPin className="w-3 h-3 text-slate-400" strokeWidth={2} />
+            <span className="font-medium text-[0.6875rem]">
               {distanceNum < 1 
                 ? `${(distanceNum * 5280).toFixed(0)} ft` 
                 : `${distanceNum.toFixed(1)} mi`}
@@ -141,33 +151,43 @@ export const CompactMatchBadge: React.FC<MatchBadgeProps> = ({
   // Ensure distance is a number
   const distanceNum = distance !== undefined ? Number(distance) : undefined;
 
-  const getRankEmoji = () => {
-    if (rank === 1) return '🏆';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
-    return '📊';
+  const getRankIcon = () => {
+    if (rank === 1) return Trophy;
+    if (rank === 2) return Award;
+    if (rank === 3) return Medal;
+    return BarChart3;
   };
+
+  const getRankIconColor = () => {
+    if (rank === 1) return 'text-amber-600';
+    if (rank === 2) return 'text-slate-600';
+    if (rank === 3) return 'text-orange-600';
+    return 'text-blue-600';
+  };
+
+  const RankIcon = getRankIcon();
 
   return (
     <div className={`
       inline-flex items-center gap-1.5 
       px-2 py-1
-      rounded-xl
-      bg-white/15 
-      backdrop-blur-sm
-      border border-white/25
+      rounded-md
+      bg-slate-100
+      border border-slate-200
       text-[0.6875rem]
       font-semibold
-      text-white/95
+      text-slate-700
       ${className}
     `}>
-      {rank && <span className="flex items-center">{getRankEmoji()}</span>}
+      {rank && <RankIcon className={`w-3 h-3 ${getRankIconColor()}`} strokeWidth={2} />}
       {score !== undefined && <span className="whitespace-nowrap">{score}%</span>}
       {distanceNum !== undefined && !isNaN(distanceNum) && (
-        <span className="flex items-center whitespace-nowrap">
-          📍 {distanceNum < 1 ? `${(distanceNum * 5280).toFixed(0)}ft` : `${distanceNum.toFixed(1)}mi`}
+        <span className="flex items-center gap-0.5 whitespace-nowrap">
+          <MapPin className="w-3 h-3 text-slate-500" strokeWidth={2} />
+          {distanceNum < 1 ? `${(distanceNum * 5280).toFixed(0)}ft` : `${distanceNum.toFixed(1)}mi`}
         </span>
       )}
     </div>
   );
 };
+

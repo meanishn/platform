@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Button } from './';
+import type { LucideIcon } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 export interface ConfirmationModalProps {
   isOpen: boolean;
@@ -14,7 +16,7 @@ export interface ConfirmationModalProps {
   reasonLabel?: string;
   reasonPlaceholder?: string;
   warningMessage?: string;
-  icon?: string;
+  icon?: LucideIcon;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -24,13 +26,13 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   title,
   message,
   confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  cancelText = 'Close',
   confirmVariant = 'primary',
   requireReason = false,
   reasonLabel = 'Reason',
   reasonPlaceholder = 'Please provide a reason...',
   warningMessage,
-  icon,
+  icon: IconComponent,
 }) => {
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,39 +66,44 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       onClose={handleClose}
       title={title}
       size="md"
+      theme="light"
     >
       <div className="space-y-4">
         {/* Icon & Message */}
         <div className="flex items-start gap-3">
-          {icon && <span className="text-3xl flex-shrink-0">{icon}</span>}
-          <p className="text-white/80 flex-1">{message}</p>
+          {IconComponent && (
+            <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <IconComponent className="w-5 h-5 text-slate-600" strokeWidth={2} />
+            </div>
+          )}
+          <p className="text-slate-700 flex-1">{message}</p>
         </div>
 
         {/* Reason Input (if required) */}
         {requireReason && (
           <div>
-            <label className="block text-white/70 text-sm mb-2">
-              {reasonLabel} <span className="text-red-400">*</span>
+            <label className="block text-slate-700 text-sm mb-2">
+              {reasonLabel} <span className="text-red-600">*</span>
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={reasonPlaceholder}
-              className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[120px] resize-none"
+              className="w-full px-4 py-3 rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 min-h-[120px] resize-none"
               autoFocus
               disabled={isSubmitting}
             />
             {!reason.trim() && (
-              <p className="text-red-400 text-xs mt-1">This field is required</p>
+              <p className="text-red-600 text-xs mt-1">This field is required</p>
             )}
           </div>
         )}
 
         {/* Warning Message */}
         {warningMessage && (
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
-            <p className="text-yellow-200 text-sm flex items-start gap-2">
-              <span className="text-base">⚠️</span>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p className="text-amber-900 text-sm flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" strokeWidth={2} />
               <span>{warningMessage}</span>
             </p>
           </div>

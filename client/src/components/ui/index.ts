@@ -3,6 +3,8 @@ export { Input, Select, Textarea } from './Form';
 export { Modal, Card, Badge } from './Modal';
 export { ConfirmationModal } from './ConfirmationModal';
 export type { ConfirmationModalProps } from './ConfirmationModal';
+export { Icon } from './Icon';
+export type { IconProps } from './Icon';
 
 // Shared reusable components (used by customer, provider, admin)
 export { StatCard } from './StatCard';

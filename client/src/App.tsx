@@ -22,7 +22,7 @@ import { RequestDetail } from './pages/customer/RequestDetail';
 // Provider Pages
 import { ProviderDashboard } from './pages/provider/Dashboard';
 import { ProviderAssignments } from './pages/provider/Assignments';
-import { AssignmentDetail } from './pages/provider/AssignmentDetail';
+
 import { ProviderRequestDetail } from './pages/provider/RequestDetail';
 import { AvailableJobsEnhanced } from './pages/provider/AvailableJobsEnhanced';
 import { AcceptedJobs } from './pages/provider/AcceptedJobs';
@@ -71,7 +71,6 @@ const AppContent = () => {
           <Route path="/provider/available-jobs" element={<AvailableJobsEnhanced />} />
           <Route path="/provider/accepted-jobs" element={<AcceptedJobs />} />
           <Route path="/provider/assignments" element={<ProviderAssignments />} />
-          <Route path="/provider/assignments/:id" element={<AssignmentDetail />} />
           <Route path="/provider/requests/:id" element={<ProviderRequestDetail />} />
           <Route path="/provider/jobs/:id" element={<ProviderRequestDetail />} />
           
@@ -101,9 +100,7 @@ function App() {
     <AuthProvider>
         <NotificationProvider>
           <Router>
-            <div className="page-container">
-              <AppContent />
-            </div>
+            <AppContent />
           </Router>
         </NotificationProvider>
     </AuthProvider>

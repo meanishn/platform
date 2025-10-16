@@ -16,6 +16,7 @@ import { useNotificationService } from '../../services/notificationService';
 import { useJobDetailsModal } from '../../hooks';
 import type { JobDto, ProviderActionRequest } from '../../types/api';
 import { SocketEvents, useSocketEvent } from '../../hooks/useWebSocket';
+import { Target, RefreshCw, Clock, CheckCircle2, MapPin, Trophy, Timer, Calendar, DollarSign, Search, Zap, FileText, Check, X } from 'lucide-react';
 
 type FilterType = 'all' | 'nearby' | 'high-match' | 'urgent';
 type SortType = 'match-score' | 'distance' | 'posted-date' | 'urgency';
@@ -178,44 +179,45 @@ export const AvailableJobsEnhanced: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-      {/* Header */}
-      <PageHeader
-        icon="🎯"
-        title="Available Jobs"
-        description="Service requests matching your skills and location"
-        action={{
-          label: 'Refresh',
-          icon: '🔄',
-          onClick: fetchAvailableJobs,
-          disabled: isLoading,
-        }}
-      />
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        {/* Header */}
+        <PageHeader
+          icon={Target}
+          title="Available Jobs"
+          description="Service requests matching your skills and location"
+          action={{
+            label: 'Refresh',
+            icon: RefreshCw,
+            onClick: fetchAvailableJobs,
+            disabled: isLoading,
+          }}
+        />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <StatCard
           label="New"
           value={pendingCount}
-          icon="⏳"
+          icon={Clock}
           colorScheme="yellow"
         />
         <StatCard
           label="Accepted"
           value={acceptedCount}
-          icon="✅"
+          icon={CheckCircle2}
           colorScheme="green"
         />
         <StatCard
           label="Nearby"
           value={nearbyCount}
-          icon="📍"
+          icon={MapPin}
           colorScheme="blue"
         />
         <StatCard
           label="High Match"
           value={highMatchCount}
-          icon="🏆"
+          icon={Trophy}
           colorScheme="purple"
         />
       </div>
@@ -235,32 +237,38 @@ export const AvailableJobsEnhanced: React.FC = () => {
             variant={filter === 'nearby' ? 'primary' : 'outline'}
             onClick={() => setFilter('nearby')}
             size="sm"
+            className="flex items-center gap-1.5"
           >
-            📍 Nearby ({nearbyCount})
+            <MapPin className="w-4 h-4" strokeWidth={2} />
+            <span>Nearby ({nearbyCount})</span>
           </Button>
           <Button
             variant={filter === 'high-match' ? 'primary' : 'outline'}
             onClick={() => setFilter('high-match')}
             size="sm"
+            className="flex items-center gap-1.5"
           >
-            🏆 High Match ({highMatchCount})
+            <Trophy className="w-4 h-4" strokeWidth={2} />
+            <span>High Match ({highMatchCount})</span>
           </Button>
           <Button
             variant={filter === 'urgent' ? 'primary' : 'outline'}
             onClick={() => setFilter('urgent')}
             size="sm"
+            className="flex items-center gap-1.5"
           >
-            ⚡ Urgent
+            <Zap className="w-4 h-4" strokeWidth={2} />
+            <span>Urgent</span>
           </Button>
         </div>
 
         {/* Sort */}
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-white/70 text-sm whitespace-nowrap">Sort by:</span>
+          <span className="text-slate-600 text-sm whitespace-nowrap">Sort by:</span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortType)}
-            className="px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="match-score">Match Score</option>
             <option value="distance">Distance</option>
@@ -276,7 +284,7 @@ export const AvailableJobsEnhanced: React.FC = () => {
           {filteredJobs.map((job) => (
             <Card 
               key={job.id} 
-              className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+              className="overflow-hidden bg-white border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300"
             >
               <div className="p-4 md:p-6">
                 {/* Match Badge - Prominent at top */}
@@ -293,42 +301,43 @@ export const AvailableJobsEnhanced: React.FC = () => {
                 <div className="flex items-start justify-between mb-4 gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 md:gap-3 mb-2 flex-wrap">
-                      <h3 className="text-lg md:text-xl font-semibold text-white">
+                      <h3 className="text-lg md:text-xl font-semibold text-slate-900">
                         {job.title}
                       </h3>
                       <StatusBadge status={job.status} />
                       {job.urgency && <UrgencyBadge urgency={job.urgency} />}
                     </div>
                     
-                    <p className="text-sm md:text-base text-white/70 mb-3 line-clamp-2">
+                    <p className="text-sm md:text-base text-slate-600 mb-3 line-clamp-2">
                       {job.description}
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
-                      <JobDetailItem label="Location" value={job.address} icon="📍" />
+                      <JobDetailItem label="Location" value={job.address} icon={MapPin} />
                       <JobDetailItem 
                         label="Est. Hours" 
                         value={`${job.estimatedHours || 'TBD'} hrs`} 
-                        icon="⏱️" 
+                        icon={Timer} 
                       />
                       <JobDetailItem 
                         label="Preferred" 
                         value={job.preferredDate ? new Date(job.preferredDate).toLocaleDateString() : 'Flexible'} 
-                        icon="📅" 
+                        icon={Calendar} 
                       />
-                      <JobDetailItem label="Rate" value={`$${job.tier.baseHourlyRate}/hr`} icon="💵" />
+                      <JobDetailItem label="Rate" value={`$${job.tier.baseHourlyRate}/hr`} icon={DollarSign} />
                     </div>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/10">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-200">
                   <Button
                     onClick={() => openJobDetails(job.id, fetchAvailableJobs)}
-                    variant="primary"
-                    className="flex-1 sm:flex-none"
+                    variant="outline"
+                    className="flex-1 sm:flex-none flex items-center gap-2"
                   >
-                    📋 View Full Details
+                    <FileText className="w-4 h-4" strokeWidth={2} />
+                    <span>View Full Details</span>
                   </Button>
                   
                   {job.status === 'pending' && (
@@ -336,24 +345,34 @@ export const AvailableJobsEnhanced: React.FC = () => {
                       <Button
                         onClick={() => handleQuickAccept(job.id)}
                         disabled={actioningJobId === job.id}
-                        className="flex-1 sm:flex-none bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:opacity-50"
+                        variant="primary"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2"
                       >
-                        {actioningJobId === job.id ? '...' : '✅ Quick Accept'}
+                        {actioningJobId === job.id ? (
+                          'Processing...'
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-4 h-4" strokeWidth={2} />
+                            <span>Quick Accept</span>
+                          </>
+                        )}
                       </Button>
                       <Button
                         onClick={() => handleQuickDecline(job.id)}
                         disabled={actioningJobId === job.id}
-                        variant="outline"
-                        className="flex-1 sm:flex-none"
+                        variant="danger"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5"
                       >
-                        Decline
+                        <X className="w-4 h-4" strokeWidth={2} />
+                        <span>Decline</span>
                       </Button>
                     </>
                   )}
                   
                   {job.status === 'accepted' && (
-                    <Badge variant="success" className="self-center px-4 py-2">
-                      ✓ Awaiting Customer Selection
+                    <Badge variant="success" className="self-center px-4 py-2 flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5" strokeWidth={2} />
+                      <span>Awaiting Customer Selection</span>
                     </Badge>
                   )}
                 </div>
@@ -363,7 +382,7 @@ export const AvailableJobsEnhanced: React.FC = () => {
         </div>
       ) : (
         <EmptyState
-          icon="🔍"
+          icon={Search}
           title="No Jobs Match Your Filter"
           description="Try adjusting your filters to see more opportunities"
           action={{
@@ -375,6 +394,7 @@ export const AvailableJobsEnhanced: React.FC = () => {
 
       {/* Job Details Modal - Opened via hook */}
       {JobDetailsModalComponent}
+      </div>
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { useNotificationService } from '../services/notificationService';
 import { useAuth } from '../hooks/useAuth';
 import { serviceApi, requestApi } from '../services/realApi';
 import { ServiceCategoryDto, ServiceTierDto, CreateServiceRequestDto } from '../types/api';
+import { Calendar, Clock, Flame, AlertTriangle, CheckCircle2, DollarSign, Info, Send } from 'lucide-react';
 
 interface ServiceRequestFormData {
   categoryId: number | null;
@@ -25,34 +26,34 @@ interface ServiceRequestFormProps {
 const urgencyConfig = {
   low: { 
     label: 'Low Priority', 
-    icon: '📅', 
-    color: 'text-green-600', 
-    bgColor: 'bg-green-50', 
-    borderColor: 'border-green-200',
+    icon: Calendar, 
+    color: 'text-emerald-700', 
+    bgColor: 'bg-emerald-50', 
+    borderColor: 'border-emerald-200',
     description: 'Can wait a few days'
   },
   medium: { 
     label: 'Medium Priority', 
-    icon: '⏰', 
-    color: 'text-yellow-600', 
-    bgColor: 'bg-yellow-50', 
-    borderColor: 'border-yellow-200',
+    icon: Clock, 
+    color: 'text-amber-700', 
+    bgColor: 'bg-amber-50', 
+    borderColor: 'border-amber-200',
     description: 'Within 1-2 days'
   },
   high: { 
     label: 'High Priority', 
-    icon: '🔥', 
-    color: 'text-orange-600', 
-    bgColor: 'bg-orange-50', 
-    borderColor: 'border-orange-200',
+    icon: Flame, 
+    color: 'text-red-600', 
+    bgColor: 'bg-red-50', 
+    borderColor: 'border-red-200',
     description: 'Same day preferred'
   },
   emergency: { 
     label: 'Emergency', 
-    icon: '🚨', 
-    color: 'text-red-600', 
-    bgColor: 'bg-red-50', 
-    borderColor: 'border-red-200',
+    icon: AlertTriangle, 
+    color: 'text-red-700', 
+    bgColor: 'bg-red-100', 
+    borderColor: 'border-red-300',
     description: 'Immediate attention required'
   }
 };
@@ -229,16 +230,16 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
       <div className="max-w-5xl mx-auto">
         <Card className="p-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg mb-6"></div>
+            <div className="h-8 bg-slate-200 rounded-lg mb-6"></div>
             <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="h-32 bg-gray-200 rounded-xl"></div>
-              <div className="h-32 bg-gray-200 rounded-xl"></div>
-              <div className="h-32 bg-gray-200 rounded-xl"></div>
+              <div className="h-32 bg-slate-200 rounded-xl"></div>
+              <div className="h-32 bg-slate-200 rounded-xl"></div>
+              <div className="h-32 bg-slate-200 rounded-xl"></div>
             </div>
             <div className="space-y-4">
-              <div className="h-12 bg-gray-200 rounded-lg"></div>
-              <div className="h-12 bg-gray-200 rounded-lg"></div>
-              <div className="h-24 bg-gray-200 rounded-lg"></div>
+              <div className="h-12 bg-slate-200 rounded-lg"></div>
+              <div className="h-12 bg-slate-200 rounded-lg"></div>
+              <div className="h-24 bg-slate-200 rounded-lg"></div>
             </div>
           </div>
         </Card>
@@ -248,19 +249,19 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
 
   return (
     <div className="max-w-5xl mx-auto">
-      <Card className="overflow-hidden bg-gradient-to-br from-white to-blue-50">
+      <Card className="overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-white">
-          <h2 className="text-3xl font-bold mb-2">Request a Service</h2>
-          <p className="text-blue-100">Tell us what you need and we'll connect you with qualified providers</p>
+        <div className="bg-white border-b border-slate-200 p-8">
+          <h2 className="text-3xl font-bold mb-2 text-slate-900">Request a Service</h2>
+          <p className="text-slate-600">Tell us what you need and we'll connect you with qualified providers</p>
         </div>
         
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
           {/* Step 1: Service Category Selection */}
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold">1</div>
-              <h3 className="text-xl font-semibold text-gray-800">Choose Service Category</h3>
+              <div className="flex items-center justify-center w-8 h-8 bg-slate-700 text-white rounded-full font-bold text-sm">1</div>
+              <h3 className="text-xl font-semibold text-slate-900">Choose Service Category</h3>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -272,26 +273,26 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                     type="button"
                     onClick={() => handleCategoryChange(category.id.toString())}
                     className={`
-                      relative p-6 rounded-xl border-2 transition-all duration-300 text-left
-                      hover:shadow-lg hover:scale-105 transform
+                      relative p-6 rounded-xl border-2 transition-all text-left
+                      hover:shadow-lg
                       ${isSelected 
-                        ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg scale-105' 
-                        : 'border-gray-200 bg-white hover:border-blue-300'
+                        ? 'border-slate-700 bg-slate-50 shadow-md' 
+                        : 'border-slate-200 bg-white hover:border-slate-400'
                       }
                     `}
                   >
                     {isSelected && (
                       <div className="absolute top-3 right-3">
-                        <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
+                        <div className="w-6 h-6 bg-slate-700 rounded-full flex items-center justify-center">
+                          <CheckCircle2 className="w-4 h-4 text-white" />
                         </div>
                       </div>
                     )}
                     
                     <div className="text-4xl mb-3">{category.icon || '🔧'}</div>
-                    <h4 className="font-semibold text-lg text-gray-800 mb-1">{category.name}</h4>
+                    <h4 className="font-semibold text-lg text-slate-900 mb-1">{category.name}</h4>
                     {category.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">{category.description}</p>
+                      <p className="text-sm text-slate-600 line-clamp-2">{category.description}</p>
                     )}
                   </button>
                 );
@@ -301,19 +302,19 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
 
           {/* Step 2: Service Tier Selection */}
           {selectedCategory && tiers.length > 0 && (
-            <div className="space-y-4 animate-fadeIn">
+            <div className="space-y-4">
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold">2</div>
-                <h3 className="text-xl font-semibold text-gray-800">Select Service Tier</h3>
+                <div className="flex items-center justify-center w-8 h-8 bg-slate-700 text-white rounded-full font-bold text-sm">2</div>
+                <h3 className="text-xl font-semibold text-slate-900">Select Service Tier</h3>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {tiers.map((tier, index) => {
                   const isSelected = formData.tierId === tier.id;
                   const tierColors = [
-                    { gradient: 'from-green-500 to-emerald-600', badge: 'bg-green-100 text-green-700' },
-                    { gradient: 'from-blue-500 to-indigo-600', badge: 'bg-blue-100 text-blue-700' },
-                    { gradient: 'from-purple-500 to-pink-600', badge: 'bg-purple-100 text-purple-700' }
+                    { bg: 'bg-emerald-50', border: 'border-emerald-200', accent: 'border-l-emerald-400', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: 'text-emerald-600' },
+                    { bg: 'bg-slate-50', border: 'border-slate-200', accent: 'border-l-slate-400', badge: 'bg-slate-100 text-slate-800 border-slate-200', icon: 'text-slate-600' },
+                    { bg: 'bg-amber-50', border: 'border-amber-200', accent: 'border-l-amber-400', badge: 'bg-amber-100 text-amber-800 border-amber-200', icon: 'text-amber-600' }
                   ];
                   const colors = tierColors[index % 3];
                   
@@ -323,51 +324,48 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                       type="button"
                       onClick={() => handleTierChange(tier.id.toString())}
                       className={`
-                        relative p-6 rounded-2xl border-2 transition-all duration-300 text-left
-                        hover:shadow-2xl hover:scale-105 transform overflow-hidden
+                        relative p-6 rounded-xl border-2 transition-all text-left overflow-hidden
+                        hover:shadow-lg border-l-4 flex flex-col h-full
                         ${isSelected 
-                          ? 'border-blue-500 shadow-2xl scale-105' 
-                          : 'border-gray-200 hover:border-blue-300'
+                          ? `border-slate-700 ${colors.bg} shadow-lg ${colors.accent}` 
+                          : `${colors.border} bg-white hover:border-slate-400 ${colors.accent}`
                         }
                       `}
                     >
-                      {/* Gradient header */}
-                      <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${colors.gradient}`}></div>
-                      
                       {isSelected && (
                         <div className="absolute top-4 right-4">
-                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                            <span className="text-white font-bold">✓</span>
+                          <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center shadow-md">
+                            <CheckCircle2 className="w-5 h-5 text-white" />
                           </div>
                         </div>
                       )}
                       
-                      <div className="mt-4">
-                        <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${colors.badge}`}>
+                      <div className="flex-1 flex flex-col">
+                        <div className={`inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border mb-3 self-start ${colors.badge}`}>
                           {tier.name}
                         </div>
                         
                         <div className="mb-4">
-                          <div className="text-3xl font-bold text-gray-800">
+                          <div className="text-3xl font-bold text-slate-900">
                             ${tier.baseHourlyRate}
-                            <span className="text-lg text-gray-500 font-normal">/hour</span>
+                            <span className="text-lg text-slate-600 font-normal">/hour</span>
                           </div>
                         </div>
                         
                         {tier.description && (
-                          <p className="text-sm text-gray-600 mb-4">{tier.description}</p>
+                          <p className="text-sm text-slate-600 mb-4">{tier.description}</p>
                         )}
                         
                         {/* Features based on tier */}
-                        <div className="space-y-2 text-sm text-gray-700">
+                        <div className="space-y-2 text-sm text-slate-700 flex-1">
                           {index === 0 && (
                             <>
                               <div className="flex items-center gap-2">
-                                <span className="text-green-600">✓</span>
+                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
                                 <span>Standard service</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-green-600">✓</span>
+                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
                                 <span>Basic tools & equipment</span>
                               </div>
                             </>
@@ -375,15 +373,15 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                           {index === 1 && (
                             <>
                               <div className="flex items-center gap-2">
-                                <span className="text-blue-600">✓</span>
+                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
                                 <span>Experienced professionals</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-blue-600">✓</span>
+                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
                                 <span>Advanced tools</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-blue-600">✓</span>
+                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
                                 <span>Faster service</span>
                               </div>
                             </>
@@ -391,19 +389,19 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                           {index === 2 && (
                             <>
                               <div className="flex items-center gap-2">
-                                <span className="text-purple-600">✓</span>
+                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
                                 <span>Top-tier experts</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-purple-600">✓</span>
+                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
                                 <span>Premium equipment</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-purple-600">✓</span>
+                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
                                 <span>Priority service</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-purple-600">✓</span>
+                                <CheckCircle2 className={`w-4 h-4 ${colors.icon}`} />
                                 <span>Extended warranty</span>
                               </div>
                             </>
@@ -419,17 +417,17 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
 
           {/* Step 3: Service Details */}
           {formData.tierId && (
-            <div className="space-y-6 animate-fadeIn">
+            <div className="space-y-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full font-bold">3</div>
-                <h3 className="text-xl font-semibold text-gray-800">Service Details</h3>
+                <div className="flex items-center justify-center w-8 h-8 bg-slate-700 text-white rounded-full font-bold text-sm">3</div>
+                <h3 className="text-xl font-semibold text-slate-900">Service Details</h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Service Title */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Service Title <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Service Title <span className="text-red-600">*</span>
                   </label>
                   <Input
                     type="text"
@@ -442,22 +440,22 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
 
                 {/* Service Description */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Description <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Description <span className="text-red-600">*</span>
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     placeholder="Describe the service you need in detail..."
                     rows={4}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400 bg-white"
+                    className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-all text-slate-900 placeholder-slate-400 bg-white"
                   />
                 </div>
 
                 {/* Address */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Service Address <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Service Address <span className="text-red-600">*</span>
                   </label>
                   <Input
                     type="text"
@@ -470,7 +468,7 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
 
                 {/* Preferred Date */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Preferred Date & Time
                   </label>
                   <Input
@@ -479,13 +477,13 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                     onChange={(e) => handleInputChange('preferredDate', e.target.value)}
                     className="w-full"
                   />
-                  <p className="text-xs text-gray-500 mt-1">When would you like the service to be done?</p>
+                  <p className="text-xs text-slate-500 mt-1">When would you like the service to be done?</p>
                 </div>
 
                 {/* Estimated Hours */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Estimated Hours <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Estimated Hours <span className="text-red-600">*</span>
                   </label>
                   <Input
                     type="number"
@@ -517,13 +515,14 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
 
                 {/* Urgency Level */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-semibold text-slate-700 mb-3">
                     Urgency Level
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {(Object.keys(urgencyConfig) as Array<keyof typeof urgencyConfig>).map((urgencyKey) => {
                       const config = urgencyConfig[urgencyKey];
                       const isSelected = formData.urgency === urgencyKey;
+                      const IconComponent = config.icon;
                       
                       return (
                         <button
@@ -531,19 +530,21 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
                           type="button"
                           onClick={() => handleInputChange('urgency', urgencyKey)}
                           className={`
-                            p-4 rounded-xl border-2 transition-all duration-200 text-center
-                            hover:shadow-md transform hover:scale-105
+                            p-4 rounded-xl border-2 transition-all text-center
+                            hover:shadow-md
                             ${isSelected 
-                              ? `${config.borderColor} ${config.bgColor} shadow-md scale-105` 
-                              : 'border-gray-200 bg-white hover:border-gray-300'
+                              ? `${config.borderColor} ${config.bgColor} shadow-md` 
+                              : 'border-slate-200 bg-white hover:border-slate-300'
                             }
                           `}
                         >
-                          <div className="text-3xl mb-2">{config.icon}</div>
-                          <div className={`font-semibold text-sm mb-1 ${isSelected ? config.color : 'text-gray-700'}`}>
+                          <div className="flex justify-center mb-2">
+                            <IconComponent className={`w-8 h-8 ${isSelected ? config.color : 'text-slate-400'}`} />
+                          </div>
+                          <div className={`font-semibold text-sm mb-1 ${isSelected ? config.color : 'text-slate-700'}`}>
                             {config.label}
                           </div>
-                          <div className="text-xs text-gray-500">{config.description}</div>
+                          <div className="text-xs text-slate-500">{config.description}</div>
                         </button>
                       );
                     })}
@@ -555,27 +556,27 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
 
           {/* Cost Estimate */}
           {selectedTier && formData.tierId && (
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl border-2 border-blue-200 animate-fadeIn">
+            <div className="bg-slate-50 p-6 rounded-xl border-2 border-slate-200">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
-                    <span className="text-2xl">💰</span>
+                  <h3 className="font-semibold text-lg text-slate-900 mb-2 flex items-center gap-2">
+                    <DollarSign className="w-6 h-6 text-slate-600" />
                     Cost Estimate
                   </h3>
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                  <div className="text-3xl font-bold text-slate-900 mb-2">
                     ${estimatedCost.toFixed(2)}
                   </div>
-                  <p className="text-gray-700">
+                  <p className="text-slate-700">
                     {hours.toFixed(1)} hours × ${baseRate.toFixed(2)}/hour
                   </p>
-                  <p className="text-sm text-gray-500 mt-3 flex items-center gap-1">
-                    <span>ℹ️</span>
+                  <p className="text-sm text-slate-600 mt-3 flex items-center gap-1">
+                    <Info className="w-4 h-4" />
                     <span>Final cost may vary based on actual work required</span>
                   </p>
                 </div>
-                <div className="bg-white p-4 rounded-xl shadow-md">
-                  <div className="text-xs text-gray-500 mb-1">Selected Tier</div>
-                  <div className="font-semibold text-blue-600">{selectedTier?.name || 'N/A'}</div>
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                  <div className="text-xs text-slate-500 mb-1">Selected Tier</div>
+                  <div className="font-semibold text-slate-700">{selectedTier?.name || 'N/A'}</div>
                 </div>
               </div>
             </div>
@@ -583,22 +584,22 @@ export const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({
 
           {/* Form Actions */}
           {formData.tierId && (
-            <div className="flex gap-4 pt-4 animate-fadeIn">
+            <div className="flex gap-4 pt-4">
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
+                className="flex-1 bg-slate-700 hover:bg-slate-800 text-white font-semibold py-4 text-lg rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <span className="animate-spin">⏳</span>
-                    Submitting Request...
-                  </span>
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Submitting Request...</span>
+                  </>
                 ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <span>🚀</span>
-                    Submit Service Request
-                  </span>
+                  <>
+                    <Send className="w-5 h-5" />
+                    <span>Submit Service Request</span>
+                  </>
                 )}
               </Button>
               {onCancel && (

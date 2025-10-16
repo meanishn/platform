@@ -49,15 +49,15 @@ export const Modal: React.FC<ModalProps> = (props) => {
   const themeClasses = {
     light: {
       bg: 'bg-white',
-      headerBorder: 'border-gray-200',
-      titleText: 'text-gray-900',
-      closeButton: 'text-gray-400 hover:text-gray-600',
+      headerBorder: 'border-slate-200',
+      titleText: 'text-slate-900',
+      closeButton: 'text-slate-400 hover:text-slate-600',
     },
     dark: {
-      bg: 'bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-xl border border-white/20',
-      headerBorder: 'border-white/10',
+      bg: 'bg-slate-900 border border-slate-700',
+      headerBorder: 'border-slate-700',
       titleText: 'text-white',
-      closeButton: 'text-white/60 hover:text-white',
+      closeButton: 'text-slate-400 hover:text-white',
     },
   };
 
@@ -67,7 +67,7 @@ export const Modal: React.FC<ModalProps> = (props) => {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 transition-opacity bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 transition-opacity bg-black/50"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -137,7 +137,7 @@ export const Card: React.FC<CardProps> = ({
   };
 
   return (
-    <div className={`bg-white/10 backdrop-blur-md border border-white/20 rounded-lg shadow-lg ${paddingClasses[padding]} ${className}`}>
+    <div className={`bg-white border border-slate-200 rounded-lg shadow-sm ${paddingClasses[padding]} ${className}`}>
       {children}
     </div>
   );
@@ -157,17 +157,17 @@ export const Badge: React.FC<BadgeProps> = ({
   className = '',
 }) => {
   const variantClasses = {
-    default: 'bg-gray-500/30 text-gray-200 border border-gray-400/30',
-    success: 'bg-green-500/70 text-white border border-green-400/30',
-    warning: 'bg-yellow-500/30 text-yellow-200 border border-yellow-400/30',
-    danger: 'bg-red-500/30 text-white border border-red-400/30',
-    info: 'bg-blue-500/30 text-blue-200 border border-blue-400/30',
-    primary: 'bg-purple-600/80 text-white border border-purple-500/50',
-    blue: 'bg-blue-500/30 text-blue-200 border border-blue-400/30',
-    green: 'bg-green-500/30 text-green-200 border border-green-400/30',
-    purple: 'bg-purple-500/30 text-purple-200 border border-purple-400/30',
-    gray: 'bg-gray-500/30 text-gray-200 border border-gray-400/30',
-    yellow: 'bg-yellow-500/30 text-yellow-200 border border-yellow-400/30',
+    default: 'bg-slate-100 text-slate-700 border border-slate-200',
+    success: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+    warning: 'bg-amber-100 text-amber-800 border border-amber-200',
+    danger: 'bg-red-100 text-red-800 border border-red-200',
+    info: 'bg-blue-100 text-blue-800 border border-blue-200',
+    primary: 'bg-blue-100 text-blue-800 border border-blue-200',
+    blue: 'bg-blue-100 text-blue-800 border border-blue-200',
+    green: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+    purple: 'bg-purple-100 text-purple-800 border border-purple-200',
+    gray: 'bg-slate-100 text-slate-700 border border-slate-200',
+    yellow: 'bg-amber-100 text-amber-800 border border-amber-200',
   };
 
   const sizeClasses = {
@@ -177,7 +177,7 @@ export const Badge: React.FC<BadgeProps> = ({
 
   return (
     <span className={`
-      inline-flex items-center font-medium rounded-full backdrop-blur-sm
+      inline-flex items-center font-medium rounded-full
       ${variantClasses[variant]} ${sizeClasses[size]} ${className}
     `}>
       {children}

@@ -5,6 +5,7 @@ import { requestApi } from '../../services/realApi';
 import { ServiceRequestDetailDto } from '../../types/api';
 import { useNotificationService } from '../../services/notificationService';
 import { formatDistanceToNow } from 'date-fns';
+import { CheckCircle, X } from 'lucide-react';
 
 export const ProviderRequestDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -150,9 +151,10 @@ export const ProviderRequestDetail: React.FC = () => {
   const canAccept = request.status === 'assigned' || request.status === 'in_progress';
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">{request.title}</h1>
           <p className="text-white/70">Request #{request.id}</p>
@@ -245,17 +247,23 @@ export const ProviderRequestDetail: React.FC = () => {
                 <Button
                   onClick={handleAccept}
                   disabled={isProcessing}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2"
                 >
-                  {isProcessing ? 'Processing...' : '✅ Accept Request'}
+                  {isProcessing ? 'Processing...' : (
+                    <>
+                      <CheckCircle className="w-4 h-4" strokeWidth={2} />
+                      <span>Accept Request</span>
+                    </>
+                  )}
                 </Button>
                 <Button
                   onClick={handleDecline}
                   disabled={isProcessing}
-                  variant="outline"
-                  className="w-full"
+                  variant="danger"
+                  className="w-full flex items-center justify-center gap-2"
                 >
-                  ❌ Decline
+                  <X className="w-4 h-4" strokeWidth={2} />
+                  <span>Decline</span>
                 </Button>
               </div>
             </Card>
@@ -304,6 +312,7 @@ export const ProviderRequestDetail: React.FC = () => {
             ← Back to Assignments
           </Button>
         </div>
+      </div>
       </div>
     </div>
   );
