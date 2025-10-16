@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ServiceRequestForm } from '../../components/ServiceRequestForm';
 import { RoleGuard } from '../../components/auth/RoleGuard';
 import { useAuth } from '../../hooks/useAuth';
+import { Button } from '../../components/ui';
 
 interface ServiceRequestFormData {
   categoryId: number | null;
@@ -23,11 +24,7 @@ export const ServiceRequestPage: React.FC = () => {
   const handleFormSubmit = (_data: ServiceRequestFormData) => {
     // After successful form submission, redirect based on user role
     setTimeout(() => {
-      if (user?.role === 'provider') {
-        navigate('/provider/dashboard');
-      } else {
-        navigate('/requests');
-      }
+      navigate('/requests');
     }, 2000); // Allow time for success notification to be seen
   };
 
@@ -64,12 +61,14 @@ export const ServiceRequestPage: React.FC = () => {
           <div className="mt-8 text-center">
             <p className="text-slate-600 text-sm">
               Need help? Contact our support team or{' '}
-              <button 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => navigate(user?.role === 'provider' ? '/provider/dashboard' : '/dashboard')}
-                className="text-slate-700 hover:text-slate-900 underline font-medium"
+                className="text-slate-700 hover:text-slate-900 underline font-medium inline-flex p-0 h-auto"
               >
                 return to dashboard
-              </button>
+              </Button>
             </p>
           </div>
         </div>
