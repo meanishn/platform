@@ -1,5 +1,5 @@
 import { useToast } from '../components/notifications/ToastNotification';
-import { useNotifications } from '../contexts/NotificationContext';
+import { useNotifications } from '../hooks/useNotifications';
 
 export interface NotificationOptions {
   title: string;

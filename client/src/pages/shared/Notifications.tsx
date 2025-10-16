@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNotifications } from '../../contexts/NotificationContext';
+import { useNotifications } from '../../hooks/useNotifications';
 import { Card, Button, Badge, Input } from '../../components/ui';
 import { formatDistanceToNow } from 'date-fns';
 import { 

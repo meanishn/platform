@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../../contexts/NotificationContext';
+import { useNotifications } from '../../hooks/useNotifications';
 import { Button, Badge } from '../ui';
 import { formatDistanceToNow } from 'date-fns';
 import { Bell, CheckCircle, AlertTriangle, XCircle, Info, Wrench, DollarSign, HardHat, Settings, PartyPopper, Megaphone } from 'lucide-react';
