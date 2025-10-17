@@ -1,0 +1,79 @@
+# Render.com Infrastructure as Code
+# Deploy with: render deploy
+# Or connect your GitHub repo to Render Dashboard
+
+services:
+  # Backend API Service
+  - type: web
+    name: platform-api
+    env: node
+    region: oregon # Change to your preferred region
+    plan: free # Options: free, starter, standard, pro
+    buildCommand: cd server && npm install && npm run build && npm run migrate:prod
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: platform-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true # Auto-generate secure secret
+        sync: false
+      - key: CLIENT_URL
+        value: https://platform-app.onrender.com # Update after frontend deploy
+      # Optional: Google OAuth (uncomment if needed)
+      # - key: GOOGLE_CLIENT_ID
+      #   sync: false
+      # - key: GOOGLE_CLIENT_SECRET
+      #   sync: false
+      # - key: GOOGLE_CALLBACK_URL
+      #   value: https://platform-api.onrender.com/api/auth/google/callback
+    healthCheckPath: /health
+    autoDeploy: true # Auto-deploy on git push
+
+  # Frontend Static Site
+  - type: web
+    name: platform-app
+    env: static
+    region: oregon # Change to your preferred region
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://platform-api.onrender.com # Update with actual backend URL
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+    autoDeploy: true
+
+databases:
+  # PostgreSQL Database
+  - name: platform-db
+    databaseName: platform
+    user: platform_user
+    plan: free # Free tier: 90 days free, then $7/month
+    region: oregon # Should match service region
+    ipAllowList: [] # Empty = allow all (required for free tier)
+
+# Cron Jobs (to prevent cold starts)
+# Note: Cron jobs are not available on free tier
+# Upgrade to Starter plan ($7/month) to use this
+# - type: cron
+#   name: keep-alive
+#   env: node
+#   schedule: "*/10 * * * *" # Every 10 minutes
+#   buildCommand: echo "Keep alive job"
+#   startCommand: curl https://platform-api.onrender.com/health
+
