@@ -117,7 +117,7 @@ export const ProviderDashboard: React.FC = () => {
           variant="primary"
           primaryAction={{
             label: 'Find Available Jobs',
-            onClick: () => navigate('/provider/jobs/available'),
+            onClick: () => navigate('/provider/available-jobs'),
           }}
           secondaryAction={{
             label: 'View Assignments',

@@ -3,9 +3,8 @@
  */
 
 // Provider-specific components (only for provider users)
-export { MatchBadge, CompactMatchBadge } from './MatchBadge';
+export { MatchBadge } from './MatchBadge';
 export { JobDetailsModal } from './JobDetailsModal';
-// export { JobCard } from './JobCard';
 export { ProfileStatusCard } from './ProfileStatusCard';
 export { CustomerInfoHeader } from './CustomerInfoHeader';
 
@@ -23,6 +22,5 @@ export {
   CenteredLoadingSpinner,
 } from '../ui';
 
-export type { JobCardProps } from './JobCard';
 export type { ProfileStatusCardProps, ProfileStatus } from './ProfileStatusCard';
 export type { CustomerInfoHeaderProps } from './CustomerInfoHeader';

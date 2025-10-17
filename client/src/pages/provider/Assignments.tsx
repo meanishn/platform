@@ -250,13 +250,13 @@ export const ProviderAssignments: React.FC = () => {
           description="No ongoing or upcoming jobs"
           action={{
             label: 'Browse Available Jobs',
-            onClick: () => navigate('/provider/jobs/available'),
+            onClick: () => navigate('/provider/available-jobs'),
           }}
         />
         
         <div className="mt-6 text-center">
           <p className="text-sm text-slate-600 mb-3">Ready to take on new work?</p>
-          <Link to="/provider/jobs/accepted">
+          <Link to="/provider/accepted-jobs">
             <Button variant="outline">
               View Accepted Jobs
             </Button>

@@ -21,9 +21,11 @@ import { useJobDetailsModal, useConfirmationModal } from '../../hooks';
 import type { JobDto } from '../../types/api';
 import { formatDistanceToNow } from 'date-fns';
 import { RefreshCw, Info, AlertTriangle, MapPin, Timer, DollarSign, Lightbulb, Sparkles, Clock, Trophy, CheckCircle2, BarChart3, Users, FileText, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const AcceptedJobs: React.FC = () => {
   const notify = useNotificationService();
+  const navigate = useNavigate();
   const { openJobDetails, JobDetailsModalComponent } = useJobDetailsModal();
   const { confirm, ConfirmationModalComponent } = useConfirmationModal();
   const [jobs, setJobs] = useState<JobDto[]>([]);
@@ -223,7 +225,7 @@ export const AcceptedJobs: React.FC = () => {
           description="You haven't accepted any jobs yet, or all accepted jobs have been processed."
           action={{
             label: 'Browse Available Jobs',
-            onClick: () => window.location.href = '/provider/available-jobs',
+            onClick: () => navigate('/provider/available-jobs'),
           }}
         />
       )}

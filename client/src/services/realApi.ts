@@ -233,48 +233,6 @@ export const notificationApi = {
 };
 
 /**
- * Dashboard API
- */
-export const dashboardApi = {
-  getStats: async (): Promise<ApiResponse<{
-    totalUsers: number;
-    totalProviders: number;
-    totalCustomers: number;
-    pendingVerifications: number;
-    activeRequests: number;
-    totalRevenue: number;
-    monthlyGrowth: number;
-  }>> => {
-    const response = await apiClient(`${API_BASE_URL}/dashboard/stats`);
-    return handleResponse<ApiResponse<{
-      totalUsers: number;
-      totalProviders: number;
-      totalCustomers: number;
-      pendingVerifications: number;
-      activeRequests: number;
-      totalRevenue: number;
-      monthlyGrowth: number;
-    }>>(response);
-  },
-  getActivity: async(): Promise<ApiResponse<ActivityItemDto[]>> => {
-    const response = await apiClient(`${API_BASE_URL}/dashboard/activity`);
-    return handleResponse<ApiResponse<ActivityItemDto[]>>(response);
-  }
-};
-
-/**
- * Health check
- */
-export const healthApi = {
-  check: async (): Promise<ApiResponse<{ message: string; timestamp: string }>> => {
-    const response = await apiClient(`${API_BASE_URL}/health`, {
-      skipAuth: true
-    });
-    return handleResponse<ApiResponse<{ message: string; timestamp: string }>>(response);
-  }
-};
-
-/**
  * Provider Assignment API
  */
 export const providerApi = {
@@ -344,50 +302,6 @@ export const providerApi = {
   getProviderActivity: async (): Promise<ApiResponse<ActivityItemDto[]>> => {
     const response = await apiClient(`${API_BASE_URL}/providers/dashboard/requests`);
     return handleResponse<ApiResponse<ActivityItemDto[]>>(response);
-  }
-};
-
-/**
- * Review API
- */
-export const reviewApi = {
-  createReview: async (requestId: number, data: CreateReviewDto): Promise<ApiResponse<ReviewDto>> => {
-    const response = await apiClient(`${API_BASE_URL}/reviews/${requestId}`, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-    return handleResponse<ApiResponse<ReviewDto>>(response);
-  },
-
-  getProviderReviews: async (providerId: number): Promise<ApiResponse<ReviewDetailDto[]>> => {
-    const response = await apiClient(`${API_BASE_URL}/reviews/provider/${providerId}`, {
-      skipAuth: true
-    });
-    return handleResponse<ApiResponse<ReviewDetailDto[]>>(response);
-  },
-
-  getProviderStats: async (providerId: number): Promise<ApiResponse<ProviderRatingStatsDto>> => {
-    const response = await apiClient(`${API_BASE_URL}/reviews/provider/${providerId}/stats`, {
-      skipAuth: true
-    });
-    return handleResponse<ApiResponse<ProviderRatingStatsDto>>(response);
-  },
-
-  getRequestReview: async (requestId: number): Promise<ApiResponse<ReviewDetailDto>> => {
-    const response = await apiClient(`${API_BASE_URL}/reviews/request/${requestId}`, {
-      skipAuth: true
-    });
-    return handleResponse<ApiResponse<ReviewDetailDto>>(response);
-  },
-
-  canReview: async (requestId: number): Promise<ApiResponse<{ canReview: boolean; reason?: string }>> => {
-    const response = await apiClient(`${API_BASE_URL}/reviews/request/${requestId}/can-review`);
-    return handleResponse<ApiResponse<{ canReview: boolean; reason?: string }>>(response);
-  },
-
-  getUserReviews: async (): Promise<ApiResponse<ReviewDetailDto[]>> => {
-    const response = await apiClient(`${API_BASE_URL}/reviews/my-reviews`);
-    return handleResponse<ApiResponse<ReviewDetailDto[]>>(response);
   }
 };
 
