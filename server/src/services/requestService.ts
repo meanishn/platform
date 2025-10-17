@@ -7,7 +7,6 @@
 
 import ServiceRequest, { RequestStatus, UrgencyLevel } from '../models/ServiceRequest';
 import User from '../models/User';
-import RequestAcceptance from '../models/RequestAcceptance';
 import RequestEligibleProvider from '../models/RequestEligibleProvider';
 import { matchingService } from './matchingService';
 import { notificationService } from './notificationService';
@@ -98,13 +97,7 @@ export class RequestService {
       throw new Error('Provider not authorized');
     }
 
-    // Record provider acceptance (idempotent)
-    await RequestAcceptance.query().insert({
-      request_id: requestId,
-      provider_id: providerId
-    }).onConflict(['request_id', 'provider_id']).ignore();
-
-    // NEW: Update eligible providers table with acceptance
+    // Update eligible providers table with acceptance
     // Only update if provider was eligible (safety check)
     const eligibleRecord = await RequestEligibleProvider.query()
       .where({ request_id: requestId, provider_id: providerId })
@@ -159,20 +152,17 @@ export class RequestService {
       throw new Error('Request is not awaiting confirmation');
     }
 
-    // Ensure the provider has accepted
-    const acceptance = await RequestAcceptance.query()
-      .where({ request_id: requestId, provider_id: providerId })
-      .first();
-    if (!acceptance) {
-      throw new Error('Selected provider has not accepted this request');
-    }
-
-    // Ensure provider was eligible (additional validation)
+    // Ensure provider was eligible and has accepted
     const eligibleRecord = await RequestEligibleProvider.query()
       .where({ request_id: requestId, provider_id: providerId })
       .first();
+    
     if (!eligibleRecord) {
       throw new Error('Selected provider was not eligible for this request');
+    }
+    
+    if (eligibleRecord.status !== 'accepted') {
+      throw new Error('Selected provider has not accepted this request');
     }
 
     // TRANSACTION: Update both tables atomically
@@ -204,12 +194,6 @@ export class RequestService {
         .where('request_id', requestId)
         .where('provider_id', '!=', providerId)
         .whereNotNull('accepted_at'); // Only those who actually accepted
-
-      // 4. Remove other acceptances from legacy table
-      await RequestAcceptance.query(trx)
-        .delete()
-        .where('request_id', requestId)
-        .where('provider_id', '!=', providerId);
     });
 
     // Get updated request for response
@@ -1115,13 +1099,6 @@ export class RequestService {
           updated_at: knex.fn.now()
         })
         .where({ request_id: requestId, provider_id: providerId });
-
-      // If provider had accepted, remove from legacy table
-      if (eligible.status === 'accepted') {
-        await RequestAcceptance.query(trx)
-          .delete()
-          .where({ request_id: requestId, provider_id: providerId });
-      }
 
       // Update provider stats
       const provider = await User.query(trx).findById(providerId);

@@ -60,7 +60,7 @@ export async function seed(knex: Knex): Promise<void> {
       provider_bio: 'Professional plumber specializing in residential repairs and installations. Available for emergency calls.',
       provider_skills: JSON.stringify(['Pipe repair', 'Drain cleaning', 'Fixture installation', 'Water heater repair']),
       provider_certifications: JSON.stringify([
-        { name: 'Licensed Electrician', issuer: 'State Board', year: 2014 },
+        { name: 'Licensed Plumber', issuer: 'State Board', year: 2014 },
         { name: 'Master Plumber License', issuer: 'State Board', year: 2018 },
         { name: 'Backflow Prevention Certified', issuer: 'Water Authority', year: 2022 }
       ]),
