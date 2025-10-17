@@ -9,6 +9,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { requestService } from '../services/requestService';
 import { emitToUser, emitToRole, SocketEvents } from '../services/socketService';
+import { toProviderWithContactDto } from '../sanitizers/user.sanitizer';
 
 export class RequestController {
   /**
@@ -566,9 +567,12 @@ export class RequestController {
         });
       }
 
+      // Sanitize provider data to DTO format
+      const sanitizedProvider = toProviderWithContactDto(provider);
+
       res.json({
         success: true,
-        data: provider
+        data: sanitizedProvider
       });
     } catch (error) {
       res.status(400).json({

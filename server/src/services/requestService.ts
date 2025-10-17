@@ -985,7 +985,12 @@ export class RequestService {
         'phone',
         'profile_image',
         'average_rating',
-        'total_jobs_completed'
+        'total_jobs_completed',
+        'role',
+        'provider_bio',
+        'provider_skills',
+        'response_time_average',
+        'is_available'
       ]);
 
     return provider || null;

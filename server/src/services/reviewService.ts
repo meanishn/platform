@@ -21,19 +21,35 @@ export interface CreateReviewData {
 export class ReviewService {
   
   /**
-   * Create a review for a completed job
+   * Create a review for a completed job (bidirectional: customer can review provider, provider can review customer)
    */
   async createReview(data: CreateReviewData): Promise<Review> {
     // Check if request exists and is completed
     const request = await ServiceRequest.query().findById(data.requestId);
     if (!request) throw new Error('Request not found');
     if (request.status !== 'completed') throw new Error('Can only review completed jobs');
-    if (request.user_id !== data.reviewerId) throw new Error('Only job owner can leave a review');
     if (!request.assigned_provider_id) throw new Error('No provider assigned for this job');
 
-    // Check if review already exists
-    const existingReview = await Review.query().where('request_id', data.requestId).first();
-    if (existingReview) throw new Error('Review already exists for this job');
+    // Determine reviewer and reviewee
+    const isCustomer = request.user_id === data.reviewerId;
+    const isProvider = request.assigned_provider_id === data.reviewerId;
+
+    if (!isCustomer && !isProvider) {
+      throw new Error('Only the customer or assigned provider can leave a review');
+    }
+
+    // Determine reviewee ID
+    const revieweeId = isCustomer ? request.assigned_provider_id : request.user_id;
+
+    // Check if this user has already reviewed
+    const existingReview = await Review.query()
+      .where('request_id', data.requestId)
+      .where('reviewer_id', data.reviewerId)
+      .first();
+    
+    if (existingReview) {
+      throw new Error('You have already reviewed this job');
+    }
 
     // Validate rating
     if (data.rating < 1 || data.rating > 5) {
@@ -44,23 +60,28 @@ export class ReviewService {
     const review = await Review.query().insertAndFetch({
       request_id: data.requestId,
       reviewer_id: data.reviewerId,
-      reviewee_id: request.assigned_provider_id,
+      reviewee_id: revieweeId,
       rating: data.rating,
       comment: data.comment,
       criteria_ratings: data.criteriaRatings,
       is_public: data.isPublic !== false // Default to true
     });
 
-    // Update provider's average rating
-    await this.updateProviderRating(request.assigned_provider_id);
+    // Fetch relations for return
+    const reviewWithRelations = await Review.query()
+      .findById(review.id)
+      .withGraphFetched('[reviewer, reviewee]');
 
-    return review;
+    // Update reviewee's average rating
+    await this.updateUserRating(revieweeId);
+
+    return reviewWithRelations!;
   }
 
   /**
-   * Get reviews for a provider
+   * Get reviews for a user (provider or customer)
    */
-  async getProviderReviews(providerId: number, limit = 10, offset = 0): Promise<{
+  async getUserReviews(userId: number, limit = 10, offset = 0): Promise<{
     reviews: Review[];
     total: number;
     stats: {
@@ -71,23 +92,23 @@ export class ReviewService {
   }> {
     // Get reviews
     const reviews = await Review.query()
-      .where('reviewee_id', providerId)
+      .where('reviewee_id', userId)
       .where('is_public', true)
-      .withGraphFetched('[reviewer, request]')
+      .withGraphFetched('[reviewer, reviewee]')
       .orderBy('created_at', 'desc')
       .limit(limit)
       .offset(offset);
 
     // Get total count
     const totalResult = await Review.query()
-      .where('reviewee_id', providerId)
+      .where('reviewee_id', userId)
       .where('is_public', true)
       .count('* as count')
       .first();
     const total = parseInt((totalResult as any)?.count || '0');
 
     // Get statistics
-    const stats = await this.getProviderRatingStats(providerId);
+    const stats = await this.getUserRatingStats(userId);
 
     return {
       reviews,
@@ -97,15 +118,15 @@ export class ReviewService {
   }
 
   /**
-   * Get provider rating statistics
+   * Get user rating statistics (works for both providers and customers)
    */
-  async getProviderRatingStats(providerId: number): Promise<{
+  async getUserRatingStats(userId: number): Promise<{
     averageRating: number;
     totalReviews: number;
     ratingDistribution: { [key: number]: number };
   }> {
     const reviews = await Review.query()
-      .where('reviewee_id', providerId)
+      .where('reviewee_id', userId)
       .where('is_public', true)
       .select('rating');
 
@@ -136,47 +157,72 @@ export class ReviewService {
   }
 
   /**
-   * Update provider's average rating
+   * Update user's average rating (works for both providers and customers)
    */
-  private async updateProviderRating(providerId: number): Promise<void> {
-    const stats = await this.getProviderRatingStats(providerId);
+  private async updateUserRating(userId: number): Promise<void> {
+    const stats = await this.getUserRatingStats(userId);
     
     await User.query()
-      .patchAndFetchById(providerId, {
+      .patchAndFetchById(userId, {
         average_rating: stats.averageRating
       });
   }
 
   /**
-   * Get review by request ID
+   * Get all reviews for a request (bidirectional)
    */
-  async getReviewByRequestId(requestId: number): Promise<Review | undefined> {
+  async getReviewsByRequestId(requestId: number): Promise<Review[]> {
     return Review.query()
       .where('request_id', requestId)
-      .withGraphFetched('[reviewer, reviewee, request]')
-      .first();
+      .withGraphFetched('[reviewer, reviewee]')
+      .orderBy('created_at', 'desc');
   }
 
   /**
-   * Check if user can review a request
+   * Check if user can review a request (bidirectional)
    */
-  async canReview(requestId: number, userId: number): Promise<boolean> {
+  async canUserReview(requestId: number, userId: number): Promise<{ canReview: boolean; reason?: string }> {
     const request = await ServiceRequest.query().findById(requestId);
-    if (!request) return false;
-    if (request.status !== 'completed') return false;
-    if (request.user_id !== userId) return false;
+    
+    if (!request) {
+      return { canReview: false, reason: 'Request not found' };
+    }
+    
+    if (request.status !== 'completed') {
+      return { canReview: false, reason: 'Can only review completed jobs' };
+    }
 
-    const existingReview = await Review.query().where('request_id', requestId).first();
-    return !existingReview;
+    const isCustomer = request.user_id === userId;
+    const isProvider = request.assigned_provider_id === userId;
+
+    if (!isCustomer && !isProvider) {
+      return { canReview: false, reason: 'You are not part of this request' };
+    }
+
+    if (!request.assigned_provider_id) {
+      return { canReview: false, reason: 'No provider assigned to this job' };
+    }
+
+    // Check if user has already reviewed
+    const existingReview = await Review.query()
+      .where('request_id', requestId)
+      .where('reviewer_id', userId)
+      .first();
+    
+    if (existingReview) {
+      return { canReview: false, reason: 'You have already reviewed this job' };
+    }
+
+    return { canReview: true };
   }
 
   /**
-   * Get user's given reviews
+   * Get reviews given by a user
    */
-  async getUserReviews(userId: number): Promise<Review[]> {
+  async getReviewsGivenByUser(userId: number): Promise<Review[]> {
     return Review.query()
       .where('reviewer_id', userId)
-      .withGraphFetched('[reviewee, request]')
+      .withGraphFetched('[reviewee, reviewer]')
       .orderBy('created_at', 'desc');
   }
 }

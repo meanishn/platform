@@ -1,6 +1,9 @@
 export { Button } from './Button';
 export { Input, Select } from './Form';
 export { Modal, Card, Badge } from './Modal';
+export { StarRating } from './StarRating';
+export { ReviewModal } from './ReviewModal';
+export { SubmitReviewModal } from './SubmitReviewModal';
 export { Checkbox } from './Checkbox';
 export type { CheckboxProps } from './Checkbox';
 export { ConfirmationModal } from './ConfirmationModal';

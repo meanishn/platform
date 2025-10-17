@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { ReviewService } from '../services/reviewService';
 import { validationResult } from 'express-validator';
+import { toReviewDetailDto, toReviewDetailDtoArray, toProviderRatingStatsDto } from '../sanitizers/review.sanitizer';
+import type { ApiResponse } from '../../../shared-types/api';
+import type { ReviewDetailDto, ProviderRatingStatsDto, CreateReviewDto } from '../../../shared-types/review';
 
 export class ReviewController {
   private reviewService: ReviewService;
@@ -25,99 +28,123 @@ export class ReviewController {
       }
 
       const { requestId } = req.params;
-      const { rating, comment, criteriaRatings, isPublic } = req.body;
+      const reviewData: CreateReviewDto = {
+        rating: req.body.rating,
+        comment: req.body.comment,
+        criteriaRatings: req.body.criteriaRatings,
+        isPublic: req.body.isPublic
+      };
 
       const review = await this.reviewService.createReview({
         requestId: parseInt(requestId),
         reviewerId: userId,
-        rating,
-        comment,
-        criteriaRatings,
-        isPublic
+        ...reviewData
       });
 
-      res.status(201).json({
+      const sanitizedReview = toReviewDetailDto(review);
+
+      const response: ApiResponse<ReviewDetailDto> = {
         success: true,
         message: 'Review created successfully',
-        data: review
-      });
+        data: sanitizedReview
+      };
+
+      res.status(201).json(response);
     } catch (error) {
-      res.status(400).json({
+      const response: ApiResponse = {
         success: false,
         message: error instanceof Error ? error.message : 'Review creation failed'
-      });
+      };
+      res.status(400).json(response);
     }
   };
 
   /**
-   * Get reviews for a provider
+   * Get reviews for a user (provider or customer)
    */
-  getProviderReviews = async (req: Request, res: Response) => {
+  getUserReviews = async (req: Request, res: Response) => {
     try {
-      const { providerId } = req.params;
+      const { userId } = req.params;
       const { limit = 10, offset = 0 } = req.query;
 
-      const result = await this.reviewService.getProviderReviews(
-        parseInt(providerId),
+      const result = await this.reviewService.getUserReviews(
+        parseInt(userId),
         parseInt(limit as string),
         parseInt(offset as string)
       );
 
-      res.json({
+      const sanitizedReviews = toReviewDetailDtoArray(result.reviews);
+
+      const response: ApiResponse<{ 
+        reviews: ReviewDetailDto[]; 
+        total: number;
+        stats: ProviderRatingStatsDto;
+      }> = {
         success: true,
-        data: result
-      });
+        data: {
+          reviews: sanitizedReviews,
+          total: result.total,
+          stats: toProviderRatingStatsDto(result.stats)
+        }
+      };
+
+      res.json(response);
     } catch (error) {
-      res.status(400).json({
+      const response: ApiResponse = {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to get reviews'
-      });
+      };
+      res.status(400).json(response);
     }
   };
 
   /**
-   * Get provider rating statistics
+   * Get user rating statistics
    */
-  getProviderStats = async (req: Request, res: Response) => {
+  getUserStats = async (req: Request, res: Response) => {
     try {
-      const { providerId } = req.params;
+      const { userId } = req.params;
 
-      const stats = await this.reviewService.getProviderRatingStats(parseInt(providerId));
+      const stats = await this.reviewService.getUserRatingStats(parseInt(userId));
 
-      res.json({
+      const response: ApiResponse<ProviderRatingStatsDto> = {
         success: true,
-        data: stats
-      });
+        data: toProviderRatingStatsDto(stats)
+      };
+
+      res.json(response);
     } catch (error) {
-      res.status(400).json({
+      const response: ApiResponse = {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to get stats'
-      });
+      };
+      res.status(400).json(response);
     }
   };
 
   /**
-   * Get review for a specific request
+   * Get reviews for a specific request (bidirectional)
    */
-  getRequestReview = async (req: Request, res: Response) => {
+  getRequestReviews = async (req: Request, res: Response) => {
     try {
       const { requestId } = req.params;
 
-      const review = await this.reviewService.getReviewByRequestId(parseInt(requestId));
+      const reviews = await this.reviewService.getReviewsByRequestId(parseInt(requestId));
 
-      if (!review) {
-        return res.status(404).json({ success: false, message: 'Review not found' });
-      }
+      const sanitizedReviews = toReviewDetailDtoArray(reviews);
 
-      res.json({
+      const response: ApiResponse<ReviewDetailDto[]> = {
         success: true,
-        data: review
-      });
+        data: sanitizedReviews
+      };
+
+      res.json(response);
     } catch (error) {
-      res.status(400).json({
+      const response: ApiResponse = {
         success: false,
-        message: error instanceof Error ? error.message : 'Failed to get review'
-      });
+        message: error instanceof Error ? error.message : 'Failed to get reviews'
+      };
+      res.status(400).json(response);
     }
   };
 
@@ -133,41 +160,49 @@ export class ReviewController {
         return res.status(401).json({ success: false, message: 'Authentication required' });
       }
 
-      const canReview = await this.reviewService.canReview(parseInt(requestId), userId);
+      const canReviewResult = await this.reviewService.canUserReview(parseInt(requestId), userId);
 
-      res.json({
+      const response: ApiResponse<{ canReview: boolean; reason?: string }> = {
         success: true,
-        data: { canReview }
-      });
+        data: canReviewResult
+      };
+
+      res.json(response);
     } catch (error) {
-      res.status(400).json({
+      const response: ApiResponse = {
         success: false,
         message: error instanceof Error ? error.message : 'Check failed'
-      });
+      };
+      res.status(400).json(response);
     }
   };
 
   /**
-   * Get user's given reviews
+   * Get reviews given by a user
    */
-  getUserReviews = async (req: Request, res: Response) => {
+  getMyReviews = async (req: Request, res: Response) => {
     try {
       const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, message: 'Authentication required' });
       }
 
-      const reviews = await this.reviewService.getUserReviews(userId);
+      const reviews = await this.reviewService.getReviewsGivenByUser(userId);
 
-      res.json({
+      const sanitizedReviews = toReviewDetailDtoArray(reviews);
+
+      const response: ApiResponse<ReviewDetailDto[]> = {
         success: true,
-        data: reviews
-      });
+        data: sanitizedReviews
+      };
+
+      res.json(response);
     } catch (error) {
-      res.status(400).json({
+      const response: ApiResponse = {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to get reviews'
-      });
+      };
+      res.status(400).json(response);
     }
   };
 }

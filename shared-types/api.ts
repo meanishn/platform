@@ -104,3 +104,18 @@ export interface ProviderActionResponse {
     reopened?: boolean;
   };
 }
+
+/**
+ * Review Response Types
+ */
+
+export interface ReviewsListResponse {
+  reviews: import('./review').ReviewDetailDto[];
+  total: number;
+  stats: import('./review').ProviderRatingStatsDto;
+}
+
+export interface CanReviewResponse {
+  canReview: boolean;
+  reason?: string;
+}

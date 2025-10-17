@@ -11,11 +11,12 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Button, Badge, InfoBox, ContactLinkCard, InfoAlert } from '../ui';
+import { Modal, Button, Badge, InfoBox, ContactLinkCard, InfoAlert, ReviewModal, SubmitReviewModal, StarRating } from '../ui';
 import { MatchBadge, CustomerInfoHeader } from '../provider';
 import { providerApi } from '../../services/realApi';
 import { useNotificationService } from '../../services/notificationService';
-import type { ProviderJobDetailDto, ProviderActionRequest } from '../../types/api';
+import { api, handleResponse } from '../../services/apiClient';
+import type { ProviderJobDetailDto, ProviderActionRequest, ReviewDetailDto, ApiResponse, CanReviewResponse } from '../../types/api';
 import type { PublicUserDto } from '../../../../shared-types/user';
 import type { CustomerWithContactDto } from '../../../../shared-types/user';
 import { 
@@ -54,6 +55,39 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
   const [isActioning, setIsActioning] = useState(false);
   const [showDeclineReason, setShowDeclineReason] = useState(false);
   const [declineReason, setDeclineReason] = useState('');
+  
+  // Review states
+  const [reviews, setReviews] = useState<ReviewDetailDto[]>([]);
+  const [canReview, setCanReview] = useState<boolean>(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isSubmitReviewModalOpen, setIsSubmitReviewModalOpen] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  const fetchReviews = useCallback(async () => {
+    try {
+      const response = await api.get(`/api/reviews/request/${jobId}`);
+      const data = await handleResponse<ApiResponse<ReviewDetailDto[]>>(response);
+      
+      if (data.success && data.data) {
+        setReviews(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error);
+    }
+  }, [jobId]);
+
+  const checkCanReview = useCallback(async () => {
+    try {
+      const response = await api.get(`/api/reviews/request/${jobId}/can-review`);
+      const data = await handleResponse<ApiResponse<CanReviewResponse>>(response);
+      
+      if (data.success && data.data) {
+        setCanReview(data.data.canReview);
+      }
+    } catch (error) {
+      console.error('Failed to check review status:', error);
+    }
+  }, [jobId]);
 
   const fetchJobDetails = useCallback(async () => {
     try {
@@ -62,6 +96,14 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
       
       if (response.success && response.data) {
         setJob(response.data);
+        
+        // Always fetch reviews to show existing reviews at any stage
+        fetchReviews();
+        
+        // Check if user can review (only possible after completion)
+        if (response.data.status === 'completed') {
+          checkCanReview();
+        }
       } else {
         notify.error('Error', response.message || 'Failed to load job details');
       }
@@ -72,7 +114,7 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jobId]);
+  }, [jobId, fetchReviews, checkCanReview]);
 
   useEffect(() => {
     if (isOpen && jobId) {
@@ -112,6 +154,34 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
     handleAction({ action: 'decline', reason: declineReason });
   };
 
+  const handleViewReviews = () => {
+    setIsReviewModalOpen(true);
+  };
+
+  const handleSubmitReview = async (rating: number, comment: string) => {
+    setIsSubmittingReview(true);
+    try {
+      const response = await api.post(`/api/reviews/${jobId}`, {
+        rating,
+        comment,
+        isPublic: true,
+      });
+      
+      await handleResponse(response);
+      
+      // Refresh data to hide "Leave Review" button
+      await fetchReviews();
+      await checkCanReview();
+      
+      // Modal will show success message and auto-close
+    } catch (error) {
+      console.error('Failed to submit review:', error);
+      throw error;
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   const getUrgencyBadge = (urgency: string) => {
     const configs: Record<string, { variant: 'danger' | 'warning' | 'info' | 'default' }> = {
       emergency: { variant: 'danger' },
@@ -130,6 +200,7 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
 
   const isAssigned = job?.status === 'assigned' || job?.status === 'in_progress';
   const isAvailable = job?.status === 'pending';
+  const isCompleted = job?.status === 'completed';
 
   // Type guard to check if customer has contact info (assigned provider view)
   const hasCustomerContact = (customer: PublicUserDto | CustomerWithContactDto): customer is CustomerWithContactDto => {
@@ -296,6 +367,29 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
                     <Badge variant="default" className="text-xs">Always Pays On Time</Badge>
                   </div>
 
+                  {/* Reviews - Simple inline display */}
+                  <div className="pt-3 border-t border-slate-200/60">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <StarRating rating={job.customer.averageRating || 0} readonly size="sm" />
+                        <span className="text-xs text-slate-600">
+                          {reviews.length > 0 
+                            ? `${reviews.length} ${reviews.length === 1 ? 'review' : 'reviews'}`
+                            : 'No reviews yet'
+                          }
+                        </span>
+                      </div>
+                      {reviews.length > 0 && (
+                        <button
+                          onClick={handleViewReviews}
+                          className="text-xs text-blue-600 hover:text-blue-700 underline cursor-pointer"
+                        >
+                          View reviews
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   <InfoAlert icon={AlertCircle} variant="warning" className="mt-4">
                     Full contact details (phone, email, exact address) will be shown after customer assigns this job to you.
                   </InfoAlert>
@@ -310,6 +404,29 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
                     totalJobsCompleted={job.customer.totalJobsCompleted}
                     showFullLastName={true}
                   />
+
+                  {/* Reviews - Simple inline display */}
+                  <div className="pt-2 pb-3 border-b border-slate-200/60">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <StarRating rating={job.customer.averageRating || 0} readonly size="sm" />
+                        <span className="text-xs text-slate-600">
+                          {reviews.length > 0 
+                            ? `${reviews.length} ${reviews.length === 1 ? 'review' : 'reviews'}`
+                            : 'No reviews yet'
+                          }
+                        </span>
+                      </div>
+                      {reviews.length > 0 && (
+                        <button
+                          onClick={handleViewReviews}
+                          className="text-xs text-blue-600 hover:text-blue-700 underline cursor-pointer"
+                        >
+                          View reviews
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
                   <div className="space-y-2">
                     <ContactLinkCard 
@@ -424,6 +541,17 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
                   </Button>
                 </>
               )}
+
+              {/* Only show "Leave Review" button when completed and eligible */}
+              {isCompleted && canReview && (
+                <Button 
+                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center gap-2"
+                  onClick={() => setIsSubmitReviewModalOpen(true)}
+                >
+                  <Star className="w-4 h-4" />
+                  Leave Review
+                </Button>
+              )}
             </div>
           </div>
         ) : (
@@ -432,6 +560,32 @@ export const JobDetailsModal: React.FC<JobDetailsModalProps> = ({
           </div>
         )}
       </div>
+
+      {/* Review Modals */}
+      {job && (
+        <>
+          <ReviewModal
+            isOpen={isReviewModalOpen}
+            onClose={() => setIsReviewModalOpen(false)}
+            reviews={reviews}
+            title="Job Reviews"
+          />
+          
+          <SubmitReviewModal
+            isOpen={isSubmitReviewModalOpen}
+            onClose={() => setIsSubmitReviewModalOpen(false)}
+            onSubmit={handleSubmitReview}
+            revieweeName={
+              customerWithContact 
+                ? `${customerWithContact.firstName} ${customerWithContact.lastName}`
+                : job.customer 
+                  ? `${job.customer.firstName} ${job.customer.lastName}`
+                  : 'Customer'
+            }
+            isSubmitting={isSubmittingReview}
+          />
+        </>
+      )}
     </Modal>
   );
 };

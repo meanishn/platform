@@ -7,9 +7,9 @@
  */
 
 import React from 'react';
-import { Card, Button, ProviderRating } from '../ui';
-import { Clock, CheckCircle2, Phone, Check, X } from 'lucide-react';
-import type { ProviderWithContactDto } from '../../types/api';
+import { Card, Button, StarRating } from '../ui';
+import { Clock, CheckCircle2, Phone, Check, X, User } from 'lucide-react';
+import type { ProviderWithContactDto, ReviewDetailDto } from '../../types/api';
 
 export interface ProviderInfoCardProps {
   provider: ProviderWithContactDto;
@@ -18,6 +18,8 @@ export interface ProviderInfoCardProps {
   isProcessing: boolean;
   onConfirm?: () => void;
   onReject?: () => void;
+  onViewReviews?: () => void;
+  reviews?: ReviewDetailDto[];
   className?: string;
 }
 
@@ -28,6 +30,8 @@ export const ProviderInfoCard: React.FC<ProviderInfoCardProps> = ({
   isProcessing,
   onConfirm,
   onReject,
+  onViewReviews,
+  reviews = [],
   className = '',
 }) => {
   const showConfirmationActions = status === 'pending' && isPending;
@@ -49,28 +53,52 @@ export const ProviderInfoCard: React.FC<ProviderInfoCardProps> = ({
           )}
         </h3>
         
-        <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <div className="flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 bg-slate-200 rounded-full flex items-center justify-center text-slate-700 text-xl sm:text-2xl font-bold border-2 border-slate-300">
-            {provider.firstName[0]}{provider.lastName[0]}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="text-base sm:text-lg font-semibold text-slate-900">
-              {provider.firstName} {provider.lastName}
-            </h4>
-            <p className="text-xs sm:text-sm text-slate-600 truncate">{provider.email}</p>
-            <p className="text-xs sm:text-sm text-slate-600 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" strokeWidth={2} />
-              <span>{provider.phone}</span>
-            </p>
-            {provider.averageRating && provider.averageRating > 0 && (
-              <div className="mt-1.5 sm:mt-2">
-                <ProviderRating
-                  rating={provider.averageRating}
-                  totalJobs={provider.totalJobsCompleted || 0}
-                  size="sm"
-                />
+        {/* Provider Details Section */}
+        <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+          <h4 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+            <User className="w-4 h-4" />
+            Provider Details
+          </h4>
+          
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center text-slate-700 text-lg font-bold border-2 border-slate-300">
+                {provider.firstName[0]}{provider.lastName[0]}
               </div>
-            )}
+              <div className="flex-1 min-w-0">
+                <h5 className="text-base font-semibold text-slate-900">
+                  {provider.firstName} {provider.lastName}
+                </h5>
+                <p className="text-xs text-slate-600">{provider.email}</p>
+                <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-0.5">
+                  <Phone className="w-3.5 h-3.5 flex-shrink-0" strokeWidth={2} />
+                  <span>{provider.phone}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Reviews - Simple inline display */}
+            <div className="pt-3 border-t border-slate-200/60">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <StarRating rating={provider.averageRating || 0} readonly size="sm" />
+                  <span className="text-xs text-slate-600">
+                    {reviews.length > 0 
+                      ? `${reviews.length} ${reviews.length === 1 ? 'review' : 'reviews'}`
+                      : 'No reviews yet'
+                    }
+                  </span>
+                </div>
+                {reviews.length > 0 && onViewReviews && (
+                  <button
+                    onClick={onViewReviews}
+                    className="text-xs text-blue-600 hover:text-blue-700 underline cursor-pointer"
+                  >
+                    View reviews
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

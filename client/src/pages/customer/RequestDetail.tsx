@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Card, Button, LoadingSkeleton, EmptyState, PageContainer, BackLink } from '../../components/ui';
+import { Card, Button, LoadingSkeleton, EmptyState, PageContainer, BackLink, ReviewModal, SubmitReviewModal } from '../../components/ui';
 import { 
   AcceptedProvidersModal,
   RequestInfoGrid,
@@ -17,11 +17,11 @@ import {
   StatusTimeline,
 } from '../../components/customer';
 import { api, handleResponse } from '../../services/apiClient';
-import type { ServiceRequestDetailDto, ProviderWithContactDto } from '../../types/api';
+import type { ServiceRequestDetailDto, ProviderWithContactDto, ReviewDetailDto, ApiResponse, CanReviewResponse } from '../../types/api';
 import { useSocketEvent, SocketEvents } from '../../hooks/useWebSocket';
 import { useConfirmationModal } from '../../hooks/useConfirmationModal';
 import { getStatusBadge, getUrgencyBadge } from '../../utils/badgeHelpers';
-import { Users, X, AlertTriangle, Star } from 'lucide-react';
+import { Users, X, AlertTriangle, Star, MessageSquare } from 'lucide-react';
 
 interface SocketEventData {
   requestId?: number | string;
@@ -38,6 +38,13 @@ export const RequestDetail: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptedProviderCount, setAcceptedProviderCount] = useState<number>(0);
   const [isProvidersModalOpen, setIsProvidersModalOpen] = useState(false);
+  
+  // Review states
+  const [reviews, setReviews] = useState<ReviewDetailDto[]>([]);
+  const [canReview, setCanReview] = useState<boolean>(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isSubmitReviewModalOpen, setIsSubmitReviewModalOpen] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   
   const { confirm: confirmCancel, ConfirmationModalComponent: CancelConfirmationModal } = useConfirmationModal();
 
@@ -57,6 +64,36 @@ export const RequestDetail: React.FC = () => {
       // Silently fail - count just won't show
     }
   }, [id]);
+
+  const fetchReviews = useCallback(async () => {
+    if (!id) return;
+    
+    try {
+      const response = await api.get(`/api/reviews/request/${id}`);
+      const data = await handleResponse<ApiResponse<ReviewDetailDto[]>>(response);
+      
+      if (data.success && data.data) {
+        setReviews(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error);
+    }
+  }, [id]);
+
+  const checkCanReview = useCallback(async () => {
+    if (!id || !token) return;
+    
+    try {
+      const response = await api.get(`/api/reviews/request/${id}/can-review`);
+      const data = await handleResponse<ApiResponse<CanReviewResponse>>(response);
+      
+      if (data.success && data.data) {
+        setCanReview(data.data.canReview);
+      }
+    } catch (error) {
+      console.error('Failed to check review status:', error);
+    }
+  }, [id, token]);
 
   const fetchRequestDetail = useCallback(async () => {
     if (!token || !id) return;
@@ -85,13 +122,21 @@ export const RequestDetail: React.FC = () => {
             console.error('Failed to fetch provider:', error);
           }
         }
+
+        // Always fetch reviews to show existing reviews at any stage
+        fetchReviews();
+        
+        // Check if user can review (only possible after completion)
+        if (foundRequest.status === 'completed') {
+          checkCanReview();
+        }
       }
     } catch (error) {
       console.error('Failed to fetch request:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [token, id, fetchAcceptedProviderCount]);
+  }, [token, id, fetchAcceptedProviderCount, fetchReviews, checkCanReview]);
 
   useEffect(() => {
     fetchRequestDetail();
@@ -216,6 +261,36 @@ export const RequestDetail: React.FC = () => {
     setIsProvidersModalOpen(false);
   };
 
+  const handleViewReviews = () => {
+    setIsReviewModalOpen(true);
+  };
+
+  const handleSubmitReview = async (rating: number, comment: string) => {
+    if (!id) return;
+    
+    setIsSubmittingReview(true);
+    try {
+      const response = await api.post(`/api/reviews/${id}`, {
+        rating,
+        comment,
+        isPublic: true,
+      });
+      
+      await handleResponse(response);
+      
+      // Refresh data to hide "Leave Review" button
+      await fetchReviews();
+      await checkCanReview();
+      
+      // Modal will show success message and auto-close
+    } catch (error) {
+      console.error('Failed to submit review:', error);
+      throw error;
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-8">
@@ -298,6 +373,8 @@ export const RequestDetail: React.FC = () => {
             isProcessing={isProcessing}
             onConfirm={handleConfirmProvider}
             onReject={handleRejectProvider}
+            reviews={reviews.filter(review => review.revieweeId === provider.id)}
+            onViewReviews={handleViewReviews}
           />
         )}
 
@@ -344,11 +421,27 @@ export const RequestDetail: React.FC = () => {
                 </Button>
               )}
               
-              {request.status === 'completed' && (
+              {/* Show reviews button at all stages if reviews exist */}
+              {reviews.length > 0 && (
                 <Button 
                   size="sm"
-                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700"
-                  onClick={() => navigate(`/requests/${request.id}/review`)}
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={handleViewReviews}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <MessageSquare className="w-4 h-4" strokeWidth={2} />
+                    <span>View Reviews ({reviews.length})</span>
+                  </span>
+                </Button>
+              )}
+              
+              {/* Only show "Leave Review" button when completed and eligible */}
+              {request.status === 'completed' && canReview && (
+                <Button 
+                  size="sm"
+                  className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600"
+                  onClick={() => setIsSubmitReviewModalOpen(true)}
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Star className="w-4 h-4" strokeWidth={2} />
@@ -383,6 +476,26 @@ export const RequestDetail: React.FC = () => {
       
       {/* Cancel Request Confirmation Modal */}
       {CancelConfirmationModal}
+
+      {/* Review Modals */}
+      {request && (
+        <>
+          <ReviewModal
+            isOpen={isReviewModalOpen}
+            onClose={() => setIsReviewModalOpen(false)}
+            reviews={reviews}
+            title="Job Reviews"
+          />
+          
+          <SubmitReviewModal
+            isOpen={isSubmitReviewModalOpen}
+            onClose={() => setIsSubmitReviewModalOpen(false)}
+            onSubmit={handleSubmitReview}
+            revieweeName={provider ? `${provider.firstName} ${provider.lastName}` : 'Service Provider'}
+            isSubmitting={isSubmittingReview}
+          />
+        </>
+      )}
     </PageContainer>
   );
 };

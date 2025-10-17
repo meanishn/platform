@@ -250,7 +250,7 @@ export const ServiceRequestCard: React.FC<ServiceRequestCardProps> = ({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => navigate(`/requests/${request.id}/review`)}
+              onClick={() => navigate(`/requests/${request.id}`)}
               className="flex items-center gap-2"
             >
               <Star className="w-4 h-4" strokeWidth={2} />
