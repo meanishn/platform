@@ -18,7 +18,7 @@ import {
   LoadingSkeleton,
   PageContainer,
 } from '../../components/ui';
-import { userApi } from '../../services/realApi';
+import { userApi } from '../../services/apiService';
 import { AuthUserDto } from '../../types/api';
 
 export const Profile: React.FC = () => {

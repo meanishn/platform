@@ -11,7 +11,7 @@ import {
   JobDetailItem,
   CenteredLoadingSpinner
 } from '../../components/provider';
-import { providerApi } from '../../services/realApi';
+import { providerApi } from '../../services/apiService';
 import { useNotificationService } from '../../services/notificationService';
 import { useJobDetailsModal } from '../../hooks';
 import type { JobDto, ProviderActionRequest } from '../../types/api';

@@ -14,7 +14,7 @@ import {
   FeaturedActionCard,
 } from '../../components/ui';
 import { RoleGuard } from '../../components/auth/RoleGuard';
-import { providerApi } from '../../services/realApi';
+import { providerApi } from '../../services/apiService';
 import { ActivityItemDto } from '../../types/api';
 import { ProfileStatusCard } from '../../components/provider';
 import { ClipboardList, CheckCircle2, DollarSign, Star, User, Plus, FileText, Zap } from 'lucide-react';

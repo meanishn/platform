@@ -21,7 +21,7 @@ import {
   type TabOption 
 } from '../../components/ui';
 import { JobDetailsModal } from '../../components/provider';
-import { providerApi } from '../../services/realApi';
+import { providerApi } from '../../services/apiService';
 import { useNotificationService } from '../../services/notificationService';
 import { useConfirmationModal } from '../../hooks';
 import type { ProviderAssignmentDto } from '../../types/api';

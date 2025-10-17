@@ -13,7 +13,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Badge, InfoBox, ContactLinkCard, InfoAlert, ReviewModal, SubmitReviewModal, StarRating } from '../ui';
 import { MatchBadge, CustomerInfoHeader } from '../provider';
-import { providerApi } from '../../services/realApi';
+import { providerApi } from '../../services/apiService';
 import { useNotificationService } from '../../services/notificationService';
 import { api, handleResponse } from '../../services/apiClient';
 import type { ProviderJobDetailDto, ProviderActionRequest, ReviewDetailDto, ApiResponse, CanReviewResponse } from '../../types/api';

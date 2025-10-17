@@ -21,7 +21,7 @@ import {
 import type { UrgencyLevel } from './ui';
 import { useNotificationService } from '../services/notificationService';
 import { useAuth } from '../hooks/useAuth';
-import { serviceApi, requestApi } from '../services/realApi';
+import { serviceApi, requestApi } from '../services/apiService';
 import { ServiceCategoryDto, ServiceTierDto, CreateServiceRequestDto } from '../types/api';
 import { Send } from 'lucide-react';
 

@@ -1,7 +1,7 @@
 import React, { useReducer, useEffect, useCallback, type ReactNode } from 'react';
 import { AuthUserDto, RegisterData, UpdateProfileData } from '../types/user';
 import { ApiResponse, AuthResponseDto } from '../types/api';
-import { authApi } from '../services/realApi';
+import { authApi } from '../services/apiService';
 import { AuthContext, AuthContextType } from './AuthContextDefinition';
 import { ApiError } from '../services/apiClient';
 

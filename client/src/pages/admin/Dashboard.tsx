@@ -10,7 +10,7 @@ import {
   type QuickAction,
   type PendingAction
 } from '../../components/admin';
-import { adminApi } from '../../services/realApi';
+import { adminApi } from '../../services/apiService';
 import { responsiveGrids } from '../../styles/responsive.config';
 import { AdminStatsDto } from '../../types/api';
 

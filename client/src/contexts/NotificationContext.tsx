@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ReactNode } from 'react';
-import { notificationApi } from '../services/realApi';
+import { notificationApi } from '../services/apiService';
 import { NotificationDto } from '../types/api';
 import { 
   NotificationContext, 

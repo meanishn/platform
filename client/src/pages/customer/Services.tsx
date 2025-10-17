@@ -19,7 +19,7 @@ import {
   PageContainer,
 } from '../../components/ui';
 import { Link } from 'react-router-dom';
-import { serviceApi } from '../../services/realApi';
+import { serviceApi } from '../../services/apiService';
 import { ServiceCategoryDto } from '../../types/service';
 import { Zap, Wrench, Sparkles, Palette, Wind, Trees, Search } from 'lucide-react';
 

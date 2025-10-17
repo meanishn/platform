@@ -12,7 +12,7 @@ import {
   SectionHeader,
   FeaturedActionCard,
 } from '../../components/ui';
-import { customerApi } from '../../services/realApi';
+import { customerApi } from '../../services/apiService';
 import type { CustomerStatsDto, ActivityItemDto } from '../../types/api';
 import { HelpCard } from '../../components/customer';
 import { ClipboardList, CheckCircle2, DollarSign, Star, User, MessageCircle, Sparkles } from 'lucide-react';

@@ -1,6 +1,6 @@
 /**
- * Real API Service
- * Replaces MSW mock with actual server API calls
+ * API Service
+ * Client-side service layer for making HTTP requests to the backend API
  */
 
 import { apiClient, handleResponse } from './apiClient';
@@ -20,10 +20,6 @@ import type {
   AcceptAssignmentDto,
   DeclineAssignmentDto,
   AuthUserDto,
-  ReviewDto,
-  ReviewDetailDto,
-  ProviderRatingStatsDto,
-  CreateReviewDto,
   UpdateProfileData,
   PublicUserDto,
   AuthUserRespose,
@@ -420,3 +416,4 @@ export const customerApi = {
     return handleResponse<ApiResponse<ActivityItemDto[]>>(response);
   }
 };
+
