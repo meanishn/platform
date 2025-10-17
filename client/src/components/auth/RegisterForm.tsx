@@ -17,7 +17,7 @@ import {
   RoleSelector 
 } from '../ui';
 import { Navigate } from 'react-router-dom';
-import { UserPlus, Loader2 } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 
 export const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -177,14 +177,7 @@ export const RegisterForm: React.FC = () => {
           isLoading={isLoading}
           disabled={isLoading}
         >
-          {isLoading ? (
-            <span className="flex items-center justify-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" strokeWidth={2} />
-              <span>Creating Account...</span>
-            </span>
-          ) : (
-            <span>Create Account</span>
-          )}
+          {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>
       </form>
 

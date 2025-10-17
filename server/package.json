@@ -10,9 +10,9 @@
     "start": "node dist/server/src/server.js",
     "migrate": "knex --knexfile src/db/knexfile.ts migrate:latest",
     "migrate:rollback": "knex --knexfile src/db/knexfile.ts migrate:rollback",
-    "migrate:prod": "NODE_ENV=production knex --knexfile src/db/knexfile.ts migrate:latest",
+    "migrate:prod": "cross-env NODE_ENV=production knex --knexfile src/db/knexfile.ts migrate:latest",
     "seed": "knex --knexfile src/db/knexfile.ts seed:run",
-    "seed:prod": "NODE_ENV=production knex --knexfile src/db/knexfile.ts seed:run",
+    "seed:prod": "cross-env NODE_ENV=production knex --knexfile src/db/knexfile.ts seed:run",
     "db:reset": "npm run migrate:rollback && npm run migrate && npm run seed",
     "deploy:build": "npm install && npm run build && npm run migrate:prod",
     "health-check": "node -e \"fetch(process.env.RENDER_EXTERNAL_URL + '/health').then(r => r.json()).then(console.log).catch(console.error)\""
@@ -50,6 +50,7 @@
     "typescript": "^5.0.0"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "ts-node-dev": "^2.0.0"
   }
 }

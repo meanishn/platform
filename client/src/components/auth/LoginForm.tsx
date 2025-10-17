@@ -17,7 +17,7 @@ import {
 } from '../ui';
 import { Link, useNavigate } from 'react-router-dom';
 import { DemoCredentials } from './DemoCredentials';
-import { Lock, Loader2 } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -132,14 +132,7 @@ export const LoginForm: React.FC = () => {
               isLoading={isLoading}
               disabled={isLoading}
             >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" strokeWidth={2} />
-                  <span>Signing in...</span>
-                </span>
-              ) : (
-                <span>Sign in</span>
-              )}
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
 
