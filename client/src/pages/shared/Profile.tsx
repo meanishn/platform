@@ -124,9 +124,9 @@ export const Profile: React.FC = () => {
 
   return (
     <PageContainer maxWidth="7xl">
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight">Profile Settings</h1>
-          <p className="text-sm text-slate-600 leading-normal mt-1">Manage your account information and preferences</p>
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 leading-tight">Profile Settings</h1>
+          <p className="text-xs sm:text-sm text-slate-600 leading-normal mt-1">Manage your account information and preferences</p>
         </div>
 
         {/* Tab Navigation */}
@@ -144,12 +144,12 @@ export const Profile: React.FC = () => {
         {/* Personal Information Tab */}
         {activeTab === 'personal' && (
           <Card>
-          <div className="p-5">
-            <h3 className="text-lg font-semibold text-slate-900 leading-snug mb-6">Personal Information</h3>
+          <div className="p-4 sm:p-5">
+            <h3 className="text-base sm:text-lg font-semibold text-slate-900 leading-snug mb-4 sm:mb-6">Personal Information</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
                   First Name
                 </label>
                 <Input
@@ -160,7 +160,7 @@ export const Profile: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
                   Last Name
                 </label>
                 <Input
@@ -170,8 +170,8 @@ export const Profile: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+              <div className="md:col-span-2">
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
                   Email Address
                 </label>
                 <Input
@@ -183,8 +183,8 @@ export const Profile: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+            <div className="mt-4 sm:mt-6">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
                 Bio
               </label>
               <Textarea
@@ -202,12 +202,12 @@ export const Profile: React.FC = () => {
         {/* Contact & Address Tab */}
         {activeTab === 'contact' && (
           <Card>
-          <div className="p-5">
-            <h3 className="text-lg font-semibold text-slate-900 leading-snug mb-6">Contact & Address</h3>
+          <div className="p-4 sm:p-5">
+            <h3 className="text-base sm:text-lg font-semibold text-slate-900 leading-snug mb-4 sm:mb-6">Contact & Address</h3>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-2">
                   Phone Number
                 </label>
                 <Input
@@ -219,15 +219,15 @@ export const Profile: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="text-md font-medium text-slate-900 mb-4">Address</h4>
-                <div className="grid grid-cols-1 gap-4">
+                <h4 className="text-sm sm:text-md font-medium text-slate-900 mb-3 sm:mb-4">Address</h4>
+                <div className="grid grid-cols-1 gap-3 sm:gap-4">
                   <Input
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     value={(profile.address as any)?.street || ''}
                     onChange={(e) => handleAddressChange('street', e.target.value)}
                     placeholder="Street Address"
                   />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                     <Input
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       value={(profile.address as any)?.city || ''}
@@ -257,10 +257,10 @@ export const Profile: React.FC = () => {
         {/* Preferences Tab */}
         {activeTab === 'preferences' && (
           <Card>
-          <div className="p-5">
-            <h3 className="text-lg font-semibold text-slate-900 leading-snug mb-6">Notification Preferences</h3>
+          <div className="p-4 sm:p-5">
+            <h3 className="text-base sm:text-lg font-semibold text-slate-900 leading-snug mb-4 sm:mb-6">Notification Preferences</h3>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <ToggleSwitch
                 label="Email Notifications"
                 description="Receive updates about your service requests"
@@ -290,10 +290,10 @@ export const Profile: React.FC = () => {
         {/* Security Tab */}
         {activeTab === 'security' && (
           <Card>
-          <div className="p-5">
-            <h3 className="text-lg font-semibold text-slate-900 leading-snug mb-6">Security Settings</h3>
+          <div className="p-4 sm:p-5">
+            <h3 className="text-base sm:text-lg font-semibold text-slate-900 leading-snug mb-4 sm:mb-6">Security Settings</h3>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <SecuritySettingCard
                 title="Password"
                 description="Last changed 3 months ago"
@@ -318,11 +318,11 @@ export const Profile: React.FC = () => {
         )}
 
         {/* Save Button */}
-        <div className="mt-8 flex justify-end">
+        <div className="mt-6 sm:mt-8 flex justify-end">
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="w-32"
+            className="w-full sm:w-auto sm:min-w-[8rem]"
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>

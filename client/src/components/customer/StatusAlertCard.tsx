@@ -83,20 +83,20 @@ export const StatusAlertCard: React.FC<StatusAlertCardProps> = ({
 
   return (
     <Card className={className}>
-      <div className="p-6">
-        <div className={`${config.bgColor} border-l-4 ${config.borderColor} rounded-lg p-4`}>
-          <div className="flex items-start gap-3">
-            <div className={`w-10 h-10 ${config.iconBgColor} rounded-lg flex items-center justify-center flex-shrink-0 ${type === 'accepted_providers' ? `border ${config.borderColor.replace('border-', 'border-')}` : ''}`}>
-              <Icon className={`w-5 h-5 ${config.iconColor}`} strokeWidth={2} />
+      <div className="p-4 sm:p-5 md:p-6">
+        <div className={`${config.bgColor} border-l-4 ${config.borderColor} rounded-lg p-3 sm:p-4`}>
+          <div className="flex items-start gap-2.5 sm:gap-3">
+            <div className={`w-9 h-9 sm:w-10 sm:h-10 ${config.iconBgColor} rounded-lg flex items-center justify-center flex-shrink-0 ${type === 'accepted_providers' ? `border ${config.borderColor.replace('border-', 'border-')}` : ''}`}>
+              <Icon className={`w-4.5 h-4.5 sm:w-5 sm:h-5 ${config.iconColor}`} strokeWidth={2} />
             </div>
-            <div className="flex-1">
-              <p className="font-semibold text-slate-900 mb-1">{title}</p>
-              <p className="text-sm text-slate-600 mb-3">{config.description}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm sm:text-base font-semibold text-slate-900 mb-1">{title}</p>
+              <p className="text-xs sm:text-sm text-slate-600 mb-2.5 sm:mb-3 leading-relaxed">{config.description}</p>
               {type === 'accepted_providers' && onViewProviders && (
                 <Button
                   size="sm"
                   onClick={onViewProviders}
-                  className="bg-slate-700 hover:bg-slate-800 text-white font-medium"
+                  className="w-full sm:w-auto bg-slate-700 hover:bg-slate-800 text-white font-medium"
                 >
                   View & Select Provider
                 </Button>

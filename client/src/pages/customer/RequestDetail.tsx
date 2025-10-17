@@ -243,11 +243,11 @@ export const RequestDetail: React.FC = () => {
   return (
     <PageContainer maxWidth="7xl">
         {/* Header */}
-        <div>
+        <div className="space-y-3 sm:space-y-4">
         <BackLink to="/requests">Back to My Requests</BackLink>
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-slate-900">Request Details</h1>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 leading-tight">Request Details</h1>
+          <div className="flex flex-wrap gap-2">
             {getStatusBadge(request.status)}
             {getUrgencyBadge(request.urgency)}
           </div>
@@ -255,12 +255,12 @@ export const RequestDetail: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Request Info Card */}
         <Card>
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">{request.title}</h2>
-            <p className="text-slate-700 mb-6">{request.description}</p>
+          <div className="p-4 sm:p-5 md:p-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-3 sm:mb-4">{request.title}</h2>
+            <p className="text-sm sm:text-base text-slate-700 mb-4 sm:mb-6 leading-relaxed">{request.description}</p>
             <RequestInfoGrid request={request} />
           </div>
         </Card>
@@ -306,14 +306,15 @@ export const RequestDetail: React.FC = () => {
 
         {/* Action Buttons */}
         <Card>
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Actions</h3>
-            <div className="flex flex-wrap gap-2">
+          <div className="p-4 sm:p-5 md:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3 sm:mb-4">Actions</h3>
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
               {request.status === 'pending' && acceptedProviderCount === 0 && (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={handleViewProviders}
+                  className="w-full sm:w-auto"
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Users className="w-4 h-4" strokeWidth={2} />
@@ -328,7 +329,7 @@ export const RequestDetail: React.FC = () => {
                   variant="outline"
                   onClick={handleCancelRequest}
                   disabled={isProcessing}
-                  className="text-red-600 border-red-300 hover:bg-red-50"
+                  className="w-full sm:w-auto text-red-600 border-red-300 hover:bg-red-50"
                 >
                   <span className="inline-flex items-center gap-1.5">
                     {isProcessing ? (
@@ -346,7 +347,7 @@ export const RequestDetail: React.FC = () => {
               {request.status === 'completed' && (
                 <Button 
                   size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700"
+                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700"
                   onClick={() => navigate(`/requests/${request.id}/review`)}
                 >
                   <span className="inline-flex items-center gap-1.5">
@@ -360,6 +361,7 @@ export const RequestDetail: React.FC = () => {
                 size="sm"
                 variant="outline" 
                 onClick={() => navigate('/requests')}
+                className="w-full sm:w-auto"
               >
                 ← Back to All Requests
               </Button>

@@ -52,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { path: '/request-service', label: 'Request Service', icon: Plus },
     { path: '/requests', label: 'My Requests', icon: ClipboardList },
     { path: '/profile', label: 'Profile', icon: User },
+    { path: '/notifications', label: 'Notifications', icon: Bell },
   ];
 
   const providerLinks = [

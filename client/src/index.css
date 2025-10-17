@@ -386,3 +386,13 @@ code {
   background: rgb(191 219 254); /* bg-blue-200 */
   color: rgb(30 58 138); /* text-blue-900 */
 }
+
+/* Scrollbar hide utility for horizontal scrolling tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
