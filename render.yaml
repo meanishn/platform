@@ -9,7 +9,7 @@ services:
     env: node
     region: oregon # Change to your preferred region
     plan: free # Options: free, starter, standard, pro
-    buildCommand: cd server && npm install && npm run build && npm run migrate:prod
+    buildCommand: cd shared-types && npm install && npm run build && cd ../server && npm install && npm run build && npm run migrate:prod
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV

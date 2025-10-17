@@ -2,17 +2,17 @@
   "name": "@servicehub/shared-types",
   "version": "1.0.0",
   "description": "Shared TypeScript types for ServiceHub platform",
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist || rmdir /s /q dist 2>nul || true"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
   },
   "files": [
-    "*.ts",
-    "index.ts"
+    "dist/**/*"
   ]
 }
