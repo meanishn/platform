@@ -10,9 +10,9 @@
     "start": "node dist/server.js",
     "migrate": "knex --knexfile src/db/knexfile.ts migrate:latest",
     "migrate:rollback": "knex --knexfile src/db/knexfile.ts migrate:rollback",
-    "migrate:prod": "NODE_ENV=production knex --knexfile dist/db/knexfile.js migrate:latest",
+    "migrate:prod": "NODE_ENV=production knex --knexfile src/db/knexfile.ts migrate:latest",
     "seed": "knex --knexfile src/db/knexfile.ts seed:run",
-    "seed:prod": "NODE_ENV=production knex --knexfile dist/db/knexfile.js seed:run",
+    "seed:prod": "NODE_ENV=production knex --knexfile src/db/knexfile.ts seed:run",
     "db:reset": "npm run migrate:rollback && npm run migrate && npm run seed",
     "deploy:build": "npm install && npm run build && npm run migrate:prod",
     "health-check": "node -e \"fetch(process.env.RENDER_EXTERNAL_URL + '/health').then(r => r.json()).then(console.log).catch(console.error)\""
@@ -46,10 +46,10 @@
     "passport-local": "^1.0.0",
     "pg": "^8.11.0",
     "socket.io": "^4.8.1",
+    "ts-node": "^10.9.1",
     "typescript": "^5.0.0"
   },
   "devDependencies": {
-    "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0"
   }
 }
