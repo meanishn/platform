@@ -28,7 +28,7 @@ export const JobDetailItem: React.FC<JobDetailItemProps> = ({
       <p className="text-slate-500 text-xs mb-1">{label}</p>
       <p className="text-slate-900 text-sm flex items-center gap-1.5">
         {IconComponent && <IconComponent className="w-4 h-4 text-slate-600" strokeWidth={2} />}
-        {value}
+        <span>{value}</span>
       </p>
     </div>
   );

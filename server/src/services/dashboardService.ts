@@ -173,32 +173,62 @@ export class DashboardService {
     // Total users
     const totalUsers = await User.query().resultSize();
 
-    // Total providers (approved)
+    // Active users (logged in within last 30 days - simplified)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const activeUsers = await User.query()
+      .where('created_at', '>=', thirtyDaysAgo.toISOString())
+      .resultSize();
+
+    // New users (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const newUsers = await User.query()
+      .where('created_at', '>=', sevenDaysAgo.toISOString())
+      .resultSize();
+
+    // Provider stats
     const totalProviders = await User.query()
       .where('is_service_provider', true)
-      .where('provider_status', 'approved')
       .resultSize();
 
-    // Total customers
-    const totalCustomers = await User.query()
-      .where('is_service_provider', false)
-      .where('is_admin', false)
-      .resultSize();
-
-    // Pending verifications
-    const pendingVerifications = await User.query()
+    const pendingProviders = await User.query()
       .where('is_service_provider', true)
       .where('provider_status', 'pending')
       .resultSize();
 
-    // Active requests
-    const activeRequests = await ServiceRequest.query()
-      .whereIn('status', ['pending', 'assigned', 'in_progress'])
+    const approvedProviders = await User.query()
+      .where('is_service_provider', true)
+      .where('provider_status', 'approved')
       .resultSize();
 
-    // Completed requests
+    const rejectedProviders = await User.query()
+      .where('is_service_provider', true)
+      .where('provider_status', 'rejected')
+      .resultSize();
+
+    const suspendedProviders = await User.query()
+      .where('is_service_provider', true)
+      .where('provider_status', 'suspended')
+      .resultSize();
+
+    // Request stats
+    const totalRequests = await ServiceRequest.query().resultSize();
+
+    const pendingRequests = await ServiceRequest.query()
+      .where('status', 'pending')
+      .resultSize();
+
+    const inProgressRequests = await ServiceRequest.query()
+      .whereIn('status', ['assigned', 'in_progress'])
+      .resultSize();
+
     const completedRequests = await ServiceRequest.query()
       .where('status', 'completed')
+      .resultSize();
+
+    const cancelledRequests = await ServiceRequest.query()
+      .whereIn('status', ['cancelled', 'declined'])
       .resultSize();
 
     // Total revenue (estimate)
@@ -212,33 +242,59 @@ export class DashboardService {
       return sum + revenue;
     }, 0);
 
-    // Monthly growth (simplified - compare this month vs last month)
+    // Monthly revenue
     const now = new Date();
     const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    const thisMonthRequests = await ServiceRequest.query()
+    const thisMonthCompletedRequests = await ServiceRequest.query()
+      .where('status', 'completed')
       .where('created_at', '>=', firstDayThisMonth.toISOString())
-      .resultSize();
+      .withGraphFetched('tier')
+      .select();
 
-    const lastMonthRequests = await ServiceRequest.query()
+    const thisMonthRevenue = thisMonthCompletedRequests.reduce((sum, request) => {
+      const revenue = (request.tier?.base_hourly_rate || 0) * (request.estimated_hours || 1);
+      return sum + revenue;
+    }, 0);
+
+    const lastMonthCompletedRequests = await ServiceRequest.query()
+      .where('status', 'completed')
       .where('created_at', '>=', firstDayLastMonth.toISOString())
       .where('created_at', '<', firstDayThisMonth.toISOString())
-      .resultSize();
+      .withGraphFetched('tier')
+      .select();
 
-    const monthlyGrowth = lastMonthRequests > 0
-      ? ((thisMonthRequests - lastMonthRequests) / lastMonthRequests) * 100
-      : 0;
+    const lastMonthRevenue = lastMonthCompletedRequests.reduce((sum, request) => {
+      const revenue = (request.tier?.base_hourly_rate || 0) * (request.estimated_hours || 1);
+      return sum + revenue;
+    }, 0);
 
     return {
-      totalUsers,
-      totalProviders,
-      totalCustomers,
-      pendingVerifications,
-      activeRequests,
-      completedRequests,
-      totalRevenue: Math.round(totalRevenue),
-      monthlyGrowth: Math.round(monthlyGrowth * 10) / 10
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        new: newUsers
+      },
+      providers: {
+        total: totalProviders,
+        pending: pendingProviders,
+        approved: approvedProviders,
+        rejected: rejectedProviders,
+        suspended: suspendedProviders
+      },
+      requests: {
+        total: totalRequests,
+        pending: pendingRequests,
+        inProgress: inProgressRequests,
+        completed: completedRequests,
+        cancelled: cancelledRequests
+      },
+      revenue: {
+        total: Math.round(totalRevenue),
+        thisMonth: Math.round(thisMonthRevenue),
+        lastMonth: Math.round(lastMonthRevenue)
+      }
     };
   }
 

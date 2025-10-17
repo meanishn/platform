@@ -52,17 +52,6 @@ export interface ProviderStatsDto {
   pendingAssignments: number;
 }
 
-// Admin Dashboard Stats
-export interface AdminStatsDto {
-  totalUsers: number;
-  totalProviders: number;
-  totalCustomers: number;
-  pendingVerifications: number;
-  activeRequests: number;
-  completedRequests: number;
-  totalRevenue: number;
-  monthlyGrowth: number;
-}
 
 export interface ActivityMetadata {
   requestId?: number;

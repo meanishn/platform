@@ -12,27 +12,14 @@ import {
 } from '../../components/admin';
 import { adminApi } from '../../services/realApi';
 import { responsiveGrids } from '../../styles/responsive.config';
-
-interface AdminStats {
-  totalUsers: number;
-  totalProviders: number;
-  totalCustomers: number;
-  pendingVerifications: number;
-  activeRequests: number;
-  completedRequests?: number;
-  totalRevenue: number;
-  monthlyGrowth: number;
-}
+import { AdminStatsDto } from '../../types/api';
 
 export const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState<AdminStats>({
-    totalUsers: 0,
-    totalProviders: 0,
-    totalCustomers: 0,
-    pendingVerifications: 0,
-    activeRequests: 0,
-    totalRevenue: 0,
-    monthlyGrowth: 0
+  const [stats, setStats] = useState<AdminStatsDto>({
+    users: { total: 0, active: 0, new: 0 },
+    providers: { total: 0, pending: 0, approved: 0, rejected: 0, suspended: 0 },
+    requests: { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0 },
+    revenue: { total: 0, thisMonth: 0, lastMonth: 0 }
   });
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,13 +45,10 @@ export const AdminDashboard: React.FC = () => {
       console.error('Failed to fetch dashboard data:', error);
       // Set default values on error to prevent rendering issues
       setStats({
-        totalUsers: 0,
-        totalProviders: 0,
-        totalCustomers: 0,
-        pendingVerifications: 0,
-        activeRequests: 0,
-        totalRevenue: 0,
-        monthlyGrowth: 0
+        users: { total: 0, active: 0, new: 0 },
+        providers: { total: 0, pending: 0, approved: 0, rejected: 0, suspended: 0 },
+        requests: { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0 },
+        revenue: { total: 0, thisMonth: 0, lastMonth: 0 }
       });
       setRecentActivity([]);
     } finally {
@@ -75,6 +59,11 @@ export const AdminDashboard: React.FC = () => {
   if (isLoading) {
     return <LoadingSkeleton type="page" />;
   }
+
+  // Calculate derived stats
+  const monthlyGrowth = stats.revenue.lastMonth > 0
+    ? Math.round(((stats.revenue.thisMonth - stats.revenue.lastMonth) / stats.revenue.lastMonth) * 100)
+    : 0;
 
   // Data configuration for components
   const quickActions: QuickAction[] = [
@@ -91,7 +80,7 @@ export const AdminDashboard: React.FC = () => {
       id: '1',
       icon: '⏳',
       title: 'Provider Verifications',
-      description: `${stats.pendingVerifications} providers waiting for approval`,
+      description: `${stats.providers.pending} providers waiting for approval`,
       actionLabel: 'Review',
       actionHref: '/admin/providers?status=pending',
       colorScheme: 'yellow',
@@ -128,43 +117,43 @@ export const AdminDashboard: React.FC = () => {
           <div className={responsiveGrids.adminStats}>
             <AdminStatCard
               label="Total Users"
-              value={stats.totalUsers.toLocaleString()}
+              value={stats.users.total.toLocaleString()}
               icon="👥"
               colorScheme="blue"
             />
             <AdminStatCard
               label="Providers"
-              value={stats.totalProviders.toLocaleString()}
+              value={stats.providers.approved.toLocaleString()}
               icon="🛠️"
               colorScheme="green"
             />
             <AdminStatCard
-              label="Customers"
-              value={stats.totalCustomers.toLocaleString()}
+              label="Active Users"
+              value={stats.users.active.toLocaleString()}
               icon="👤"
               colorScheme="purple"
             />
             <AdminStatCard
               label="Pending Verifications"
-              value={stats.pendingVerifications}
+              value={stats.providers.pending}
               icon="⏳"
               colorScheme="yellow"
             />
             <AdminStatCard
               label="Active Requests"
-              value={stats.activeRequests}
+              value={stats.requests.pending + stats.requests.inProgress}
               icon="📋"
               colorScheme="indigo"
             />
             <AdminStatCard
               label="Total Revenue"
-              value={`$${stats.totalRevenue.toLocaleString()}`}
+              value={`$${stats.revenue.total.toLocaleString()}`}
               icon="💰"
               colorScheme="red"
             />
             <AdminStatCard
               label="Monthly Growth"
-              value={`${stats.monthlyGrowth > 0 ? '+' : ''}${stats.monthlyGrowth}%`}
+              value={`${monthlyGrowth > 0 ? '+' : ''}${monthlyGrowth}%`}
               icon="📈"
               colorScheme="teal"
             />

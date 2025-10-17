@@ -5,7 +5,7 @@
 // Provider-specific components (only for provider users)
 export { MatchBadge, CompactMatchBadge } from './MatchBadge';
 export { JobDetailsModal } from './JobDetailsModal';
-export { JobCard } from './JobCard';
+// export { JobCard } from './JobCard';
 export { ProfileStatusCard } from './ProfileStatusCard';
 export { CustomerInfoHeader } from './CustomerInfoHeader';
 

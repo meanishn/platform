@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { MapPin, Clock, Calendar, DollarSign } from 'lucide-react';
 import { Card, Button, JobDetailItem, UrgencyBadge, StatusBadge } from './';
 import type { ServiceRequestListItemDto } from '../../types/api';
 
@@ -88,12 +89,12 @@ export const RequestCard: React.FC<RequestCardProps> = ({
         <JobDetailItem 
           label={labels.location} 
           value={request.address} 
-          icon="📍" 
+          icon={MapPin} 
         />
         <JobDetailItem 
           label={labels.duration} 
           value={`${request.estimatedHours || 'TBD'}h`} 
-          icon="⏱️" 
+          icon={Clock} 
         />
         <JobDetailItem 
           label={labels.preferred} 
@@ -102,7 +103,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({
               ? new Date(request.preferredDate).toLocaleDateString() 
               : 'Flexible'
           } 
-          icon="📅" 
+          icon={Calendar} 
         />
         <JobDetailItem 
           label={labels.rate} 
@@ -111,7 +112,7 @@ export const RequestCard: React.FC<RequestCardProps> = ({
               ? `$${((request.tier?.baseHourlyRate || 0) * (request.estimatedHours || 0)).toFixed(0)}`
               : `$${request.tier?.baseHourlyRate || 'N/A'}/hr`
           } 
-          icon="💵" 
+          icon={DollarSign} 
         />
       </div>
 

@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { MapPin, Clock, Calendar, DollarSign } from 'lucide-react';
 import { Card, Button, JobDetailItem, UrgencyBadge, StatusBadge } from '../ui';
 import { MatchBadge } from './MatchBadge';
 import type { JobDto } from '../../types/api';
@@ -83,14 +84,14 @@ export const JobCard: React.FC<JobCardProps> = ({
 
       {/* Job Details Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b border-white/10">
-        <JobDetailItem label="Location" value={job.address} icon="📍" />
-        <JobDetailItem label="Duration" value={`${job.estimatedHours || 'TBD'}h est.`} icon="⏱️" />
+        <JobDetailItem label="Location" value={job.address} icon={MapPin} />
+        <JobDetailItem label="Duration" value={`${job.estimatedHours || 'TBD'}h est.`} icon={Clock} />
         <JobDetailItem 
           label="Preferred" 
           value={job.preferredDate ? new Date(job.preferredDate).toLocaleDateString() : 'Flexible'} 
-          icon="📅" 
+          icon={Calendar} 
         />
-        <JobDetailItem label="Rate" value={`$${job.tier?.baseHourlyRate || 'N/A'}/hr`} icon="💵" />
+        <JobDetailItem label="Rate" value={`$${job.tier?.baseHourlyRate || 'N/A'}/hr`} icon={DollarSign} />
       </div>
 
       {/* Additional Content */}

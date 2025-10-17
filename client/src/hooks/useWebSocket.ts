@@ -22,8 +22,9 @@ export const useWebSocket = () => {
 /**
  * Hook to listen for specific WebSocket events
  * Automatically handles cleanup on unmount
+ * @deprecated This hook is not yet implemented
  */
-export const useSocketEvent = (event: string, handler: EventHandler) => {
+export const useSocketEvent = (_event: string, _handler: EventHandler) => {
   // const { on, off } = useWebSocket();
 
   // useEffect(() => {
@@ -33,7 +34,7 @@ export const useSocketEvent = (event: string, handler: EventHandler) => {
   //   };
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
   // }, [event, on, off]);
-  return
+  return;
 };
 
 /**
