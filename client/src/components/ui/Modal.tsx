@@ -93,7 +93,7 @@ export const Modal: React.FC<ModalProps> = (props) => {
             {showCloseButton && (
               <button
                 type="button"
-                className={`${currentTheme.closeButton} focus:outline-none transition-colors -mr-2`}
+                className={`${currentTheme.closeButton} focus:outline-none transition-colors cursor-pointer -mr-2`}
                 onClick={onClose}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

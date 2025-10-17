@@ -156,13 +156,13 @@ export const headerConfig = {
   // Height
   height: 'h-14 sm:h-16',
   
-  // Navigation visibility
-  navShowAt: 'md',
-  navHide: 'hidden md:flex',
+  // Navigation visibility (now shows at lg: 1024px for better spacing)
+  navShowAt: 'lg',
+  navHide: 'hidden lg:flex',
   
   // Logo sizing
   logoSize: 'w-8 h-8 sm:w-10 sm:h-10',
-  logoText: 'text-lg sm:text-xl md:text-2xl',
+  logoText: 'text-base sm:text-lg md:text-xl lg:text-2xl',
   
   // User menu
   avatarSize: 'w-7 h-7 sm:w-9 sm:h-9',
