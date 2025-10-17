@@ -39,7 +39,7 @@ import type {
 
 // Base API URL - in development, use the Vite proxy by using relative URLs
 // In production, use the environment variable or default to the API server
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
 /**
  * Authentication API
