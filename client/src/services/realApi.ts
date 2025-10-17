@@ -34,7 +34,11 @@ import type {
   ProviderActionRequest,
   ProviderActionResponse,
   ProviderJobDetailDto,
-  JobDto
+  JobDto,
+  AdminUserDto,
+  AdminUserListDto,
+  AdminProviderDetailDto,
+  AdminAnalyticsDto
 } from '../types/api';
 
 // Base API URL - in development, use the Vite proxy by using relative URLs
@@ -391,24 +395,27 @@ export const reviewApi = {
  * Admin API
  */
 export const adminApi = {
-  getUsers: async (filters?: { role?: string; status?: string }): Promise<ApiResponse<PublicUserDto[]>> => {
+  // ✅ Fixed: Server returns AdminUserListDto
+  getUsers: async (filters?: { role?: string; status?: string }): Promise<ApiResponse<AdminUserListDto>> => {
     const params = new URLSearchParams();
     if (filters?.role) params.append('role', filters.role);
     if (filters?.status) params.append('status', filters.status);
     
     const url = params.toString() ? `${API_BASE_URL}/admin/users?${params}` : `${API_BASE_URL}/admin/users`;
     const response = await apiClient(url);
-    return handleResponse<ApiResponse<PublicUserDto[]>>(response);
+    return handleResponse<ApiResponse<AdminUserListDto>>(response);
   },
 
-  updateUser: async (userId: number, data: UpdateProfileData): Promise<ApiResponse<AuthUserDto>> => {
+  // ✅ Fixed: Server returns AdminUserDto
+  updateUser: async (userId: number, data: UpdateProfileData): Promise<ApiResponse<AdminUserDto>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/users/${userId}`, {
       method: 'PATCH',
       body: JSON.stringify(data)
     });
-    return handleResponse<ApiResponse<AuthUserDto>>(response);
+    return handleResponse<ApiResponse<AdminUserDto>>(response);
   },
 
+  // ✅ Correct: No data returned
   deleteUser: async (userId: number): Promise<ApiResponse<void>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/users/${userId}`, {
       method: 'DELETE'
@@ -416,72 +423,67 @@ export const adminApi = {
     return handleResponse<ApiResponse<void>>(response);
   },
 
-  getPendingProviders: async (): Promise<ApiResponse<AuthUserDto[]>> => {
+  // ✅ Fixed: Server returns AdminProviderDetailDto[]
+  getPendingProviders: async (): Promise<ApiResponse<AdminProviderDetailDto[]>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/providers/pending`);
-    return handleResponse<ApiResponse<AuthUserDto[]>>(response);
+    return handleResponse<ApiResponse<AdminProviderDetailDto[]>>(response);
   },
 
-  getProviderDetails: async (providerId: number): Promise<ApiResponse<AuthUserDto>> => {
+  // ✅ Fixed: Server returns AdminProviderDetailDto
+  getProviderDetails: async (providerId: number): Promise<ApiResponse<AdminProviderDetailDto>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/providers/${providerId}`);
-    return handleResponse<ApiResponse<AuthUserDto>>(response);
+    return handleResponse<ApiResponse<AdminProviderDetailDto>>(response);
   },
 
-  approveProvider: async (providerId: number, qualifiedCategories: number[]): Promise<ApiResponse<AuthUserDto>> => {
+  // ✅ Fixed: Server returns AdminUserDto
+  approveProvider: async (providerId: number, qualifiedCategories: number[]): Promise<ApiResponse<AdminUserDto>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/providers/${providerId}/approve`, {
       method: 'PATCH',
       body: JSON.stringify({ qualifiedCategories })
     });
-    return handleResponse<ApiResponse<AuthUserDto>>(response);
+    return handleResponse<ApiResponse<AdminUserDto>>(response);
   },
 
-  rejectProvider: async (providerId: number, reason: string): Promise<ApiResponse<AuthUserDto>> => {
+  // ✅ Fixed: Server returns AdminUserDto
+  rejectProvider: async (providerId: number, reason: string): Promise<ApiResponse<AdminUserDto>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/providers/${providerId}/reject`, {
       method: 'PATCH',
       body: JSON.stringify({ reason })
     });
-    return handleResponse<ApiResponse<AuthUserDto>>(response);
+    return handleResponse<ApiResponse<AdminUserDto>>(response);
   },
 
-  suspendProvider: async (providerId: number, reason: string): Promise<ApiResponse<AuthUserDto>> => {
+  // ✅ Fixed: Server returns AdminUserDto
+  suspendProvider: async (providerId: number, reason: string): Promise<ApiResponse<AdminUserDto>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/providers/${providerId}/suspend`, {
       method: 'PATCH',
       body: JSON.stringify({ reason })
     });
-    return handleResponse<ApiResponse<AuthUserDto>>(response);
+    return handleResponse<ApiResponse<AdminUserDto>>(response);
   },
 
-  reactivateProvider: async (providerId: number): Promise<ApiResponse<AuthUserDto>> => {
+  // ✅ Fixed: Server returns AdminUserDto
+  reactivateProvider: async (providerId: number): Promise<ApiResponse<AdminUserDto>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/providers/${providerId}/reactivate`, {
       method: 'PATCH'
     });
-    return handleResponse<ApiResponse<AuthUserDto>>(response);
+    return handleResponse<ApiResponse<AdminUserDto>>(response);
   },
 
-  getAnalytics: async (days?: number): Promise<ApiResponse<{
-    totalRevenue: number;
-    totalRequests: number;
-    completedRequests: number;
-    activeProviders: number;
-    customerSatisfaction: number;
-    monthlyGrowth: number;
-  }>> => {
+  // ✅ Fixed: Server returns AdminAnalyticsDto
+  getAnalytics: async (days?: number): Promise<ApiResponse<AdminAnalyticsDto>> => {
     const url = days ? `${API_BASE_URL}/admin/analytics?days=${days}` : `${API_BASE_URL}/admin/analytics`;
     const response = await apiClient(url);
-    return handleResponse<ApiResponse<{
-      totalRevenue: number;
-      totalRequests: number;
-      completedRequests: number;
-      activeProviders: number;
-      customerSatisfaction: number;
-      monthlyGrowth: number;
-    }>>(response);
+    return handleResponse<ApiResponse<AdminAnalyticsDto>>(response);
   },
 
+  // ✅ Correct: Already aligned with server
   getAdminStats: async (): Promise<ApiResponse<AdminStatsDto>> => {
     const response = await apiClient(`${API_BASE_URL}/admin/dashboard/stats`);
     return handleResponse<ApiResponse<AdminStatsDto>>(response);
   },
 
+  // ✅ Correct: Already aligned with server
   getAdminActivity: async (limit?: number): Promise<ApiResponse<ActivityItemDto[]>> => {
     const url = limit ? `${API_BASE_URL}/admin/dashboard/activity?limit=${limit}` : `${API_BASE_URL}/admin/dashboard/activity`;
     const response = await apiClient(url);

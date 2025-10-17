@@ -14,4 +14,5 @@ export * from './user.sanitizer';
 export * from './request.sanitizer';
 export * from './review.sanitizer';
 export * from './notification.sanitizer';
+export * from './admin.sanitizer';
 

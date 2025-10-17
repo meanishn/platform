@@ -10,6 +10,19 @@ import ServiceRequest from '../models/ServiceRequest';
 import ProviderCategory from '../models/ProviderCategory';
 import ServiceCategory from '../models/ServiceCategory';
 import { notificationService } from './notificationService';
+import { 
+  toAdminUserDto,
+  toAdminUserListDto,
+  toAdminProviderDetailDto,
+  toAdminUserDtoArray,
+  toAdminAnalyticsDto
+} from '../sanitizers';
+import type {
+  AdminUserDto,
+  AdminUserListDto,
+  AdminProviderDetailDto,
+  AdminAnalyticsDto
+} from '../../../shared-types';
 
 export interface UserListFilters {
   role?: 'customer' | 'provider' | 'admin';
@@ -32,10 +45,7 @@ export class AdminService {
   /**
    * Get list of all users with filtering
    */
-  async getUsers(filters: UserListFilters = {}): Promise<{
-    users: User[];
-    total: number;
-  }> {
+  async getUsers(filters: UserListFilters = {}): Promise<AdminUserListDto> {
     let query = User.query()
       .select([
         'id',
@@ -43,6 +53,8 @@ export class AdminService {
         'first_name',
         'last_name',
         'phone',
+        'profile_image',
+        'role',
         'is_service_provider',
         'is_admin',
         'provider_status',
@@ -90,33 +102,44 @@ export class AdminService {
       .offset(offset)
       .orderBy('created_at', 'desc');
 
-    return { users, total };
+    // ✅ Sanitize to DTOs
+    return toAdminUserListDto(users, total);
   }
 
   /**
    * Get provider details with qualifications
    */
-  async getProviderDetails(providerId: number): Promise<User | undefined> {
-    return User.query()
+  async getProviderDetails(providerId: number): Promise<AdminProviderDetailDto | undefined> {
+    const provider = await User.query()
       .findById(providerId)
       .withGraphFetched('[providerCategories.category, receivedReviews, approver]');
+    
+    if (!provider) {
+      return undefined;
+    }
+    
+    // ✅ Sanitize to DTO
+    return toAdminProviderDetailDto(provider);
   }
 
   /**
    * Get pending provider applications
    */
-  async getPendingProviders(): Promise<User[]> {
-    return User.query()
+  async getPendingProviders(): Promise<AdminProviderDetailDto[]> {
+    const providers = await User.query()
       .where('is_service_provider', true)
       .where('provider_status', 'pending')
       .withGraphFetched('providerCategories.category')
       .orderBy('created_at', 'asc');
+    
+    // ✅ Sanitize to DTOs
+    return providers.map(p => toAdminProviderDetailDto(p));
   }
 
   /**
    * Approve a provider application
    */
-  async approveProvider(data: ApproveProviderData): Promise<User> {
+  async approveProvider(data: ApproveProviderData): Promise<AdminUserDto> {
     const provider = await User.query().findById(data.providerId);
     
     if (!provider) {
@@ -171,7 +194,8 @@ export class AdminService {
 
     console.log(`✅ Provider ${data.providerId} approved by admin ${data.adminId}`);
 
-    return updatedProvider;
+    // ✅ Sanitize to DTO
+    return toAdminUserDto(updatedProvider);
   }
 
   /**
@@ -181,7 +205,7 @@ export class AdminService {
     providerId: number,
     adminId: number,
     reason?: string
-  ): Promise<User> {
+  ): Promise<AdminUserDto> {
     const provider = await User.query().findById(providerId);
     
     if (!provider) {
@@ -209,7 +233,8 @@ export class AdminService {
 
     console.log(`❌ Provider ${providerId} rejected by admin ${adminId}`);
 
-    return updatedProvider;
+    // ✅ Sanitize to DTO
+    return toAdminUserDto(updatedProvider);
   }
 
   /**
@@ -219,7 +244,7 @@ export class AdminService {
     providerId: number,
     adminId: number,
     reason?: string
-  ): Promise<User> {
+  ): Promise<AdminUserDto> {
     const provider = await User.query().findById(providerId);
     
     if (!provider) {
@@ -253,13 +278,14 @@ export class AdminService {
 
     console.log(`⚠️ Provider ${providerId} suspended by admin ${adminId}`);
 
-    return updatedProvider;
+    // ✅ Sanitize to DTO
+    return toAdminUserDto(updatedProvider);
   }
 
   /**
    * Reactivate a suspended provider
    */
-  async reactivateProvider(providerId: number, adminId: number): Promise<User> {
+  async reactivateProvider(providerId: number, adminId: number): Promise<AdminUserDto> {
     const provider = await User.query().findById(providerId);
     
     if (!provider) {
@@ -287,7 +313,8 @@ export class AdminService {
 
     console.log(`✅ Provider ${providerId} reactivated by admin ${adminId}`);
 
-    return updatedProvider;
+    // ✅ Sanitize to DTO
+    return toAdminUserDto(updatedProvider);
   }
 
   /**
@@ -296,7 +323,7 @@ export class AdminService {
   async updateUserProfile(
     userId: number,
     updates: Partial<User>
-  ): Promise<User> {
+  ): Promise<AdminUserDto> {
     const user = await User.query().findById(userId);
     
     if (!user) {
@@ -304,9 +331,12 @@ export class AdminService {
     }
 
     // Remove sensitive fields that shouldn't be updated this way
-    const { password, ...safeUpdates } = updates as any;
+    const { password, password_hash, ...safeUpdates } = updates as any;
 
-    return User.query().patchAndFetchById(userId, safeUpdates);
+    const updatedUser = await User.query().patchAndFetchById(userId, safeUpdates);
+    
+    // ✅ Sanitize to DTO
+    return toAdminUserDto(updatedUser);
   }
 
   /**
@@ -343,12 +373,7 @@ export class AdminService {
   /**
    * Get platform analytics
    */
-  async getAnalytics(days = 30): Promise<{
-    requestsOverTime: Array<{ date: string; count: number }>;
-    categoriesDistribution: Array<{ category: string; count: number }>;
-    averageResponseTime: number;
-    completionRate: number;
-  }> {
+  async getAnalytics(days = 30): Promise<AdminAnalyticsDto> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -406,12 +431,13 @@ export class AdminService {
       ? (completedRequests / totalRequests) * 100
       : 0;
 
-    return {
+    // ✅ Sanitize to DTO
+    return toAdminAnalyticsDto({
       requestsOverTime,
       categoriesDistribution,
       averageResponseTime: Math.round(averageResponseTime),
       completionRate: Math.round(completionRate)
-    };
+    });
   }
 }
 

@@ -1,5 +1,6 @@
 import Notification from '../models/Notification';
 import type { NotificationDto, NotificationListDto } from '../../../shared-types';
+import { toNotificationDto, toNotificationListDto } from '../sanitizers';
 
 export interface CreateNotificationData {
   userId: number;
@@ -7,23 +8,6 @@ export interface CreateNotificationData {
   title: string;
   message: string;
   data?: any;
-}
-
-/**
- * Mapper function to convert model instance to DTO
- */
-function toNotificationDto(notification: Notification): NotificationDto {
-  return {
-    id: notification.id,
-    userId: notification.user_id,
-    type: notification.type,
-    title: notification.title,
-    message: notification.message,
-    data: notification.data,
-    isRead: notification.is_read,
-    readAt: notification.read_at || undefined,
-    createdAt: notification.created_at
-  };
 }
 
 export class NotificationService {
@@ -68,10 +52,8 @@ export class NotificationService {
         .resultSize()
     ]);
 
-    return {
-      notifications: notifications.map(toNotificationDto),
-      unreadCount
-    };
+    // ✅ Use centralized sanitizer
+    return toNotificationListDto(notifications, unreadCount);
   }
 
   /**

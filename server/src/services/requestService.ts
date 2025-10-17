@@ -19,7 +19,9 @@ import type {
   ProviderAssignmentDto,
   JobDto,
   PublicUserDto,
-  CustomerWithContactDto
+  CustomerWithContactDto,
+  ProviderWithContactDto,
+  CreateServiceRequestDto
 } from '../../../shared-types';
 import { 
   toPublicUserDto,
@@ -27,37 +29,24 @@ import {
   toServiceRequestDetailDto,
   toServiceRequestListItemDto,
   toProviderAssignmentDto,
-  toCustomerWithContactDto
+  toProviderWithContactDto
 } from '../sanitizers';
-
-export interface CreateRequestData {
-  userId: number;
-  categoryId: number;
-  tierId: number;
-  title: string;
-  description: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  preferredDate?: string;
-  urgency?: UrgencyLevel;
-  estimatedHours?: number;
-  images?: string[];
-}
 
 export class RequestService {
   /**
    * Create a new service request with automatic provider matching
    * This triggers the automatic matching algorithm
+   * @param userId - Authenticated user ID (from auth context)
+   * @param data - Request data from client (CreateServiceRequestDto)
    */
-  async createRequest(data: CreateRequestData): Promise<ServiceRequestDto> {
+  async createRequest(userId: number, data: CreateServiceRequestDto): Promise<ServiceRequestDto> {
 
     console.log('images at insert:', data.images);
     console.log('JSON.stringify(images):', JSON.stringify(data.images));
 
     // Create the request
     const request = await ServiceRequest.query().insertAndFetch({
-      user_id: data.userId,
+      user_id: userId,
       category_id: data.categoryId,
       tier_id: data.tierId,
       title: data.title,
@@ -803,8 +792,9 @@ export class RequestService {
 
   /**
    * Get assigned provider info for a request
+   * Returns sanitized ProviderWithContactDto
    */
-  async getAssignedProvider(requestId: number): Promise<User | null> {
+  async getAssignedProvider(requestId: number): Promise<ProviderWithContactDto | null> {
     const request = await ServiceRequest.query()
       .findById(requestId)
       .select('assigned_provider_id');
@@ -831,7 +821,12 @@ export class RequestService {
         'is_available'
       ]);
 
-    return provider || null;
+    if (!provider) {
+      return null;
+    }
+
+    // ✅ Sanitize to DTO (single source of truth)
+    return toProviderWithContactDto(provider);
   }
 
   /**

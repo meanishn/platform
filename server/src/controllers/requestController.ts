@@ -9,12 +9,6 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { requestService } from '../services/requestService';
 import { emitToUser, emitToRole, SocketEvents } from '../services/socketService';
-import { 
-  toProviderWithContactDto,
-  toServiceRequestDto,
-  toServiceRequestDetailDto,
-  toServiceRequestListItemDto
-} from '../sanitizers';
 
 export class RequestController {
   /**
@@ -47,8 +41,8 @@ export class RequestController {
         images
       } = req.body;
 
-      const request = await requestService.createRequest({
-        userId,
+      // ✅ Pass userId separately, data matches CreateServiceRequestDto from shared-types
+      const request = await requestService.createRequest(userId, {
         categoryId,
         tierId,
         title,
@@ -581,12 +575,10 @@ export class RequestController {
         });
       }
 
-      // Sanitize provider data to DTO format
-      const sanitizedProvider = toProviderWithContactDto(provider);
-
+      // ✅ Service already returns sanitized DTO (ProviderWithContactDto)
       res.json({
         success: true,
-        data: sanitizedProvider
+        data: provider
       });
     } catch (error) {
       res.status(400).json({
