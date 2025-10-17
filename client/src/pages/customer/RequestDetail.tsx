@@ -99,35 +99,30 @@ export const RequestDetail: React.FC = () => {
     if (!token || !id) return;
     
     try {
-      // Fetch request details
-      const response = await api.get('/api/service-requests');
-      const data = await handleResponse<{ success: boolean; data: ServiceRequestDetailDto[] }>(response);
-      const foundRequest = data.data.find((r: ServiceRequestDetailDto) => r.id === parseInt(id));
+      // Fetch request details using dedicated endpoint
+      const response = await api.get(`/api/service-requests/${id}`);
+      const data = await handleResponse<{ success: boolean; data: ServiceRequestDetailDto }>(response);
       
-      if (foundRequest) {
-        setRequest(foundRequest);
+      if (data.success && data.data) {
+        setRequest(data.data);
         
-        // Fetch accepted provider count for pending requests
-        if (foundRequest.status === 'pending') {
-          fetchAcceptedProviderCount();
+        // Set provider from the request detail response (no separate API call needed)
+        if (data.data.assignedProvider) {
+          setProvider(data.data.assignedProvider);
+        } else {
+          setProvider(null);
         }
         
-        // If provider is assigned, fetch provider details
-        if (foundRequest.assignedProviderId) {
-          try {
-            const providerResponse = await api.get(`/api/requests/${id}/assigned-provider`);
-            const providerData = await handleResponse<{ success: boolean; data: ProviderWithContactDto }>(providerResponse);
-            setProvider(providerData.data);
-          } catch (error) {
-            console.error('Failed to fetch provider:', error);
-          }
+        // Fetch accepted provider count for pending requests
+        if (data.data.status === 'pending') {
+          fetchAcceptedProviderCount();
         }
 
         // Always fetch reviews to show existing reviews at any stage
         fetchReviews();
         
         // Check if user can review (only possible after completion)
-        if (foundRequest.status === 'completed') {
+        if (data.data.status === 'completed') {
           checkCanReview();
         }
       }

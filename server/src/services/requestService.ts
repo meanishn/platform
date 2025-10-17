@@ -21,7 +21,14 @@ import type {
   PublicUserDto,
   CustomerWithContactDto
 } from '../../../shared-types';
-import { toPublicUserDto } from '../sanitizers';
+import { 
+  toPublicUserDto,
+  toServiceRequestDto,
+  toServiceRequestDetailDto,
+  toServiceRequestListItemDto,
+  toProviderAssignmentDto,
+  toCustomerWithContactDto
+} from '../sanitizers';
 
 export interface CreateRequestData {
   userId: number;
@@ -37,175 +44,6 @@ export interface CreateRequestData {
   estimatedHours?: number;
   images?: string[];
 }
-
-/**
- * Mapper functions to convert model instances to DTOs
- */
-function toServiceRequestDto(request: ServiceRequest): ServiceRequestDto {
-  // Parse images if stored as JSON string
-  let images: string[] | undefined;
-  if (request.images) {
-    try {
-      images = typeof request.images === 'string' 
-        ? JSON.parse(request.images) 
-        : request.images;
-    } catch {
-      images = [];
-    }
-  }
-
-  return {
-    id: request.id,
-    userId: request.user_id,
-    categoryId: request.category_id,
-    tierId: request.tier_id,
-    title: request.title,
-    description: request.description,
-    address: request.address,
-    latitude: request.latitude,
-    longitude: request.longitude,
-    preferredDate: request.preferred_date || undefined,
-    urgency: request.urgency,
-    estimatedHours: request.estimated_hours || undefined,
-    images,
-    status: request.status,
-    assignedProviderId: request.assigned_provider_id || undefined,
-    assignedAt: request.assigned_at || undefined,
-    startedAt: request.started_at || undefined,
-    completedAt: request.completed_at || undefined,
-    createdAt: request.created_at,
-    updatedAt: request.updated_at
-  };
-}
-
-function toServiceRequestDetailDto(request: ServiceRequest, isAssignedProvider = false): ServiceRequestDetailDto {
-  const baseDto = toServiceRequestDto(request);
-  
-  // Build customer object - include contact info only for assigned provider
-  const customer: any = {
-    id: request.user!.id,
-    firstName: request.user!.first_name || '',
-    lastName: request.user!.last_name || '',
-    profileImage: request.user!.profile_image || undefined,
-    averageRating: request.user!.average_rating || undefined,
-    totalJobsCompleted: request.user!.total_jobs_completed || 0,
-    role: 'customer'
-  };
-
-  // Add contact information only for assigned provider
-  if (isAssignedProvider) {
-    customer.email = request.user!.email;
-    customer.phone = request.user!.phone || undefined;
-  }
-  
-  return {
-    ...baseDto,
-    customer,
-    category: {
-      id: request.category!.id,
-      name: request.category!.name,
-      description: request.category!.description || undefined,
-      icon: request.category!.icon || undefined,
-      isActive: request.category!.is_active
-    },
-    tier: {
-      id: request.tier!.id,
-      categoryId: request.tier!.category_id,
-      name: request.tier!.name,
-      description: request.tier!.description || undefined,
-      baseHourlyRate: request.tier!.base_hourly_rate,
-      isActive: request.tier!.is_active
-    },
-    assignedProvider: request.assignedProvider ? {
-      id: request.assignedProvider.id,
-      firstName: request.assignedProvider.first_name || '',
-      lastName: request.assignedProvider.last_name || '',
-      profileImage: request.assignedProvider.profile_image || undefined,
-      averageRating: request.assignedProvider.average_rating || undefined,
-      totalJobsCompleted: request.assignedProvider.total_jobs_completed || 0,
-      role: 'provider',
-      providerBio: request.assignedProvider.provider_bio || undefined,
-      providerSkills: request.assignedProvider.provider_skills || undefined,
-      responseTimeAverage: request.assignedProvider.response_time_average || undefined,
-      isAvailable: request.assignedProvider.is_available || false,
-      email: request.assignedProvider.email,
-      phone: request.assignedProvider.phone || undefined
-    } : undefined
-  };
-}
-
-function toServiceRequestListItemDto(request: ServiceRequest): ServiceRequestListItemDto {
-  // Parse images if stored as JSON string
-  let images: string[] | undefined;
-  if (request.images) {
-    try {
-      images = typeof request.images === 'string' 
-        ? JSON.parse(request.images) 
-        : request.images;
-    } catch {
-      images = [];
-    }
-  }
-
-  return {
-    id: request.id,
-    title: request.title,
-    description: request.description,
-    address: request.address,
-    status: request.status,
-    urgency: request.urgency,
-    estimatedHours: request.estimated_hours || undefined,
-    preferredDate: request.preferred_date || undefined,
-    createdAt: request.created_at,
-    completedAt: request.completed_at || undefined,
-    category: {
-      id: request.category!.id,
-      name: request.category!.name,
-      icon: request.category!.icon || undefined
-    },
-    tier: {
-      id: request.tier!.id,
-      name: request.tier!.name,
-      baseHourlyRate: request.tier!.base_hourly_rate
-    }
-  };
-}
-
-function toProviderAssignmentDto(request: ServiceRequest, eligibleRecord?: RequestEligibleProvider): ProviderAssignmentDto {
-  // Create the detailed request object with customer contact info (provider is assigned)
-  const requestDetail = toServiceRequestDetailDto(request, true); // true = isAssignedProvider, includes contact info
-  
-  // Map eligibility status to assignment status
-  let assignmentStatus: 'pending' | 'accepted' | 'declined';
-  if (eligibleRecord) {
-    switch (eligibleRecord.status) {
-      case 'selected':
-      case 'accepted':
-        assignmentStatus = 'accepted';
-        break;
-      case 'rejected':
-      case 'cancelled_by_provider':
-        assignmentStatus = 'declined';
-        break;
-      default:
-        assignmentStatus = 'pending';
-    }
-  } else {
-    assignmentStatus = 'pending';
-  }
-  
-  return {
-    id: eligibleRecord?.id || request.id, // Use eligible record id if available
-    requestId: request.id,
-    providerId: request.assigned_provider_id!,
-    status: assignmentStatus,
-    notifiedAt: eligibleRecord?.notified_at || request.assigned_at || request.created_at,
-    respondedAt: eligibleRecord?.accepted_at || request.assigned_at,
-    expiresAt: undefined, // Could be calculated if needed
-    request: requestDetail
-  };
-}
-
 
 export class RequestService {
   /**

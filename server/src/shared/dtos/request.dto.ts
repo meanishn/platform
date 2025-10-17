@@ -1,5 +1,6 @@
 /**
  * Service Request Data Transfer Objects
+ * Updated: 2025-10-17 - Added ProviderAssignmentDto and completedAt field
  */
 
 import { PublicUserDto, ProviderWithContactDto } from './user.dto';
@@ -72,6 +73,7 @@ export interface ServiceRequestListItemDto {
   estimatedHours?: number;
   preferredDate?: string;
   createdAt: string;
+  completedAt?: string;
   
   category: {
     id: number;
@@ -98,5 +100,18 @@ export interface CreateServiceRequestDto {
   urgency?: UrgencyLevel;
   estimatedHours?: number;
   images?: string[];
+}
+
+// Provider assignment types
+export interface ProviderAssignmentDto {
+  id: number;
+  requestId: number;
+  providerId: number;
+  status: 'pending' | 'accepted' | 'declined';
+  notifiedAt: string;
+  respondedAt?: string;
+  expiresAt?: string;
+  
+  request: ServiceRequestDetailDto;
 }
 

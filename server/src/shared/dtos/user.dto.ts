@@ -32,6 +32,12 @@ export interface ProviderWithContactDto extends ProviderProfileDto {
   phone?: string;
 }
 
+// Customer with contact info (only for assigned providers)
+export interface CustomerWithContactDto extends PublicUserDto {
+  email: string;
+  phone?: string;
+}
+
 // Authenticated user's own profile (includes personal info but NOT password)
 export interface AuthUserDto {
   id: number;

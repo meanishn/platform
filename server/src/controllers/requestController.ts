@@ -9,7 +9,12 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { requestService } from '../services/requestService';
 import { emitToUser, emitToRole, SocketEvents } from '../services/socketService';
-import { toProviderWithContactDto } from '../sanitizers/user.sanitizer';
+import { 
+  toProviderWithContactDto,
+  toServiceRequestDto,
+  toServiceRequestDetailDto,
+  toServiceRequestListItemDto
+} from '../sanitizers';
 
 export class RequestController {
   /**
@@ -552,13 +557,22 @@ export class RequestController {
 
   /**
    * Get assigned provider for a request
-   * GET /api/requests/:requestId/assigned-provider
+   * GET /api/service-requests/:id/assigned-provider
    */
   getAssignedProvider = async (req: Request, res: Response) => {
     try {
-      const { requestId } = req.params;
+      const { id } = req.params;
 
-      const provider = await requestService.getAssignedProvider(parseInt(requestId));
+      // Validate ID parameter
+      const requestId = parseInt(id);
+      if (isNaN(requestId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid request ID'
+        });
+      }
+
+      const provider = await requestService.getAssignedProvider(requestId);
 
       if (!provider) {
         return res.status(404).json({

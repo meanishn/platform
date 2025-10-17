@@ -1,6 +1,7 @@
 /**
  * Request Sanitizer
  * Handles all service request-related data sanitization
+ * Updated: 2025-10-17 - Using centralized DTOs from shared/dtos
  */
 
 import ServiceRequest from '../models/ServiceRequest';
@@ -11,7 +12,8 @@ import {
   ServiceRequestDetailDto,
   ServiceRequestListItemDto,
   ServiceCategoryDto,
-  ServiceTierDto
+  ServiceTierDto,
+  ProviderAssignmentDto
 } from '../shared/dtos/request.dto';
 import { sanitizeArray } from './base.sanitizer';
 import { toPublicUserDto, toProviderWithContactDto } from './user.sanitizer';
@@ -20,6 +22,18 @@ import { toPublicUserDto, toProviderWithContactDto } from './user.sanitizer';
  * Convert ServiceRequest model to ServiceRequestDto
  */
 export function toServiceRequestDto(request: ServiceRequest | any): ServiceRequestDto {
+  // Parse images if stored as JSON string
+  let images: string[] | undefined;
+  if (request.images) {
+    try {
+      images = typeof request.images === 'string' 
+        ? JSON.parse(request.images) 
+        : request.images;
+    } catch {
+      images = [];
+    }
+  }
+
   return {
     id: request.id,
     userId: request.user_id,
@@ -35,7 +49,7 @@ export function toServiceRequestDto(request: ServiceRequest | any): ServiceReque
     preferredDate: request.preferred_date,
     urgency: request.urgency,
     estimatedHours: request.estimated_hours,
-    images: request.images,
+    images,
     
     status: request.status,
     assignedProviderId: request.assigned_provider_id,
@@ -52,15 +66,26 @@ export function toServiceRequestDto(request: ServiceRequest | any): ServiceReque
 /**
  * Convert ServiceRequest with relations to ServiceRequestDetailDto
  * Includes customer, category, tier, and assigned provider (if any)
+ * @param request - ServiceRequest with relations
+ * @param isAssignedProvider - Whether the requester is the assigned provider (for progressive customer disclosure)
  */
-export function toServiceRequestDetailDto(request: ServiceRequest | any): ServiceRequestDetailDto {
+export function toServiceRequestDetailDto(request: ServiceRequest | any, isAssignedProvider = false): ServiceRequestDetailDto {
   if (!request.user || !request.category || !request.tier) {
     throw new Error('Request must include user, category, and tier relations');
   }
 
+  // Build customer object - include contact info only for assigned provider
+  const customer: any = toPublicUserDto(request.user);
+  
+  // Add contact information only for assigned provider
+  if (isAssignedProvider && request.status === 'assigned') {
+    customer.email = request.user.email;
+    customer.phone = request.user.phone;
+  }
+
   return {
     ...toServiceRequestDto(request),
-    customer: toPublicUserDto(request.user),
+    customer,
     category: toServiceCategoryDto(request.category),
     tier: toServiceTierDto(request.tier),
     assignedProvider: request.assignedProvider 
@@ -83,6 +108,7 @@ export function toServiceRequestListItemDto(request: ServiceRequest | any): Serv
     estimatedHours: request.estimated_hours,
     preferredDate: request.preferred_date,
     createdAt: request.created_at,
+    completedAt: request.completed_at,
     
     category: {
       id: request.category?.id || request.category_id,
@@ -157,5 +183,44 @@ export function toServiceCategoryDtoArray(categories: ServiceCategory[]): Servic
  */
 export function toServiceTierDtoArray(tiers: ServiceTier[]): ServiceTierDto[] {
   return sanitizeArray(tiers, toServiceTierDto);
+}
+
+/**
+ * Convert ServiceRequest to ProviderAssignmentDto
+ * Used for provider's assignment/job views
+ */
+export function toProviderAssignmentDto(request: any, eligibleRecord?: any): ProviderAssignmentDto {
+  // Create the detailed request object with customer contact info (provider is assigned)
+  const requestDetail = toServiceRequestDetailDto(request, true); // true = isAssignedProvider, includes contact info
+  
+  // Map eligibility status to assignment status
+  let assignmentStatus: 'pending' | 'accepted' | 'declined';
+  if (eligibleRecord) {
+    switch (eligibleRecord.status) {
+      case 'selected':
+      case 'accepted':
+        assignmentStatus = 'accepted';
+        break;
+      case 'rejected':
+      case 'cancelled_by_provider':
+        assignmentStatus = 'declined';
+        break;
+      default:
+        assignmentStatus = 'pending';
+    }
+  } else {
+    assignmentStatus = 'pending';
+  }
+  
+  return {
+    id: eligibleRecord?.id || request.id, // Use eligible record id if available
+    requestId: request.id,
+    providerId: request.assigned_provider_id!,
+    status: assignmentStatus,
+    notifiedAt: eligibleRecord?.notified_at || request.assigned_at || request.created_at,
+    respondedAt: eligibleRecord?.accepted_at || request.assigned_at,
+    expiresAt: undefined, // Could be calculated if needed
+    request: requestDetail
+  };
 }
 

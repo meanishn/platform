@@ -8,7 +8,8 @@ import {
   AuthUserDto,
   PublicUserDto,
   ProviderProfileDto,
-  ProviderWithContactDto
+  ProviderWithContactDto,
+  CustomerWithContactDto
 } from '../shared/dtos/user.dto';
 import { sanitizeArray } from './base.sanitizer';
 
@@ -84,6 +85,18 @@ export function toProviderProfileDto(user: User | any): ProviderProfileDto {
 export function toProviderWithContactDto(user: User | any): ProviderWithContactDto {
   return {
     ...toProviderProfileDto(user),
+    email: user.email,
+    phone: user.phone
+  };
+}
+
+/**
+ * Convert User model to CustomerWithContactDto
+ * ONLY use for assigned providers - includes customer contact information
+ */
+export function toCustomerWithContactDto(user: User | any): CustomerWithContactDto {
+  return {
+    ...toPublicUserDto(user),
     email: user.email,
     phone: user.phone
   };
