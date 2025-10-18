@@ -17,10 +17,30 @@ export const apiClient = async (url: string, config: RequestConfig = {}): Promis
 
   // Get token from localStorage
   const token = localStorage.getItem('token');
-  
-  // Construct full URL
-  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-  console.log(`[API Client] ${restConfig.method || 'GET'} ${fullUrl} - Token exists:`, !!token, 'Skip auth:', skipAuth);
+
+  // Construct full URL with hotfix to avoid double "/api/api"
+  let fullUrl: string;
+
+  if (url.startsWith('http')) {
+    fullUrl = url;
+  } else {
+    const apiBase = API_BASE_URL.replace(/\/+$/, ''); // remove trailing slashes from base URL
+    const relativeUrl = url.replace(/^\/+/, ''); // remove leading slashes from relative URL
+
+    if (apiBase.endsWith('/api') && relativeUrl.startsWith('api/')) {
+      // Avoid duplicated '/api/api/...'
+      fullUrl = `${apiBase}/${relativeUrl.replace(/^api\//, '')}`;
+    } else {
+      fullUrl = `${apiBase}/${relativeUrl}`;
+    }
+  }
+
+  console.log(
+    `[API Client] ${restConfig.method || 'GET'} ${fullUrl} - Token exists:`,
+    !!token,
+    'Skip auth:',
+    skipAuth
+  );
 
   // Build headers
   const finalHeaders: HeadersInit = {
@@ -40,6 +60,7 @@ export const apiClient = async (url: string, config: RequestConfig = {}): Promis
     headers: finalHeaders,
   });
 };
+
 
 /**
  * Convenience methods for common HTTP verbs
